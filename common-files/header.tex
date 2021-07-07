@@ -20,6 +20,7 @@
 \usepackage{mdframed}
 \usepackage{textcomp}
 \usepackage{enumitem}
+\usepackage{hyperref}
 
 
 % Horizontal alignment
@@ -100,18 +101,35 @@ receive credits.}
 
 %% Book
 \newcommand{\seedbook}{\textit{Computer \& Internet Security: A Hands-on Approach}, 2nd
-Edition, by Wenliang Du. See details at \url{https://www.handsonsecurity.net}.}
+Edition, by Wenliang Du. See details at \url{https://www.handsonsecurity.net}.\xspace}
 
 %% Videos
 \newcommand{\seedisvideo}{\textit{Internet Security: A Hands-on Approach},
-by Wenliang Du. See details at \url{https://www.handsonsecurity.net/video.html}.}
+by Wenliang Du. See details at \url{https://www.handsonsecurity.net/video.html}.\xspace}
 
 \newcommand{\seedcsvideo}{\textit{Computer Security: A Hands-on Approach},
-by Wenliang Du. See details at \url{https://www.handsonsecurity.net/video.html}.}
+by Wenliang Du. See details at \url{https://www.handsonsecurity.net/video.html}.\xspace}
 
 %% Lab Environment
-\newcommand{\seedenvironment}{This lab has been tested on our pre-built
-Ubuntu 16.04 VM, which can be downloaded from the SEED website.}
+\newcommand{\seedenvironment}{Este laboratorio ha sido testeado en nuestra imagen pre-compilada Ubuntu 16.04 VM, que puede ser descargada del sitio oficial de SEED.\xspace}
+
+\newcommand{\seedenvironmentA}{Este laboratorio ha sido testeado en nuestra imagen pre-compilada Ubuntu 16.04 VM, que puede ser descargada del sitio oficial de SEED.\xspace}
+
+\newcommand{\seedenvironmentB}{Este laboratorio ha sido testeado en nuestra imagen pre-compilada Ubuntu 20.04 VM, que puede ser descargada del sitio oficial de SEED .\xspace}
+
+\newcommand{\seedenvironmentC}{This lab has been tested on the SEED
+Ubuntu 20.04 VM. You can download a pre-built image from the SEED website, 
+and run the SEED VM on your own computer. However,
+most of the SEED labs can be conducted on the cloud, and 
+you can follow our instruction to create a SEED VM on the cloud.\xspace}
+
+\newcommand{\seedenvironmentAB}{This lab has been tested on our pre-built
+Ubuntu 16.04 and 20.04 VMs, which can be downloaded from the SEED website.\xspace}
+
+\newcommand{\nodependency}{Dado que utilizamos contenedores para configurar el entorno de laboratorio, este laboratorio no depende estrictamente de la VM de SEED. Puede hacer este laboratorio utilizando otras máquinas virtuales, máquinas físicas o máquinas virtuales en la nube.\xspace}
+
+\newcommand{\adddns}{You do need to add the required IP address mapping to
+the \texttt{/etc/hosts} file.\xspace}
 
 
 

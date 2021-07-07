@@ -1,0 +1,11 @@
+
+\paragraph{Base de Datos MySQL.}
+
+Los contenedores suelen ser desechables, esto quiere decir que una vez que son destruidos, toda la información dentro de ellos se pierde por completo.
+Para este laboratorio queremos que nuestra información quede persistida en la base de datos MySQL, por lo tanto no perderemos nuestro trabajo al apagar nuestro contenedor. Para lograr esto, hemos montado la carpeta \texttt{mysql\_data} en nuestra Máquina Host (dentro de la carpeta \texttt{Labsetup}, esta carpeta será creada después que el contenedor de MySQL sea creado y este corriendo) ubicada en el directorio \texttt{/var/lib/mysql} dentro del contenedor MySQL, en este directorio MySQL guardará todas las bases de datos.
+Inclusive si el contenedor es destruido la información de la base de datos es conservada.
+Si Ud. desea resetear la base de datos puede borrar la carpeta, usando el siguiente comando;
+\begin{lstlisting}
+$ sudo rm -rf mysql_data
+\end{lstlisting}
+

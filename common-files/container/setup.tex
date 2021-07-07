@@ -1,0 +1,42 @@
+Para empezar el setup del contenedor, deberá de descargarse el archivo \texttt{Labsetup.zip} ubicado en el laboratorio correspondiente dentro del sitio web oficial dentro de la Máquina Virtual prevista por SEED. Una vez descargado deberá descomprimirlo y entrar dentro de la carpeta \texttt{Labsetup} donde encontrará el archivo \texttt{docker-compose.yml} para setear el entorno de laboratorio. Para una información más detallada sobre el archivo \texttt{Dockerfile} y otros archivos relacionados, puede encontrarla dentro del Manual de Usuario del laboratorio en uso, en el sitio web oficial de SEED.
+
+Si esta es su primera experiencia haciendo el setup del laboratorio usando contenedores es recomendable leer este manual.
+
+A continuación, se listarán los comandos más usados en Docker y Compose.
+Ya que estos comandos serán usados con mucha frecuencia, hemos creados un conjunto de alias para los mismos, ubicados en del archivo \texttt{.bashrc} dentro de la Máquina Virtual provista por SEED (Ubuntu 20.04)
+
+\begin{lstlisting}
+$ docker-compose build  # Build the container image
+$ docker-compose up     # Start the container
+$ docker-compose down   # Shut down the container
+
+// Aliases for the Compose commands above
+$ dcbuild       # Alias for: docker-compose build
+$ dcup          # Alias for: docker-compose up
+$ dcdown        # Alias for: docker-compose down
+\end{lstlisting}
+
+
+Dado que todoos los contenedores estarán corriendo en un segundo plano. Se deberá proceder a correr comandos para interactuar con los mismos, una de las operaciones fundamentales a hacer con un contenedor es obtener una shell sobre el mismo. Usaremos \texttt{"docker ps"} para encontrar el ID del contenedor deseado y ejecutareos\texttt{"docker exec"} para lanzar una shell en ese contenedor.
+Hemos creado un alias para ello dentro del archivo \texttt{.bashrc}
+
+\begin{lstlisting}
+$ dockps        // Alias for: docker ps --format "{{.ID}}  {{.Names}}" 
+$ docksh <id>   // Alias for: docker exec -it <id> /bin/bash
+
+// The following example shows how to get a shell inside hostC
+$ dockps
+b1004832e275  hostA-10.9.0.5
+0af4ea7a3e2e  hostB-10.9.0.6
+9652715c8e0a  hostC-10.9.0.7
+
+$ docksh 96
+root@9652715c8e0a:/#  
+
+// Note: If a docker command requires a container ID, you do not need to 
+//       type the entire ID string. Typing the first few characters will 
+//       be sufficient, as long as they are unique among all the containers. 
+\end{lstlisting}
+
+En caso de problemas al momento de hacer el setup del entorno de laboratorio, por favor revise dentro del manual en la sección de ``Common Problems'' para encontrar posibles soluciones.
+
