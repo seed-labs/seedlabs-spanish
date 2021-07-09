@@ -6,17 +6,10 @@
 %     - Format_String
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-
-Shellcode is typically used in code injection attacks.
-It is basically a piece of code that launches a shell, and
-is usually written in assembly languages.
-In this lab, we only provide the binary version of a generic shellcode,
-without explaining how it works, because it is non-trivial.
-If you are interested in how exactly shellcode works, and
-want to write a shellcode from scratch, you
-can learn that from a separate SEED lab called \textit{Shellcode Lab}.
-Our generic shellcode is listed in the following (we only list
-the 32-bit version):
+Un Shellcode es una porción de código comúnmente escrito en lenguaje ensamblador y que es típicamente usado para realizar ataques de inyección de código a la hora de explotar determinadas vulnerabilidades.
+En este laboratorio, sólo ofrecemos un binario genérico de un shellcode, dado que el funcionamiento de un shellcode está fuera del alcance de este laborattorio, no nos adentraremos en los detalles de su funcionamiento.
+Si está interesado en saber como funciona un shellcode y quiere escribir un shellcode desde cero, puede consultar nuestro laboratorio \textit{Shellcode Lab}.
+A continuación se lista nuestro shellcode genérico de 32-bit:
 
 \begin{lstlisting}[language=python]
 shellcode = (
@@ -34,18 +27,12 @@ shellcode = (
 ).encode('latin-1')
 \end{lstlisting}
 
-The shellcode runs the \texttt{"/bin/bash"} shell program (Line~\ding{202}),
-but it is given two arguments, \texttt{"-c"} (Line~\ding{203}) and
-a command string (Line~\ding{204}). This indicates that the shell program
-will run the commands in the second argument.
-The \texttt{*} at the end of these strings is only a placeholder,
-and it will be replaced by
-one byte of \texttt{0x00} during the execution of the shellcode. 
-Each string needs to have a zero at the end, but we cannot put 
-zeros in the shellcode. Instead, we put a placeholder at the end of each string, 
-and then dynamically put a zero in the placeholder during the 
-execution. 
+Este shellcode ejecuta un shell \texttt{"/bin/bash"} (Line~\ding{202}) con dos argumentos de entrada que son invocados usando el parámetro \texttt{"-c"} (Línea \ding{203}) y su valor que en este caso es una cadena con comandos (Línea \ding{204}). Esto quiere decir que el shell correrá una determinada cantidad de comandos como segundo argumento.
+El \texttt{*} al final de la cadena es un placeholder y será reemplazado por el byte \texttt{0x00} durante la ejecución del shellcode.
+Esto se debe a que cada cadena necesita terminar con un cero, pero dado que en un shellcode no podemos poner ceros, ponemos un placeholder al final de cada una de ellas, y a la hora de su ejecución reemplazaremos ese placeholder por un cero.
 
+Si quisieramos el comando que se va a ejecutar en el shellcode, solamente tenemos que modificar la cadena ubicada en la línea \ding{204}.
+Debe tener en cuenta que al hacer este tipo de cambio, se debe preservar la misma longitud de cadena que se tiene originalmente,
 If we want the shellcode to run some other commands,
 we just need to modify the command string in Line~\ding{204}.
 However, when making changes, we need to
