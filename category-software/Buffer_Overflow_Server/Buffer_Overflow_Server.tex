@@ -287,7 +287,7 @@ Para esta tarea, hay dos piezas fundamentales a tener en cuenta a la hora de exp
 Estas son el valor del frame pointer y la dirección de memoria del buffer (buffer address) (Línea \ding{80}). El registro del frame pointer es llamado \texttt{ebp} en arquitecturas x86 y \texttt{rbp} en arquitecturas x64.
 Ud. puede utilizar ambos elementos para construir el payload de ataque.
 
-\paragraph{Agregando un poco de Aleatoriedad.} Para que la dirección del buffer y su frame pointer no sean siempre los mismos para cada uno de los estudiantes que realizan el laboratorio, hemos agregado un poco de aleatoriedad al programa vulnerable. Estos valores cambiarán cada vez que se el contenedor se reinicie, mientras el contenedor este corriendo los valores permanecerán iguales. Esta aleatoriedad es solamente para hacer el trabajo de los estudiantes un tanto diferente y no debe confundirse con address-randomization.
+\paragraph{Agregando Aleatoriedad.} Para que la dirección del buffer y su frame pointer no sean siempre los mismos para cada uno de los estudiantes que realizan el laboratorio, hemos agregado un poco de aleatoriedad al programa vulnerable. Estos valores cambiarán cada vez que se el contenedor se reinicie, mientras el contenedor este corriendo los valores permanecerán iguales. Esta aleatoriedad es solamente para hacer el trabajo de los estudiantes un tanto diferente y no debe confundirse con address-randomization.
 
 
 % -------------------------------------------
@@ -347,7 +347,7 @@ $ cat badfile | nc 10.9.0.5 9090
 \paragraph{Shell Reversa.}
 Dado que estamos haciendo un ataque a un servidor remoto desde nuestra máquina local, no nos servirá de mucho correr \texttt{/bin/sh} en el servidor vulnerable, ya que será ejecutado de forma local y no podremos tener el control sobre este shell desde nuestro lado. Una de las técnicas más comúnes para lograr control sobre este shell de forma remota es la Shell Reversa. En la Sección \ref{sec:guildelines} se explica como correr una shell reversa.
 Ud. deberá de modificar la cadena de comandos en el shellcode, para poder obtener una shell reversa en el servidor vulnerable.
-Por favor incluya las explicaciones pertinentes junto con los screenshots de este procedimiento en el informe de laboratorio.
+Por favor incluya las explicaciones pertinentes junto con los screenshots de este procedimiento en el informe del laboratorio.
 
 
 % *******************************************
@@ -371,41 +371,19 @@ server-2-10.9.0.6 | Input size: 6
 server-2-10.9.0.6 | Buffer's address inside bof():     0xffffda3c
 server-2-10.9.0.6 | ==== Returned Properly ====
 \end{lstlisting}
- 
-As you can see, the server only gives out one hint, the 
-address of the buffer; it does not reveal the value of the 
-frame pointer. This means, the size of the buffer is unknown
-to you. That makes exploiting the vulnerability more 
-difficult than the Level-1 attack. 
-Although the actual buffer size can be found in 
-\texttt{Makefile}, you are not allowed to use that 
-information in the attack, because in the real world, it is 
-unlikely that you will have this file. 
-To simplify the task, we do assume that the
-the range of the buffer size is known.
-Another fact that
-may be useful to you is that, due to the memory alignment,
-the value stored in the
-frame pointer is always multiple of four (for 32-bit programs).
+
+Como se puede observar, el servidor solamente está mostrando la dirección de memoria del buffer y no el valor del frame pointer. Esto quiere decir que para ud. el tamaño del buffer es desconocido, haciendo el ataque más difícil que el del Level 1.
+A pesar que el tamaño actual del buffer se encuentra en el archivo \texttt{Makefile}, no se permite usar esa información para el ataque, esto es porque en un escenario real de explotación este tipo de información estará disponible.
+Para simplificar la tarea, hemos asumido que el rango del tamaño del buffer es un valor entre 100 y 300, como se indica abajo.
+Otro dato que le puede ser de utilidad es que debido a como funciona el alineamiento en memoria o memory aligment, todo los valores guardados en el frame pointer son múltiplos de cuatro (para programas de 32-bits)
 
 
 \begin{lstlisting}
 Range of the buffer size (in bytes): [100, 300]
 \end{lstlisting}
  
-
-Your job is to construct one payload to exploit the buffer overflow
-vulnerability on the server, and get a root shell on the target server (using
-the reverse shell technique). Please be noted, you are only allowed 
-to construct one payload that works for any buffer size 
-within this range.  You will not get all the credits if you 
-use the brute-force method, i.e., trying one buffer size
-each time. The more you try, the easier it will be detected 
-and defeated by the victim. That's why minimizing the number 
-of trials is important for attacks. 
-In your lab report, you need to describe your method, 
-and provide evidences.
-
+Su tarea es generar un payload para explotar la vulnerabilidad de buffer overflow en el servidor y obtener un root shell en este (usando la técnica de shell reversa). Cabe aclarar que el payload a generar debe de funcionar para cualquiera de los tamaños del buffer anteriormente establecidos. Ud. no obtendrá créditos si lo hace a través de un método de fuerza bruta. Mientras más intente, más fácil será detectar el ataque y mitigarlo de parte de la víctima. Es por eso que es crucial minimizar la cantidad de intentos en el ataque.
+En el informe del laboratorio deberá describir el método que se uso y mostrar las evidencias del ataque.
 
 
 % *******************************************
@@ -413,12 +391,9 @@ and provide evidences.
 % *******************************************
 \section{Tarea 4: Ataque Level-3} 
 
-In the previous tasks, our target servers are 32-bit 
-programs. In this task, we switch to a 64-bit server 
-program.  Our new target is \texttt{10.9.0.7}, which 
-runs the 64-bit version of the \texttt{stack} program.  
-Let's first send a hello message to this server. 
-We will see the following messages printed out by the target container. 
+En las tareas anteriores se trabajo con un binario vulnerable de 32-bits. En esta tarea lo haremos con uno de 64-bits, nuestro servidor vulnerable estará en la IP \texttt{10.9.0.7} y correra el binario del programa  \texttt{stack} de 64-bits.
+Primero enviaremos un mensaje de hello al servidor.
+Una vez hecho esto podremos observar en el contenedor target los siguientes mensajes.
 
 \begin{lstlisting}
 // On the VM (i.e., the attacker machine)
@@ -434,16 +409,11 @@ server-3-10.9.0.7 | Buffer's address inside bof():     0x00007fffffffe070
 server-3-10.9.0.7 | ==== Returned Properly ====
 \end{lstlisting}
 
-You can see the values of the frame pointer and buffer's address
-become 8 bytes long (instead of 4 bytes in 32-bit programs).
-Your job is to construct your payload to exploit the buffer overflow
-vulnerability of the server. 
-You ultimate goal is to get a root shell on 
-the target server. You can use the shellcode from Task 1, but 
-you need to use the 64-bit version of the shellcode. 
+Como se puede observar, los valores del frame pointer y la dirección del buffer son de 8 bytes de longitud (en vez de 4 bytes como lo es en un programa de 32-bits)
+Su tarea es generar un payload para explotar la vulnerabilidad de buffer overflow de este servidor.
+El objetivo final será obtener un root shell en el servidor vulnerable. Puede usar el shellcode de la Tarea 1 pero necesitará usar la versión de 64-bits de este shellcode.
 
-
-\paragraph{Challenges.} Compared to buffer-overflow attacks on 32-bit 
+\paragraph{Desafíos.} Compared to buffer-overflow attacks on 32-bit 
 machines, attacks on 64-bit machines is more difficult. The most 
 difficult part is the address. Although the x64 architecture 
 supports 64-bit address space, only the address from 
@@ -451,22 +421,15 @@ supports 64-bit address space, only the address from
 every address (8 bytes), the highest two bytes are always zeros. 
 This causes a problem.
 
-In our buffer-overflow attacks, we need to store at least one address 
-in the payload, and the payload will be copied into the stack via
-\texttt{strcpy()}. We know that the \texttt{strcpy()} function
-will stop copying when it sees a zero. Therefore, if a zero 
-appears in the middle of the payload, the content after the 
-zero cannot be copied into the stack. How to solve this 
-problem is the most difficult challenge in this attack. In your 
-report, you need to describe how you solve this problem. 
-
-
+En nuestros ataques de buffer overflow, necesitamos guardar al menos una dirección de memoria en el payload, este será copiado en el stack por medio de la función \texttt{strcpy()}. Sabemos que la función \texttt{strcpy()}  dejará de copiar datos al encontrarse con un valor cero. Por lo tanto, si un cero
+aparece en el medio del payload, los datos que siguen después de este no serán copiado. Resolver esta cuestión es uno de los desafíos más difíciles para este ataque.
+En su informe del laboratorio, deberá describir como resolver este problema.
 
 
 % *******************************************
 % SECTION
 % *******************************************
-\section{Task 5: Level-4 Attack} 
+\section{Tarea 5: Ataque Level-4} 
 
 The server in this task is similar to that in Level 3, 
 except that the buffer size is much smaller. From the 
