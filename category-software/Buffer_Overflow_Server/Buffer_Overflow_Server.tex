@@ -47,7 +47,7 @@ Este laboratorio cubre los siguientes tópicos:
 \item Buffer overflow - Ataques y Vulnerabilidad
 \item Invocación de una función y su Stack Layout
 \item Address randomization, Non-executable stack, y  StackGuard
-\item Shellcode. Hemos hecho un laboratorio separado sobre cómo escribir un shellcode desde cero.
+\item Shellcode. Contamos con un laboratorio separado sobre cómo escribir un shellcode desde cero.
 \end{itemize}
 
 
@@ -65,10 +65,10 @@ Los ataques de buffer-overflow son abordados en más detalle en los siguientes r
 
 
 \paragraph{Nota para los instructores.}
-Los instructores pueden personalizar este laboratorio modificando los valores para \texttt{N1}, ..., \texttt{N4}. Ver Section~\ref{sec:vulnerable_program} para más detalles.
-Dependiendo del conocimiento de los estudiantes y el tiempo asignado al laboratorio, los instructores también pueden hacer opcionales los Niveles 2, 3 y 4.
-La Tarea del Nivel 1 es suficiente para cubrir lo básico en cuanto a los ataques buffer-overflow. Los niveles del 2 al 4 incrementan la dificultad de estos ataques.
-Todas las tareas relacionadas a las contramedidas están ligadas a la tarea del Nivel 1 por lo tanto saltearse los otros niveles no afecta el abordaje de estas tareas.
+Los instructores pueden personalizar este laboratorio modificando los valores para \texttt{L1}, ..., \texttt{L4}. Ver Section~\ref{sec:vulnerable_program} para más detalles.
+Dependiendo del conocimiento de los estudiantes y el tiempo asignado al laboratorio, los instructores también pueden hacer opcionales los Levels 2, 3 y 4.
+La Tarea del Level 1 es suficiente para cubrir lo básico en cuanto a los ataques buffer-overflow. Los Levels del 2 al 4 incrementan la dificultad de estos ataques.
+Todas las tareas relacionadas a las contramedidas están ligadas a la tarea del Level 1 por lo tanto saltearse los otros niveles no afecta el abordaje de estas tareas.
 
 
 % *******************************************
@@ -150,8 +150,8 @@ A continuación se muestra un ejemplo de como usar gcc para compilar el código 
 $ gcc -DBUF_SIZE=$(L1) -o stack -z execstack -fno-stack-protector stack.c
 \end{lstlisting}
 
-Compilaremos el programa \texttt{stack} como un binario de 32-bit y de 64-bit. Nuestra Máquina Virtual con Ubuntu 20.04 es de 64-bit, pero soporta binarios de 32-bit. Todo lo que debemos hacer es usar la opción \texttt{-m32} en \texttt{gcc}.
-Debido a que las librerías dinámicas de 32-bit no están instaladas por defecto en los contenedores, deberemos de usar también la opción \texttt{-static} para poder generar un binario de 32-bit estáticamente linkeado que no dependa de estas librerías dinámicas.
+Compilaremos el programa \texttt{stack} como un binario de 32-bits y de 64-bits. Nuestra Máquina Virtual con Ubuntu 20.04 es de 64-bit, pero soporta binarios de 32-bits. Todo lo que debemos hacer es usar la opción \texttt{-m32} en \texttt{gcc}.
+Debido a que las librerías dinámicas de 32-bits no están instaladas por defecto en los contenedores, deberemos de usar también la opción \texttt{-static} para poder generar un binario de 32-bits estáticamente linkeado que no dependa de estas librerías dinámicas.
 
 Los comandos de compilación son provistos dentro del archivo \texttt{Makefile}. Para compilar el código, lo único que debe de tipear es \texttt{make}. Las variables \texttt{L1}, \texttt{L2}, \texttt{L3}, y \texttt{L4} dentro del archivo \texttt{Makefile}, serán usadas durante la compilación.
 Al terminar la compilación, deberemos de copiar el binario en la carpeta \texttt{bof-containers} de esta forma estarán disponibles en los contenedores. 
@@ -164,21 +164,20 @@ $ make install
  
 
 \paragraph{Para instructores (personalización).}
-To make the lab slightly different from the one offered in the past,
-instructors can change the value for \texttt{BUF\_SIZE} by requiring
-students to compile the server code using different \texttt{BUF\_SIZE} values.
-In \texttt{Makefile}, the \texttt{BUF\_SIZE} value is set by
-four variables \texttt{L1}, ..., \texttt{L4}.
-Instructors should pick the values for these variables based
-on the following suggestions:
+Para que el laboratorio sea ligeramente diferente al que se ofrecía en el pasado,
+los instructores pueden cambiar el valor de \texttt{BUF\_SIZE} solicitando
+que los estudiantes compilen el código del servidor usando diferentes valores de \texttt {BUF\_SIZE}.
+Dentro del archivo \texttt{Makefile}, el valor de \texttt{BUF\_SIZE} es seteado en 
+cuatro variables \texttt{L1}, ..., \texttt{L4}.
+Los instructores deben elegir los valores para estas variables en función de
+en las siguientes sugerencias:
 
 \begin{itemize}[noitemsep]
-\item \texttt{L1}: pick a number between 100 and 400
-\item \texttt{L2}: pick a number between 100 and 200
-\item \texttt{L3}: pick a number between 100 and 400
-\item \texttt{L4}: pick a number between 20 and 80;
-we need to keep this number smaller, to make this level more challenging 
-than the previous level. 
+\item \texttt{L1}: elegir un valor entre 100 y 400
+\item \texttt{L2}: elegir un valor entre 100 y 400
+\item \texttt{L3}: elegir un valor entre 100 y 400
+\item \texttt{L4}: elegir un valor entre 20 y 80
+Para hacer más difícil la tarea entre los diferentes niveles, es recomendable usar valores pequeños.
 \end{itemize}
 
 
@@ -217,7 +216,7 @@ Vamos a familiarizarnos un poco con este concepto.
 
 Ud. puede encontrar el shellcode genérico en la carpeta \texttt{shellcode}.
 Dentro de esta podrá observar dos scripts en python, \texttt{shellcode\_32.py} y \texttt{shellcode\_64.py}. 
-Uno para 32-bit y otro para 64-bit.
+Uno para 32-bits y otro para 64-bits.
 Estos scripts se encargarán de generar el binario del shellcode dentro de los archivos \texttt{codefile\_32} y \texttt{codefile\_64}.
 También puede usar el archivo \texttt{call\_shellcode} para ejecutar el shellcode. 
 
@@ -256,8 +255,8 @@ En esta tarea trabajaremos sobre el contenedor Level-1.
 % -------------------------------------------
 \subsection{Servidor} 
 
-Nuestro primer target corre en la ip \texttt{10.9.0.5} (puerto \texttt{9090}), y el programa vulnerable es un binario de 32-bit llamado \texttt{stack}.
-Primero procederemos a enviar un mensaje inocuo al servidor.
+Nuestro primer target corre en la ip \texttt{10.9.0.5} (puerto \texttt{9090}), y el programa vulnerable es un binario de 32-bits llamado \texttt{stack}.
+Primero procederemos a enviar un mensaje inocuo (a modo de prueba) hacia el servidor.
 Una vez hecho esto podremos observar en el contenedor target los siguientes mensajes (esto puede variar levemente)
 
 \begin{lstlisting}
@@ -274,7 +273,7 @@ server-1-10.9.0.5 | Buffer's address inside bof():     0xffffdb18    (*@\ding{80
 server-1-10.9.0.5 | ==== Returned Properly ====
 \end{lstlisting}
 
-El servidor podrá aceptar un flujo de datos superior a los \texttt{517} bytes, esto causará un buffer overflow. Su tarea es construir un payload para explotar esta vulnerabilidad. Si ud. salva este payload dentro de un archivo, puede enviarlo al servidor de la siguiente manera.
+El servidor podrá aceptar un flujo de datos superior a \texttt{517} bytes, esto causará un buffer overflow. Su tarea es construir un payload para explotar esta vulnerabilidad. Si ud. salva este payload dentro de un archivo, puede enviarlo al servidor de la siguiente manera.
 
 \begin{lstlisting}
 $ cat <file> | nc 10.9.0.5 9090
@@ -288,14 +287,7 @@ Para esta tarea, hay dos piezas fundamentales a tener en cuenta a la hora de exp
 Estas son el valor del frame pointer y la dirección de memoria del buffer (buffer address) (Línea \ding{80}). El registro del frame pointer es llamado \texttt{ebp} en arquitecturas x86 y \texttt{rbp} en arquitecturas x64.
 Ud. puede utilizar ambos elementos para construir el payload de ataque.
 
-\paragraph{Agregando un poco de Aleatoridad.} We have added a little bit of randomness
-in the program, so different students are likely to see different values
-for the buffer address and frame pointer. The values only change 
-when the container restarts, so as long as you keep the 
-container running, you will see the same numbers (the numbers 
-seen by different students are still different). This randomness
-is different from the address-randomization countermeasure. Its sole
-purpose is to make students' work a little bit different. 
+\paragraph{Agregando un poco de Aleatoriedad.} Para que la dirección del buffer y su frame pointer no sean siempre los mismos para cada uno de los estudiantes que realizan el laboratorio, hemos agregado un poco de aleatoriedad al programa vulnerable. Estos valores cambiarán cada vez que se el contenedor se reinicie, mientras el contenedor este corriendo los valores permanecerán iguales. Esta aleatoriedad es solamente para hacer el trabajo de los estudiantes un tanto diferente y no debe confundirse con address-randomization.
 
 
 % -------------------------------------------
@@ -303,17 +295,13 @@ purpose is to make students' work a little bit different.
 % ------------------------------------------- 
 \subsection{Escribiendo el Exploit y Lanzando el Ataque} 
 
-To exploit the buffer-overflow vulnerability in the target program,
-we need to prepare a payload, and save it inside a file (we will use 
-\texttt{badfile} as the file name in this document). 
-We will use a Python program to do that.
-We provide a skeleton program called \texttt{exploit.py}, which
-is included in the lab setup file. 
-The code is incomplete, and students need to replace some of the essential 
-values in the code. 
+Para explotar la vulnerabilidad de buffer overflow en el programa target, vamos a necesitar preparar un payload y salvarlo dentro de un archivo (usaremos el nombre de archivo \texttt{badfile} en este documento).
+Usaremos un script en Python para la generación de este archivo. 
+Hemos provisto un script genérico en Python (ubicado en la carpeta de nuestro laboratorio) llamado \texttt{exploit.py}.
+Este código está incompleto y será necesario que los estudiantes completen determinados valores dentro de este para llevar a cabo un ataque exitoso.
 
 
-\newcommand{\needtochange}{\ding{73} Need to change \ding{73}}
+\newcommand{\needtochange}{\ding{73} Necesita completarse \ding{73}}
 
 
 \begin{lstlisting}[language=python, caption={The skeleton exploit code (\texttt{exploit.py})}]
@@ -347,15 +335,8 @@ with open('badfile', 'wb') as f:
   f.write(content)
 \end{lstlisting}
 
-
-After you finish the above program, run it. This will generate
-the contents for \texttt{badfile}. Then feed it to
-the vulnerable server. If your exploit is implemented correctly, the 
-command you put inside your shellcode will be executed. If your 
-command generates some outputs, you should be able to see
-them from the container window. Please provide proofs to show that you
-can successfully get the vulnerable server to run 
-your commands.
+Al terminar de completar el programa anterior, debe correrlo. Esto generará el contenido para el archivo \texttt{badfile}. Una vez generado debe ser enviado al servidor vulnerable. Si el exploit es implementado de manera correcta, el código del shellcode será ejecutado. 
+Si el comando usado genera algún output este será mostrado en dentro de los mensajes del contenedor. Por favor incluya las pruebas que muestren que su servidor vulnerable ha sido capaz de correr los siguientes comandos.
 
 \begin{lstlisting}
 $./exploit.py   // create the badfile
@@ -364,17 +345,9 @@ $ cat badfile | nc 10.9.0.5 9090
  
 
 \paragraph{Shell Reversa.}
-We are not interested in running some pre-determined commands. We 
-want to get a root shell on the target server, so we can 
-type any command we want. Since we are on a remote machine,
-if we simply get the server to run \texttt{/bin/sh}, we won't be able to
-control the shell program. Reverse shell is a typical
-technique to solve this problem. Section~\ref{sec:guildelines} provides 
-detailed instructions on how to run a reverse shell.
-Please modify the command string in your shellcode, so you can
-get a reverse shell on the target server. 
-Please include screenshots and explanation in your lab report.
-
+Dado que estamos haciendo un ataque a un servidor remoto desde nuestra máquina local, no nos servirá de mucho correr \texttt{/bin/sh} en el servidor vulnerable, ya que será ejecutado de forma local y no podremos tener el control sobre este shell desde nuestro lado. Una de las técnicas más comúnes para lograr control sobre este shell de forma remota es la Shell Reversa. En la Sección \ref{sec:guildelines} se explica como correr una shell reversa.
+Ud. deberá de modificar la cadena de comandos en el shellcode, para poder obtener una shell reversa en el servidor vulnerable.
+Por favor incluya las explicaciones pertinentes junto con los screenshots de este procedimiento en el informe de laboratorio.
 
 
 % *******************************************
@@ -382,13 +355,9 @@ Please include screenshots and explanation in your lab report.
 % *******************************************
 \section{Tarea 3: Ataque Level-2} 
 
-In this task, we are going to increase the difficulty
-of the attack a little bit by not displaying an essential 
-piece of the information. Our target server is 
-\texttt{10.9.0.6} (the port number is still \texttt{9090}, and the 
-vulnerable program is still a 32-bit program). 
-Let's first send a benign message to this server. 
-We will see the following messages printed out by the target container. 
+Para esta Tarea, vamos a agregar un poco más de dificultad al ataque, y evitaremos mostrar una parte de esa pieza fundamental de información que nos sirve para explotar el programa. Nuestro servidor target será \texttt{10.9.0.6} (el puerto seguirá siendo el \texttt{9090}, y el programa vulnerable será de 32-bits). 
+Primero procederemos a enviar un mensaje inocuo (a modo de prueba) hacia el servidor.
+Una vez hecho esto podremos observar en el contenedor target los siguientes mensajes.
 
 \begin{lstlisting}
 // On the VM (i.e., the attacker machine)
