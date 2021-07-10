@@ -413,16 +413,12 @@ Como se puede observar, los valores del frame pointer y la dirección del buffer
 Su tarea es generar un payload para explotar la vulnerabilidad de buffer overflow de este servidor.
 El objetivo final será obtener un root shell en el servidor vulnerable. Puede usar el shellcode de la Tarea 1 pero necesitará usar la versión de 64-bits de este shellcode.
 
-\paragraph{Desafíos.} Compared to buffer-overflow attacks on 32-bit 
-machines, attacks on 64-bit machines is more difficult. The most 
-difficult part is the address. Although the x64 architecture 
-supports 64-bit address space, only the address from 
-\texttt{0x00} through \texttt{0x00007FFFFFFFFFFF} is allowed. That means for 
-every address (8 bytes), the highest two bytes are always zeros. 
-This causes a problem.
 
-En nuestros ataques de buffer overflow, necesitamos guardar al menos una dirección de memoria en el payload, este será copiado en el stack por medio de la función \texttt{strcpy()}. Sabemos que la función \texttt{strcpy()}  dejará de copiar datos al encontrarse con un valor cero. Por lo tanto, si un cero
-aparece en el medio del payload, los datos que siguen después de este no serán copiado. Resolver esta cuestión es uno de los desafíos más difíciles para este ataque.
+\paragraph{Desafíos.} En comparación con una máquina de 32-bits los ataques de buffer overflow son más difíciles en una de 64-bits. La parte más compleja son las direcciones de memoria. Debido a que el espacio de direcciones permitido va de \texttt{0x00} a \texttt{0x00007FFFFFFFFFFF}, tendremos por cada dirección de memoria de 8 bytes, 2 bytes que serán ceros.
+Esto será un problema a la hora de construir nuestro payload.
+
+En nuestros ataques de buffer overflow, necesitamos guardar al menos una dirección de memoria en el payload, este será copiado en el stack usando la función \texttt{strcpy()}. Sabemos que la función \texttt{strcpy()} dejará de copiar datos al encontrarse con un valor cero. Por lo tanto, si un cero
+aparece en el medio del payload, los datos que siguen después de este no serán copiados. Resolver esta cuestión es uno de los desafíos más difíciles.
 En su informe del laboratorio, deberá describir como resolver este problema.
 
 
@@ -431,15 +427,8 @@ En su informe del laboratorio, deberá describir como resolver este problema.
 % *******************************************
 \section{Tarea 5: Ataque Level-4} 
 
-The server in this task is similar to that in Level 3, 
-except that the buffer size is much smaller. From the 
-following printout, you can see the distance between 
-the frame pointer and the buffer's address is only about 32 bytes (the 
-actual distance in the lab may be different).
-In Level 3, the distance is much larger. Your goal is the same: 
-get the root shell on this server. The server still takes in
-517 byte of input data from the user.
-
+El programa del servidor en esta tarea es similar al del Level 3, con la exepción que el tamaño del buffer es mucho más chico. En los mensajes que se muestran a continuación, se podrá observar que la distancia entre el frame pointer y la dirección de memoria del buffer es de solamente 32 bytes aproximadamente (la distancia puede variar levemente).
+En el Level 3, la distancia entre ambos era mucho más grande. Su objetivo es el mismo: obtener un root shell en el servidor vulnerable. El servidor sigue aceptando 512 bytes como tamaño total de los datos entrada.
 
 \begin{lstlisting}
 server-4-10.9.0.8 | Got a connection from 10.9.0.1
@@ -456,21 +445,15 @@ server-4-10.9.0.8 | ==== Returned Properly ====
 % *******************************************
 \section{Tarea 6: Experimentando con Address Randomization}
 
-At the beginning of this lab, we turned off one of the countermeasures,
-the Address Space Layout Randomization (ASLR). In this task, we will turn
-it back on, and see how it affects the attack. You can run 
-the following command on your VM to enable ASLR. This change is global, and 
-it will affect all the containers running inside the VM.
+Al comienzo del laboratorio, hemos desactivado una de las contramedidas, Address Space Layout Randomization (ASLR). En esta tarea, la activaremos y veremos como afecta al ataque. Para activarla puede correr el siguiente comando en la Máquina Virtual. Este cabio es global y afectará a los contenedores que se encuentren corriendo dentro de la Máquina Virtual.
 
 
 \begin{lstlisting}
 $ sudo /sbin/sysctl -w kernel.randomize_va_space=2
 \end{lstlisting}
 
-Please send a \texttt{hello} message to the Level 1 and Level 3 servers,
-and do it multiple times.
-In your report, please report your observation, and explain why
-ASLR makes the buffer-overflow attack more difficult. 
+A continuación envie un mensaje de \texttt{hello} a los servidores del Level 1 y Level 3 y repita este proceso varias veces.
+En el informe del laboratorio, escriba sus observaciones y explique porque ASLR hace mucho más difícil explotar una vulnerabilidad de buffer overflow.
 
 
 \paragraph{Defeating the 32-bit randomization.}
@@ -511,12 +494,12 @@ done
 % *******************************************
 % SECTION
 % *******************************************
-\section{Tasks 7: Experimenting with Other Countermeasures}
+\section{Tarea 7: Experimentando con otras Contramedidas}
 
 % -------------------------------------------
 % SUBSECTION
 % -------------------------------------------
-\subsection{Task 7.a: Turn on the StackGuard Protection}
+\subsection{Tarea 7.a: Activando StackGuard}
 
 Many compiler, such as \texttt{gcc}, implements a security mechanism called
 \textit{StackGuard} to prevent buffer overflows. In the presence of this
@@ -544,7 +527,7 @@ $ ./stack-L1 < badfile
 % -------------------------------------------
 % SUBSECTION
 % -------------------------------------------
-\subsection{Task 7.b: Turn on the Non-executable Stack Protection}
+\subsection{Task 7.b: Activandoo Non-executable Stack Protection}
 
 \input{part_nonexecutable_stack}
 
