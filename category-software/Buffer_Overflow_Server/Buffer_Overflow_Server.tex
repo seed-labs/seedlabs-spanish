@@ -46,7 +46,7 @@ Este laboratorio cubre los siguientes tópicos:
 \begin{itemize}[noitemsep]
 \item Buffer overflow - Ataques y Vulnerabilidad
 \item Invocación de una función y su Stack Layout
-\item Address randomization, Non-executable stack, y  StackGuard
+\item Address randomization, Non-executable stack, y StackGuard
 \item Shellcode. Contamos con un laboratorio separado sobre cómo escribir un shellcode desde cero.
 \end{itemize}
 
@@ -56,8 +56,8 @@ Este laboratorio cubre los siguientes tópicos:
 Los ataques de buffer overflow son abordados en más detalle en los siguientes recursos:
 
 \begin{itemize}
-\item Capítulo 4 del SEED Book, \seedbook
-\item Sección 4 del curso SEED en Udemy, \seedcsvideo
+\item Capítulo 4 del Libro de SEED, \seedbook
+\item Sección 4 del curso de SEED en Udemy, \seedcsvideo
 \end{itemize}
 
 
@@ -98,9 +98,7 @@ $ sudo /sbin/sysctl -w kernel.randomize_va_space=0
 \subsection{El Programa Vulnerable} 
 \label{sec:vulnerable_program}
 
-El programa vulnerable que vamos a usar para este laboratorio está en el archivo \texttt{stack.c}, dentro de la carpeta \texttt{server-code}.
-Este programa tiene una vulnerabilidad de buffer overflow, su tarea es explotar esta vulnerabilidad y obtener privilegios de root.
-El código mostrado a continuación contiene información trivial que fue removida del archivo original, pero en esencia es exactamente el mismo código.
+El programa vulnerable que vamos a usar para este laboratorio está en el archivo \texttt{stack.c}, dentro de la carpeta \texttt{server-code}. Este programa tiene una vulnerabilidad de buffer overflow, su tarea es explotar esta vulnerabilidad y obtener privilegios de root. El código mostrado a continuación contiene información trivial que fue removida del archivo original, pero en esencia es exactamente el mismo código.
 
 \begin{lstlisting}[language=C, caption={\texttt{stack.c}}]
 #include <stdlib.h>
@@ -198,7 +196,7 @@ Cuando este programa recibe una conexión TCP, ejecutará el programa \texttt{st
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
-\paragraph{Nota.} Antes de correr \texttt{"docker-compose build"} para hacer el build de las imágenes docker, necesitamos compillar y copiar el código del programa servidor dentro de la carpeta \texttt{bof-containers}. Para más instrucciones vea Section~\ref{sec:vulnerable_program}.
+\paragraph{Nota.} Antes de correr \texttt{"docker-compose build"} para hacer el build de las imágenes docker, necesitamos compilar y copiar el código del programa servidor dentro de la carpeta \texttt{bof-containers}. Para más instrucciones vea la Sección  \ref{sec:vulnerable_program}.
 
 
 
@@ -208,7 +206,7 @@ Cuando este programa recibe una conexión TCP, ejecutará el programa \texttt{st
 \section{Tarea 1: Shellcode}
 El objetivo final de los ataques a las vulnerabilidades de buffer overflow es poder inyectar código malicioso dentro del programa vulnerable, para que así sea ejecutado con los privilegios con que ese programa está corriendo en el sistema.
 La pieza de código más usada para para conducir este tipo de ataque de inyección de código en un ataque es llamada Shellcode.
-Vamos a familiarizarnos un poco con este concepto.
+Vamos a adentrarnos un poco en este concepto.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \input{\commonfolder/guidelines/shellcode.tex}

@@ -27,21 +27,10 @@ shellcode = (
 ).encode('latin-1')
 \end{lstlisting}
 
-Este shellcode ejecuta un shell \texttt{"/bin/bash"} (Line~\ding{202}) con dos argumentos de entrada que son invocados usando el parámetro \texttt{"-c"} (Línea \ding{203}) y su valor que en este caso es una cadena con comandos (Línea \ding{204}). Esto quiere decir que el shell correrá una determinada cantidad de comandos como segundo argumento.
+Este shellcode ejecuta una shell \texttt{"/bin/bash"} (Línea \ding{202}) con dos argumentos de entrada que son invocados usando el parámetro \texttt{"-c"} (Línea \ding{203}) y su valor que en este caso es una cadena con comandos (Línea \ding{204}). Esto quiere decir que la shell correrá una determinada cantidad de comandos como segundo argumento.
 El \texttt{*} al final de la cadena es un placeholder y será reemplazado por el byte \texttt{0x00} durante la ejecución del shellcode.
 Esto se debe a que cada cadena necesita terminar con un cero, pero dado que en un shellcode no podemos poner ceros, ponemos un placeholder al final de cada una de ellas, y a la hora de su ejecución reemplazaremos ese placeholder por un cero.
 
-Si quisieramos el comando que se va a ejecutar en el shellcode, solamente tenemos que modificar la cadena ubicada en la línea \ding{204}.
-Debe tener en cuenta que al hacer este tipo de cambio, se debe preservar la misma longitud de cadena que se tiene originalmente,
-If we want the shellcode to run some other commands,
-we just need to modify the command string in Line~\ding{204}.
-However, when making changes, we need to
-make sure not to change the length of this string, because the
-starting position of the placeholder for the \texttt{argv[]} array,
-which is right after the command string,
-is hardcoded in the binary portion of the shellcode. If
-we change the length, we need to modify the binary part.
-To keep the star at the end of this string at the same position,
-you can add or delete spaces.
-
+Para modificar el comando que se va a ejecutar en el shellcode, solamente tenemos que cambiar la cadena ubicada en la línea \ding{204}.
+Debe tener en cuenta que al hacer este tipo de cambio, se debe preservar la longitud de la cadena original, esto se debe a que el marcador de la posición inicial osea el placeholder (*) para el arreglo \texttt{argv[]} se encuentra hardcodeado en el binario generado por el shelllcode. Si la longitud de esta cadena se modifica, necesitaremos modificar el binario para mantener la posición del marcador representado por un asterisco al final de la cadena, agregando o borrando espacios en blanco.
 
