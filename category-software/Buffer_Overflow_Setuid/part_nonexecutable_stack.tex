@@ -1,34 +1,12 @@
 
-Operating systems used to allow executable stacks, but
-this has now changed: In Ubuntu OS, the binary images of programs (and shared libraries)
-must declare whether they require executable stacks or not, i.e., they need to
-mark a field in the program header. Kernel or dynamic linker uses this marking
-to decide whether to make the stack of this running program executable or
-non-executable. This marking is done automatically by the
-\texttt{gcc}, which by default makes stack
-non-executable. We can specifically make it non-executable
-using the \texttt{"-z noexecstack"} flag in the compilation.
-In our previous tasks, we used \texttt{"-z execstack"} to
-make stacks executable.
+Los sistemas operativos solían permitir ejecución de código en el stack, pero esto ha cambiado: En Ubuntu los binarios de los programas (y las librerías compartidas) deben de indicar si necesitan o no poder ejecutar código en el stack, es decir necesitan marcar un campo específico dentro del encabezado del programa que permite que esto sea posible o no. El kernel o mejor dicho el dynamic linker usan esta marca para permitir que el stack del programa pueda ejecutar o no código. Para setear esta marca a la hora de generar el binario ejecutable usando \texttt{gcc}, se usan dos flags que indican que se puede ejecutar código en el stack \texttt{"-z execstack"} o \texttt{"-z noexecstack"} que indica lo contrario.
+
+En esta tarea, haremos que el stack no pueda ejecutar código, activando la protección non-executable. Para esto nos situaremos dentro de la carpeta \texttt{shellcode} y dentro del archivo \texttt{call\_shellcode} pondremos una copia de nuestro shellcode y ejecutaremos este código desde el stack.
+Para ello se debe recompilar el archivo \texttt{call\_shellcode.c} sin usar el parámetro \texttt{"-z execstack"}, genere los archivos \texttt{a32.out} y \texttt{a64.out}, proceda a correrlos desde la línea comandos.
+Por favor comente y explique sus observaciones en el informe del laboratorio.
 
 
-In this task, we will make the stack non-executable. We will do
-this experiment in the \texttt{shellcode} folder.
-The \texttt{call\_shellcode} program puts a copy of shellcode
-on the stack, and then executes the code from the stack.
-Please recompile \texttt{call\_shellcode.c}
-into \texttt{a32.out} and \texttt{a64.out}, without
-the \texttt{"-z execstack"} option.
-Run them, describe and explain your observations.
+\paragraph{Evadiendo non-executable stack}
+Cabe aclarar que esta protección hace imposible ejecutar el shellcode en el stack pero no impide ataques de buffer overflow, ya que existen otras formas de correr código malicioso después de explotar este tipo de vulnerabilidad. Una técnica para lograr esto es la llamada {\em return-to-libc}, este tipo de ataque está fuera del alcance de este laboratorio. Sin embargo hemos hecho un laboratorio dedicado especialmente a este ataque, lo puede encontrar en nuestro sitio oficial de SEED.
 
-
-\paragraph{Defeating the non-executable stack countermeasure.}
-It should be noted that non-executable stack only makes it
-impossible to run shellcode
-on the stack, but it does not prevent buffer-overflow attacks,
-because there are other ways to run malicious code after exploiting
-a buffer-overflow vulnerability. The {\em return-to-libc} attack
-is an example. We have designed a separate lab for that
-attack. If you are interested, please see our
-Return-to-Libc Attack Lab for details.
 

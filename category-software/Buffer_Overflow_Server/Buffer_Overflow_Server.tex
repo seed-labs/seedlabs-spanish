@@ -53,7 +53,7 @@ Este laboratorio cubre los siguientes tópicos:
 
 
 \paragraph{Lecturas y Videos.}
-Los ataques de buffer-overflow son abordados en más detalle en los siguientes recursos:
+Los ataques de buffer overflow son abordados en más detalle en los siguientes recursos:
 
 \begin{itemize}
 \item Capítulo 4 del SEED Book, \seedbook
@@ -67,7 +67,7 @@ Los ataques de buffer-overflow son abordados en más detalle en los siguientes r
 \paragraph{Nota para los instructores.}
 Los instructores pueden personalizar este laboratorio modificando los valores para \texttt{L1}, ..., \texttt{L4}. Ver Section~\ref{sec:vulnerable_program} para más detalles.
 Dependiendo del conocimiento de los estudiantes y el tiempo asignado al laboratorio, los instructores también pueden hacer opcionales los Levels 2, 3 y 4.
-La Tarea del Level 1 es suficiente para cubrir lo básico en cuanto a los ataques buffer-overflow. Los Levels del 2 al 4 incrementan la dificultad de estos ataques.
+La Tarea del Level 1 es suficiente para cubrir lo básico en cuanto a los ataques buffer overflow. Los Levels del 2 al 4 incrementan la dificultad de estos ataques.
 Todas las tareas relacionadas a las contramedidas están ligadas a la tarea del Level 1 por lo tanto saltearse los otros niveles no afecta el abordaje de estas tareas.
 
 
@@ -99,7 +99,7 @@ $ sudo /sbin/sysctl -w kernel.randomize_va_space=0
 \label{sec:vulnerable_program}
 
 El programa vulnerable que vamos a usar para este laboratorio está en el archivo \texttt{stack.c}, dentro de la carpeta \texttt{server-code}.
-Este programa tiene una vulnerabilidad de buffer-overflow, su tarea es explotar esta vulnerabilidad y obtener privilegios de root.
+Este programa tiene una vulnerabilidad de buffer overflow, su tarea es explotar esta vulnerabilidad y obtener privilegios de root.
 El código mostrado a continuación contiene información trivial que fue removida del archivo original, pero en esencia es exactamente el mismo código.
 
 \begin{lstlisting}[language=C, caption={\texttt{stack.c}}]
@@ -206,7 +206,7 @@ Cuando este programa recibe una conexión TCP, ejecutará el programa \texttt{st
 % SECTION
 % ******************************************* 
 \section{Tarea 1: Shellcode}
-El objetivo final de los ataques a las vulnerabilidades de buffer-overflow es poder inyectar código malicioso dentro del programa vulnerable, para que así sea ejecutado con los privilegios con que ese programa está corriendo en el sistema.
+El objetivo final de los ataques a las vulnerabilidades de buffer overflow es poder inyectar código malicioso dentro del programa vulnerable, para que así sea ejecutado con los privilegios con que ese programa está corriendo en el sistema.
 La pieza de código más usada para para conducir este tipo de ataque de inyección de código en un ataque es llamada Shellcode.
 Vamos a familiarizarnos un poco con este concepto.
 
@@ -345,7 +345,7 @@ $ cat badfile | nc 10.9.0.5 9090
  
 
 \paragraph{Shell Reversa.}
-Dado que estamos haciendo un ataque a un servidor remoto desde nuestra máquina local, no nos servirá de mucho correr \texttt{/bin/sh} en el servidor vulnerable, ya que será ejecutado de forma local y no podremos tener el control sobre este shell desde nuestro lado. Una de las técnicas más comúnes para lograr control sobre este shell de forma remota es la Shell Reversa. En la Sección \ref{sec:guildelines} se explica como correr una shell reversa.
+Dado que estamos haciendo un ataque a un servidor remoto desde nuestra máquina local, no nos servirá de mucho correr \texttt{/bin/sh} en el servidor vulnerable, ya que será ejecutado de forma local y no podremos tener el control sobre esta shell desde nuestro lado. Una de las técnicas más comúnes para lograr control sobre esta shell de forma remota es la Shell Reversa. En la Sección \ref{sec:guildelines} se explica como correr una shell reversa.
 Ud. deberá de modificar la cadena de comandos en el shellcode, para poder obtener una shell reversa en el servidor vulnerable.
 Por favor incluya las explicaciones pertinentes junto con los screenshots de este procedimiento en el informe del laboratorio.
 
@@ -382,7 +382,7 @@ Otro dato que le puede ser de utilidad es que debido a como funciona el alineami
 Range of the buffer size (in bytes): [100, 300]
 \end{lstlisting}
  
-Su tarea es generar un payload para explotar la vulnerabilidad de buffer overflow en el servidor y obtener un root shell en este (usando la técnica de shell reversa). Cabe aclarar que el payload a generar debe de funcionar para cualquiera de los tamaños del buffer anteriormente establecidos. Ud. no obtendrá créditos si lo hace a través de un método de fuerza bruta. Mientras más intente, más fácil será detectar el ataque y mitigarlo de parte de la víctima. Es por eso que es crucial minimizar la cantidad de intentos en el ataque.
+Su tarea es generar un payload para explotar la vulnerabilidad de buffer overflow en el servidor y obtener una root shell en este (usando la técnica de shell reversa). Cabe aclarar que el payload a generar debe de funcionar para cualquiera de los tamaños del buffer anteriormente establecidos. Ud. no obtendrá créditos si lo hace a través de un método de fuerza bruta. Mientras más intente, más fácil será detectar el ataque y mitigarlo de parte de la víctima. Es por eso que es crucial minimizar la cantidad de intentos en el ataque.
 En el informe del laboratorio deberá describir el método que se uso y mostrar las evidencias del ataque.
 
 
@@ -411,7 +411,7 @@ server-3-10.9.0.7 | ==== Returned Properly ====
 
 Como se puede observar, los valores del frame pointer y la dirección del buffer son de 8 bytes de longitud (en vez de 4 bytes como lo es en un programa de 32-bits)
 Su tarea es generar un payload para explotar la vulnerabilidad de buffer overflow de este servidor.
-El objetivo final será obtener un root shell en el servidor vulnerable. Puede usar el shellcode de la Tarea 1 pero necesitará usar la versión de 64-bits de este shellcode.
+El objetivo final será obtener una root shell en el servidor vulnerable. Puede usar el shellcode de la Tarea 1 pero necesitará usar la versión de 64-bits de este shellcode.
 
 
 \paragraph{Desafíos.} En comparación con una máquina de 32-bits los ataques de buffer overflow son más difíciles en una de 64-bits. La parte más compleja son las direcciones de memoria. Debido a que el espacio de direcciones permitido va de \texttt{0x00} a \texttt{0x00007FFFFFFFFFFF}, tendremos por cada dirección de memoria de 8 bytes, 2 bytes que serán ceros.
@@ -428,7 +428,7 @@ En su informe del laboratorio, deberá describir como resolver este problema.
 \section{Tarea 5: Ataque Level-4} 
 
 El programa del servidor en esta tarea es similar al del Level 3, con la exepción que el tamaño del buffer es mucho más chico. En los mensajes que se muestran a continuación, se podrá observar que la distancia entre el frame pointer y la dirección de memoria del buffer es de solamente 32 bytes aproximadamente (la distancia puede variar levemente).
-En el Level 3, la distancia entre ambos era mucho más grande. Su objetivo es el mismo: obtener un root shell en el servidor vulnerable. El servidor sigue aceptando 512 bytes como tamaño total de los datos entrada.
+En el Level 3, la distancia entre ambos era mucho más grande. Su objetivo es el mismo: obtener una root shell en el servidor vulnerable. El servidor sigue aceptando 512 bytes como tamaño total de los datos entrada.
 
 \begin{lstlisting}
 server-4-10.9.0.8 | Got a connection from 10.9.0.1
@@ -445,33 +445,25 @@ server-4-10.9.0.8 | ==== Returned Properly ====
 % *******************************************
 \section{Tarea 6: Experimentando con Address Randomization}
 
-Al comienzo del laboratorio, hemos desactivado una de las contramedidas, Address Space Layout Randomization (ASLR). En esta tarea, la activaremos y veremos como afecta al ataque. Para activarla puede correr el siguiente comando en la Máquina Virtual. Este cabio es global y afectará a los contenedores que se encuentren corriendo dentro de la Máquina Virtual.
+Al comienzo del laboratorio, hemos desactivado una de las contramedidas, el Address Space Layout Randomization (ASLR). En esta tarea, la activaremos y veremos como afecta al ataque. Para activarla puede correr el siguiente comando en la Máquina Virtual. Este cabio es global y afectará a los contenedores que se encuentren corriendo dentro de la Máquina Virtual.
 
 
 \begin{lstlisting}
 $ sudo /sbin/sysctl -w kernel.randomize_va_space=2
 \end{lstlisting}
 
-A continuación envie un mensaje de \texttt{hello} a los servidores del Level 1 y Level 3 y repita este proceso varias veces.
+A continuación envie varias veces un mensaje de \texttt{hello} a los servidores del Level 1 y Level 3.
 En el informe del laboratorio, escriba sus observaciones y explique porque ASLR hace mucho más difícil explotar una vulnerabilidad de buffer overflow.
 
 
-\paragraph{Defeating the 32-bit randomization.}
-It was reported that on 32-bit Linux machines, only 19 bites can be used 
-for address randomization.
-That is not enough, and we can easily hit the target 
-if we run the attack for sufficient number of times. For 64-bit 
-machines, the number of bits used for randomization is 
-significantly increased. 
+\paragraph{Evadiendo 32-bits randomization.}
+Es sabido que en máquinas linux de 32-bits, sólo 19 bits pueden ser usados para hacer address randomization. Eso no es lo suficientemente robusto y podemos evadir esta protección corriendo el ataque un número determinado de veces hasta lograr un ataque exitoso. Por otro lado en máquinas de 64-bits, el número de bits usado para esta protección fue incrementado de forma significativa.
 
-In this task, we will give it a try on the 32-bit Level 1 server. 
-We use the brute-force approach to attack the server repeatedly, hoping that 
-the address we put in our payload can eventually be correct. 
-We will use the payload from the Level-1 attack. 
-You can use the following shell script to run the vulnerable program in an infinite loop. 
-If you get a reverse shell, the script will stop; otherwise, it will keep running. 
-If you are not so unlucky, you should be able to get a reverse shell within 10 minutes. 
-
+En esta Tarea, intentaremos evadir esta protección en el servidor de 32-bits del Level 1.
+Nos serviremos del método de fuerza brruta para atacar el servidor repetidamente, con la intención de poder acertar la dirección de memoria que colocaremos en nuestro payload.
+Usaremos el payloadd del ataque en el Level 1.
+Puede utilizar el script bash dado a continuación, este script correrá el ataque en un loop infinito. Si el ataque es exitóso y se obtiene una shell reversa, el script terminará, de lo contrario seguirá corriendo.
+Si tiene suerte, debería de obtener una shell reversa a lo 10 minutos de lanzado el ataque.
 
 \begin{lstlisting}[language=bash]
 #!/bin/bash
@@ -501,23 +493,11 @@ done
 % -------------------------------------------
 \subsection{Tarea 7.a: Activando StackGuard}
 
-Many compiler, such as \texttt{gcc}, implements a security mechanism called
-\textit{StackGuard} to prevent buffer overflows. In the presence of this
-protection, buffer overflow attacks will not work.
-The provided vulnerable programs were compiled without 
-enabling the StackGuard protection.
-In this task, we will turn it on and see what will happen.
+Muchos compiladores como \texttt{gcc} implementan un mecanismo de seguridad llamado \textit{StackGuard} esta protección está destinada a prevenir ataques a programas con vulnerabilidades de buffer overflow. Loss programas vulnerables que hemos estado usando tienen esta protección desactivada. 
+En esta tarea, la activaremos para ver que es lo que pasa.
 
-
-Please go to the \texttt{server-code} folder, remove the 
-\texttt{-fno-stack-protector} flag from the 
-\texttt{gcc} flag, and compile \texttt{stack.c}. 
-We will only use \texttt{stack-L1}, but 
-instead of running it in a container, we will directly 
-run it from the command line. Let's create a file
-that can cause buffer overflow, and then feed the 
-content of the file \texttt{stack-L1}. Please 
-describe and explain your observations. 
+Para activar esta protección dirígase a la carpeta \texttt{server-code} y borre el parámetro \texttt{-fno-stack-protector} en la constante \texttt{FLAGS} del archivo \texttt{Makefile} y proceda a compilar nuevamente el archivo \texttt{stack.c}.
+Usaremos solamente \texttt{stack-L1}, pero en vez de correrlo en el contenedor, lo haremos desde la consola de comandos. Primero crearemos el archivo que va a causar el buffer overflow \texttt{badfile} y a continuación haremos que el archivo \texttt{stack-L1} reciba su contenido. Por favor comente y explique sus observaciones en el informe del laboratorio.
 
 \begin{lstlisting}
 $ ./stack-L1 < badfile 
@@ -527,7 +507,7 @@ $ ./stack-L1 < badfile
 % -------------------------------------------
 % SUBSECTION
 % -------------------------------------------
-\subsection{Task 7.b: Activandoo Non-executable Stack Protection}
+\subsection{Tarea 7.b: Activando la Protección Non-executable Stack}
 
 \input{part_nonexecutable_stack}
 
@@ -535,7 +515,7 @@ $ ./stack-L1 < badfile
 % *******************************************
 % SECTION
 % *******************************************
-\section{Guidelines on Reverse Shell} 
+\section{Guía de Shell Reversa} 
 \label{sec:guildelines}
 
 
@@ -546,7 +526,7 @@ $ ./stack-L1 < badfile
 % *******************************************
 % SECTION
 % *******************************************
-\section{Informe}
+\section{Informe de Laboratorio}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \input{\commonfolder/submission}
