@@ -40,7 +40,7 @@ El objetivo de este laboratorio es poder estudiar este tipo de vulnerabilidad y 
 Para este laboratorio, los estudiantes tendrán disponibles cuatro servidores diferentes, cada uno de ellos tendrá un programa con una vulnerabilidad del tipo buffer-overflow.
 La tarea será desarrollar un exploit para explotar cada uno de estos programas y así obtener privilegios de root en cada uno de los servidores.
 A su vez cada uno de los estudiantes experimentará con diferentes tipos de contramedidades que son implementadas para mitigar este tipo de ataques.
-Los estudiantes necesitarán evaluar en que situaciones sus ataques serán exitósos y en cuales no, así también explicando el porque de este resultado.
+Los estudiantes necesitarán evaluar en que situaciones sus ataques serán exitosos y en cuales no, así también explicando el porque de este resultado.
 Este laboratorio cubre los siguientes tópicos:
 
 \begin{itemize}[noitemsep]
@@ -65,7 +65,7 @@ Los ataques de buffer overflow son abordados en más detalle en los siguientes r
 
 
 \paragraph{Nota para los instructores.}
-Los instructores pueden personalizar este laboratorio modificando los valores para \texttt{L1}, ..., \texttt{L4}. Ver Section~\ref{sec:vulnerable_program} para más detalles.
+Los instructores pueden personalizar este laboratorio modificando los valores para \texttt{L1}, ..., \texttt{L4}. Ver Sección \ref{sec:vulnerable_program} para más detalles.
 Dependiendo del conocimiento de los estudiantes y el tiempo asignado al laboratorio, los instructores también pueden hacer opcionales los Levels 2, 3 y 4.
 La Tarea del Level 1 es suficiente para cubrir lo básico en cuanto a los ataques buffer overflow. Los Levels del 2 al 4 incrementan la dificultad de estos ataques.
 Todas las tareas relacionadas a las contramedidas están ligadas a la tarea del Level 1 por lo tanto saltearse los otros niveles no afecta el abordaje de estas tareas.
@@ -245,7 +245,7 @@ $ a64.out              (*@\pointright@*) execute the shellcode in codefile_64
 \section{Tarea 1: Ataque Level-1} 
 
 Al levantar nuestros contenedores seteados en el archivo \texttt{docker-compose.yml}, tendremos cuatro contenedores corriendo, cada uno representa un nivel de dificultad diferente.
-En esta tarea trabajaremos sobre el contenedor Level-1.
+En esta tarea trabajaremos sobre el contenedor del Level-1.
 
 
 % -------------------------------------------
@@ -460,7 +460,7 @@ Es sabido que en máquinas linux de 32-bits, sólo 19 bits pueden ser usados par
 En esta Tarea, intentaremos evadir esta protección en el servidor de 32-bits del Level 1.
 Nos serviremos del método de fuerza brruta para atacar el servidor repetidamente, con la intención de poder acertar la dirección de memoria que colocaremos en nuestro payload.
 Usaremos el payloadd del ataque en el Level 1.
-Puede utilizar el script bash dado a continuación, este script correrá el ataque en un loop infinito. Si el ataque es exitóso y se obtiene una shell reversa, el script terminará, de lo contrario seguirá corriendo.
+Puede utilizar el script bash dado a continuación, este script correrá el ataque en un loop infinito. Si el ataque es exitoso y se obtiene una shell reversa, el script terminará, de lo contrario seguirá corriendo.
 Si tiene suerte, debería de obtener una shell reversa a lo 10 minutos de lanzado el ataque.
 
 \begin{lstlisting}[language=bash]
