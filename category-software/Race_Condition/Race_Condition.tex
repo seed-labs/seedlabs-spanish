@@ -178,12 +178,7 @@ En el pasado, muchos estudiantes han vaciado accidentalmente el archivo {\tt /et
 % *******************************************
 \section{Tarea 2: Lanzando el Ataque de Race Condition}
 
-The goal of this task is to exploit the race condition vulnerability in 
-the vulnerable \setuid program listed earlier. The ultimate goal is to gain
-the root privilege.  The most critical step of the attack,  making
-\texttt{/tmp/XYZ} point to the password file, must occur within
-the window between check and use; namely between the \texttt{access} 
-and \texttt{fopen} calls in the vulnerable program. 
+El objetivo de este ataque es explotar la vulnerabilidad de Race Condition de nuestro programa vulnerable con el bit de \setuid activado que ya hemos mencionado anteriormente. La meta final es obtener privilegios de root. La parte más crítica de este ataque es hacer que el archivo \texttt{/tmp/XYZ} apunte al archivo de password, dentro de la ventana tiempo que existe entre la invocación de las funciones \texttt{access} y \texttt{fopen}.
 
 % -------------------------------------------
 % SUBSECTION
