@@ -143,74 +143,40 @@ $ sudo chmod 4755 vulp
 % *******************************************
 \section{Tarea 1: Eligiendo nuestro Target}
 
-We would like to exploit the race condition vulnerability in
-the program.
-We choose to target the password file \texttt{/etc/passwd}, which is not writable by
-normal users. By exploiting the vulnerability, we would like to
-add a record to the password file, with a goal of
-creating a new user account that has the root privilege.
-Inside the password file, each user has an entry, which consists of seven fields
-separated by colons~(:). The entry for the root user is listed below.
+Para proceder a explotar la vulnerabilidad de Race Condition dentro del programa, vamos a elegir el archivo \texttt{/etc/passwd} como nuestro target, este archivo no puede ser escrito por usuarios no privilegiados. Explotando esta vulnerabilidad nuestro objetivo final será agregar un registro en este archivo, que será un usuario que tendrá privilegios dde root.
+Dentro del archivo \texttt{/etc/passwd}, cada línea del mismo es una entrada y cadda entrada representa un usuario del sistema, cada usuario tiene tiene campos que están separados por el caracter de dos puntos (:). La entrada para el usuario root se muestra a continuación:
 
 \begin{lstlisting}
 root:x:0:0:root:/root:/bin/bash
 \end{lstlisting}
 
-For the root user, the third field~(the user ID field) has a value zero. Namely, when the root
-user logs in, its process's user ID is set to zero, giving the process the root privilege.
-Basically, the power of the root account does not come from its name, but instead from
-the user ID field. If we want to create an account with the root privilege,
-we just need to put a zero in this field.
+En esta entrada, el tercer campo de este usuario (el campo de user ID) tiene un valor de cero. Esto significa que cada vez que este usuario se loguee en el sistema su id de proceso será siempre cero y es el valor de cero lo que le otorgará privilegios de root. Dicho de otro modo no es el nombre de usuario el que determina sus privilegios sino su user ID. Si quisieramos crear un usuario con privilegios de root, debemos de poner un cero en este campo.
 
+Cada entrada de este archivo, contiene un campo de password, este es el segundo campo. En el ejemplo anterior este campo tiene el valor de \texttt{"x"} lo que indica que el password para este usuario esta siendo guardado en otro archivo llamado \texttt{/etc/shadow} (shadow file). Si somos fieles a este ejemplo entonces al aprovecharnos de la vulnerabilidad de Race Condition, deberíamos de modifiar dos archivos, el archivo password y el archivo shadow, lo cual no es difícil de hacer pero existe una forma más sencilla. En vez de poner el valor \texttt{"x"} en el campo de la entrada que corresponde al usuario, podemos poner un password de esta manera el sistema operativo no irá a buscarlo al archivo shadow.
 
-Each entry also contains a password field, which is the second field. In the example above, the
-field is set to \texttt{"x"}, indicating that the password is stored in another file called
-\texttt{/etc/shadow}~(the shadow file). If we follow this example, we have to use the race condition
-vulnerability to modify both password and shadow files, which is not
-very hard to do. However, there is a simpler solution. Instead of putting \texttt{"x"} in the
-password file, we can simply put the password there, so the operating system will not look for
-the password from the shadow file.
+El campo de password no contiene el password actual; este contiene el password hasheado a través de un algoritmo de hashing de una sóla vía (one-way hashing). Para obtener este valor, se puede agregar un usuario nuevo al sistema usando el comando  \texttt{adduser} y obtener su hash correspondiente desde el archivo shadow o podríamos simplemente copiar el valor de la entrada del usuario \texttt{seed} ya que sabemos que su password es  \texttt{dees}.
+Hay algo interesante para mencionar, existe un valor mágico para las cuentas sin password que es usado por \ubuntu al ser booteado usando el modo live CD, este valor mágico es \texttt{U6aMy0wojraho} (no confundir el sexto caracter con la letra \texttt{O} ya que es un cero). Si se coloca este valor en el campo del password para un usuario cualquiera, estaríamos usando un usuario sin password, de forma tal que podríamos loguearnos con un enter al momento que el prompt del sistema nos pregunte por el password.
 
-The password field does not hold the actual password; it holds the one-way hash value of the
-password. To get such a value for a given password, we can add a new user in our own system using
-the \texttt{adduser} command, and then get the one-way hash value of our password from
-the shadow file.  Or we can simply copy the value from the \texttt{seed} user's entry,
-because we know its password is \texttt{dees}. Interestingly, there is a magic value
-used in \ubuntu live CD for a password-less account, and the magic value is
-\texttt{U6aMy0wojraho} (the 6th character is zero, not letter \texttt{O}). If we put this value
-in the password field of a user entry, we only need to hit the return key when prompted for
-a password.
-
-
-\paragraph{Tarea.} To verify whether the magic password works or not, we
-manually (as a superuser) add the following entry to the end of the \texttt{/etc/passwd} file. 
-Please report whether you can log into the \texttt{test} account without
-typing a password, and check whether you have the root privilege.
+Para verificar si el password mágico funciona o no. Necesitamos agregar siguiente  entrada como usuario privilegiado al final del archivo \texttt{/etc/passwd}.
+\paragraph{Tarea.} Para verificar si el password mágico funciona o no. Necesitamos agregar siguiente  entrada como usuario privilegiado al final del archivo \texttt{/etc/passwd}.
+Por favor reporte si puede loguearse en el sistema usando el usuario  \texttt{test} sin tipear ningún password y si tiene privilegios de root.
 
 \begin{lstlisting}
 test:U6aMy0wojraho:0:0:test:/root:/bin/bash
 \end{lstlisting}
 
-After this task, please remove this entry from the password file. In the
-next task, we need to achieve this goal as a normal user. Clearly, we are
-not allowed to do that directly to the password file, but we can exploit a
-race condition in a privileged program to achieve the same goal.
+Después de hacer esta tarea, elimine la entrada agregada anteriormente en el archivo \texttt{/etc/passwd}. En la próxima tarea, haremos que esta entrada sea agregada como un usuario normal y no como un usuario privilegiado. Claramente esto no será posible, pero lo lograremos explotando la vulnerabilidad de Race Condition de nuestro programa vulnerable que correrá con privilegios de root.
 
 
-\paragraph{Warning.}
-In the past, some students accidentally emptied the {\tt /etc/passwd} file 
-during the attack (this could be caused by some race condition problems
-inside the OS kernel). If you lose
-the password file, you will not be able to log in again. To avoid this 
-trouble, please make a copy of the original password file or take a
-snapshot of the VM. This way, you can easily recover from the mishap. 
+\paragraph{Advertencia.}
+En el pasado, muchos estudiantes han vaciado accidentalmente el archivo {\tt /etc/passwd} durante el ataque (esto puede ocurrir porque se pueden race conditions a nivel kernel). Si Ud. pierde este archivo, no podrá loguearse en el sistema. Para evitar esta situación, recomendamos que se haga una copia del archivo original o se realize un snapshot de la Máquina Virtual, de esta manera habrá forma de recuperar el estado anterior del sistema ante cualquier problema que pueda surgir.
 
 
 
 % *******************************************
 % SECTION
 % *******************************************
-\section{Tarea 2: Lanzando el ataque de Race Condition}
+\section{Tarea 2: Lanzando el Ataque de Race Condition}
 
 The goal of this task is to exploit the race condition vulnerability in 
 the vulnerable \setuid program listed earlier. The ultimate goal is to gain
