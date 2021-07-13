@@ -76,7 +76,7 @@ Todas las tareas relacionadas a las contramedidas están ligadas a la tarea del 
 % *******************************************
 \section{Configuración del Entorno de Laboratorio} 
 
-Por favor descargue el archivo \texttt{Labsetup.zip} dentro de su Máquina Virtual, desde la sección de labs en el sitio oficial de SEED, descomprímalo y dentro de la carpeta \texttt{Labsetup} estarán todos los archivos necesarios para llevar a cabo el laboratorio.
+Por favor descargue el archivo \texttt{Labsetup.zip} dentro de su Máquina Virtual, desde la sección de labs en el sitio oficial de SEED, descomprímalo y dentro del directorio \texttt{Labsetup} podrá acceder a todos los archivos necesarios para llevar a cabo el laboratorio.
 
 
 % -------------------------------------------
@@ -98,7 +98,7 @@ $ sudo /sbin/sysctl -w kernel.randomize_va_space=0
 \subsection{El Programa Vulnerable} 
 \label{sec:vulnerable_program}
 
-El programa vulnerable que vamos a usar para este laboratorio está en el archivo \texttt{stack.c}, dentro de la carpeta \texttt{server-code}. Este programa tiene una vulnerabilidad de buffer overflow, su tarea es explotar esta vulnerabilidad y obtener privilegios de root. El código mostrado a continuación contiene información trivial que fue removida del archivo original, pero en esencia es exactamente el mismo código.
+El programa vulnerable que vamos a usar para este laboratorio está en el archivo \texttt{stack.c}, dentro del directorio \texttt{server-code}. Este programa tiene una vulnerabilidad de buffer overflow, su tarea es explotar esta vulnerabilidad y obtener privilegios de root. El código mostrado a continuación contiene información trivial que fue removida del archivo original, pero en esencia es exactamente el mismo código.
 
 \begin{lstlisting}[language=C, caption={\texttt{stack.c}}]
 #include <stdlib.h>
@@ -152,8 +152,8 @@ Compilaremos el programa \texttt{stack} como un binario de 32-bits y de 64-bits.
 Debido a que las librerías dinámicas de 32-bits no están instaladas por defecto en los contenedores, deberemos de usar también la opción \texttt{-static} para poder generar un binario de 32-bits estáticamente linkeado que no dependa de estas librerías dinámicas.
 
 Los comandos de compilación son provistos dentro del archivo \texttt{Makefile}. Para compilar el código, lo único que debe de tipear es \texttt{make}. Las variables \texttt{L1}, \texttt{L2}, \texttt{L3}, y \texttt{L4} dentro del archivo \texttt{Makefile}, serán usadas durante la compilación.
-Al terminar la compilación, deberemos de copiar el binario en la carpeta \texttt{bof-containers} de esta forma estarán disponibles en los contenedores. 
-A continuación se listan los comandos para realizar la compilación y la copia de los binarios en la carpeta de los contenedores.
+Al terminar la compilación, deberemos de copiar el binario en el directorio \texttt{bof-containers} de esta forma los contenedores tendrán acceso a estos archivos. 
+A continuación se listan los comandos para realizar la compilación y la copia de los binarios en el directorio de los contenedores.
 
 \begin{lstlisting}
 $ make
@@ -181,7 +181,7 @@ Para hacer más difícil la tarea entre los diferentes niveles, es recomendable 
 
 
 \paragraph{El Programa Servidor.} 
-Dentro de la carpeta \texttt{server-code}, encontrará un archivo llamado \texttt{server.c}.
+Dentro del directorio \texttt{server-code}, encontrará un archivo llamado \texttt{server.c}.
 Este es el punto de entrada principal del servidor, este programa estará a la escucha en el puerto \texttt{9090}. 
 Cuando este programa recibe una conexión TCP, ejecutará el programa \texttt{stack} y establecerá esta conexión como el standard input del programa \texttt{stack}. De esta manera cuando \texttt{stack} lea los datos de su \texttt{stdin}, estará leyendo los datos que llegan de la conexión TCP (es decir los datos enviados por el usuario remoto). No es necesario que los estudiantes entiendan por completo el código de \texttt{server.c}.
 
@@ -196,7 +196,7 @@ Cuando este programa recibe una conexión TCP, ejecutará el programa \texttt{st
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
-\paragraph{Nota.} Antes de correr \texttt{"docker-compose build"} para hacer el build de las imágenes docker, necesitamos compilar y copiar el código del programa servidor dentro de la carpeta \texttt{bof-containers}. Para más instrucciones vea la Sección  \ref{sec:vulnerable_program}.
+\paragraph{Nota.} Antes de correr \texttt{"docker-compose build"} para hacer el build de las imágenes docker, necesitamos compilar y copiar el código del programa servidor dentro del directorio \texttt{bof-containers}. Para más instrucciones vea la Sección  \ref{sec:vulnerable_program}.
 
 
 
@@ -212,7 +212,7 @@ Vamos a adentrarnos un poco en este concepto.
 \input{\commonfolder/guidelines/shellcode.tex}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-Ud. puede encontrar el shellcode genérico en la carpeta \texttt{shellcode}.
+Ud. puede encontrar el shellcode genérico en el directorio \texttt{shellcode}.
 Dentro de esta podrá observar dos scripts en python, \texttt{shellcode\_32.py} y \texttt{shellcode\_64.py}. 
 Uno para 32-bits y otro para 64-bits.
 Estos scripts se encargarán de generar el binario del shellcode dentro de los archivos \texttt{codefile\_32} y \texttt{codefile\_64}.
@@ -295,7 +295,7 @@ Ud. puede utilizar ambos elementos para construir el payload de ataque.
 
 Para explotar la vulnerabilidad de buffer overflow en el programa target, vamos a necesitar preparar un payload y salvarlo dentro de un archivo (usaremos el nombre de archivo \texttt{badfile} en este documento).
 Usaremos un script en Python para la generación de este archivo. 
-Hemos provisto un script genérico en Python (ubicado en la carpeta de nuestro laboratorio) llamado \texttt{exploit.py}.
+Hemos provisto un script genérico en Python (ubicado en el directorio de nuestro laboratorio) llamado \texttt{exploit.py}.
 Este código está incompleto y será necesario que los estudiantes completen determinados valores dentro de este para llevar a cabo un ataque exitoso.
 
 
@@ -494,7 +494,7 @@ done
 Muchos compiladores como \texttt{gcc} implementan un mecanismo de seguridad llamado \textit{StackGuard} esta protección está destinada a prevenir ataques a programas con vulnerabilidades de buffer overflow. Loss programas vulnerables que hemos estado usando tienen esta protección desactivada. 
 En esta tarea, la activaremos para ver que es lo que pasa.
 
-Para activar esta protección dirígase a la carpeta \texttt{server-code} y borre el parámetro \texttt{-fno-stack-protector} en la constante \texttt{FLAGS} del archivo \texttt{Makefile} y proceda a compilar nuevamente el archivo \texttt{stack.c}.
+Para activar esta protección dirígase al directorio \texttt{server-code} y borre el parámetro \texttt{-fno-stack-protector} en la constante \texttt{FLAGS} del archivo \texttt{Makefile} y proceda a compilar nuevamente el archivo \texttt{stack.c}.
 Usaremos solamente \texttt{stack-L1}, pero en vez de correrlo en el contenedor, lo haremos desde la consola de comandos. Primero crearemos el archivo que va a causar el buffer overflow \texttt{badfile} y a continuación haremos que el archivo \texttt{stack-L1} reciba su contenido. Por favor comente y explique sus observaciones en el informe del laboratorio.
 
 \begin{lstlisting}

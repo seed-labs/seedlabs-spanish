@@ -58,7 +58,7 @@ Los ataques de race condition son abordados en más detalle en los siguientes re
 
 
 \paragraph{Tópicos relacionados.}
-Existen tres laboratorios relacionados a Race Condition. Uno es el laboratorio de Dirty COW, que explota una vulnerabilidad de Race Condition dentro del kernel del sistema operativo (El Capítulo 8 del libro de SEED cubre este ataque). Los otros dos son los laboratorios de Meltdown y Spectre (Capítulos 13 y 14 del libro de SEED). Estos últimos explotan una vulnerabilidad de Race Condition dentro del CPU. Estos cuatro laboratorios proveen una cobertura integral del problema de la vulnerabilidad de Race Condition en diferentes niveles: en una aplicación, en el kernel y finalmente en el hardware.
+Existen tres laboratorios relacionados a Race Condition. Uno es el laboratorio de Dirty COW, que explota una vulnerabilidad de Race Condition dentro del kernel del sistema operativo (El Capítulo 8 del libro de SEED cubre este ataque). Los otros dos son los laboratorios de Meltdown y Spectre (Capítulos 13 y 14 del libro de SEED). Estos últimos explotan una vulnerabilidad de Race Condition dentro del CPU. Estos cuatro laboratorios proveen una cobertura integral del problema de la vulnerabilidad de Race Condition en diferentes niveles: a nivel aplicación, a nivel kernel y finalmente a nivel hardware.
 
 
 \paragraph{Entorno de Laboratorio.} \seedenvironmentC
@@ -72,17 +72,11 @@ Existen tres laboratorios relacionados a Race Condition. Uno es el laboratorio d
 % -------------------------------------------
 % SUBSECTION
 % ------------------------------------------- 
-\subsection{Turning Off Countermeasures}
+\subsection{Desactivando las Contramedidas}
 
-Ubuntu has a built-in protection against race condition 
-attacks. This scheme works by restricting who can follow a symlink. 
-According to the documentation, ``symlinks in world-writable sticky 
-directories (e.g. {\tt /tmp}) cannot be followed if the follower and directory 
-owner do not match the symlink owner.''
-Ubuntu 20.04 introduces another security mechanism that prevents the root 
-from writing to the files in \texttt{/tmp} that are owned by others.  
-In this lab, we need to disable these protections. You can achieve
-that using the following commands:
+Ubuntu viene con mecanismos para proteger a los programas frente a los ataques de Race Condition. Uno de ellos funciona restringiendo el acceso a los links simbólicos dentro de  sticky directories (por ejemplo {\tt /tmp}) permitiendo el acceso solamente al creador del link si el directorio no fue creado por quién creo el link simbólico.
+Otro mecanismo de seguridad que fue implementado en Ubuntu 20.04, evita que el usuario root escriba archivos  dentro del directorio \texttt{/tmp}. que no fueron creados por este usuario.
+Como primer paso necesitaremos desactivar estas protecciones, ejecutando los siguientes comandos:
 
 \begin{lstlisting}
 // On Ubuntu 20.04, use the following:
@@ -100,11 +94,9 @@ $ sudo sysctl -w kernel.yama.protected_sticky_symlinks=0
 % -------------------------------------------
 % SUBSECTION
 % ------------------------------------------- 
-\subsection{A Vulnerable Program}
+\subsection{El Programa Vulnerable}
 
-
-The following program is a seemingly harmless program. It contains a race-condition
-vulnerability. 
+El siguiente programa es en apariencia inofensivo. Pero contiene una vulnerabilidad de Race Condition.
 
 \begin{lstlisting}[caption={The vulnerable program (\texttt{vulp.c})}]
 #include <stdio.h>
@@ -112,9 +104,9 @@ vulnerability.
 
 int main()
 {
-   char * fn = "/tmp/XYZ";
+   char* fn = "/tmp/XYZ";
    char buffer[60];
-   FILE *fp;
+   FILE* fp;
 
    /* get user input */
    scanf("%50s", buffer );
@@ -155,7 +147,7 @@ privilege. The vulnerable program runs with the root privilege, so
 it can overwrite any file.
 
 
-\paragraph{Set up the \setuid program.}
+\paragraph{Haciendo \setuid al programa.}
 We first compile the above code, and turn its binary into a \setuid program that is owned by the
 root. The following commands achieve this goal:
 

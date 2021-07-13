@@ -1,7 +1,7 @@
 
 Los sistemas operativos solían permitir ejecución de código en el stack, pero esto ha cambiado: En Ubuntu los binarios de los programas (y las librerías compartidas) deben de indicar si necesitan o no poder ejecutar código en el stack, es decir necesitan marcar un campo específico dentro del encabezado del programa que permite que esto sea posible o no. El kernel o mejor dicho el dynamic linker usan esta marca para permitir que el stack del programa pueda ejecutar o no código. Para setear esta marca a la hora de generar el binario ejecutable usando \texttt{gcc}, se usan dos flags que indican que se puede ejecutar código en el stack \texttt{"-z execstack"} o \texttt{"-z noexecstack"} que indica lo contrario.
 
-En esta tarea, haremos que el stack no pueda ejecutar código, activando la protección non-executable. Para esto nos situaremos dentro de la carpeta \texttt{shellcode} y dentro del archivo \texttt{call\_shellcode} pondremos una copia de nuestro shellcode y ejecutaremos este código desde el stack.
+En esta tarea, haremos que el stack no pueda ejecutar código, activando la protección non-executable. Para esto nos situaremos dentro del directorio \texttt{shellcode} y dentro del archivo \texttt{call\_shellcode} pondremos una copia de nuestro shellcode y ejecutaremos este código desde el stack.
 Para ello se debe recompilar el archivo \texttt{call\_shellcode.c} sin usar el parámetro \texttt{"-z execstack"}, genere los archivos \texttt{a32.out} y \texttt{a64.out}, proceda a correrlos desde la línea comandos.
 Por favor comente y explique sus observaciones en el informe del laboratorio.
 

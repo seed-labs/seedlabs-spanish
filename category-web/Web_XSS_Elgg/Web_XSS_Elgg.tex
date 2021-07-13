@@ -374,7 +374,7 @@ Una es un plugin de seguridad personalizado \texttt{HTMLawed},
 que valida el input del usuario y elimina los tags de este input.
 Hemos desactivado este plugin, 
 ubicaddo dentro de la función \texttt{filter\_tags()}
-en el archivo \texttt{input.php}, que se encuentra dentro de la carpeta
+en el archivo \texttt{input.php}, que se encuentra dentro del directorio
 \path{vendor/elgg/elgg/engine/lib/}. Observe lo siguiente:
 
 \begin{lstlisting}
@@ -386,7 +386,7 @@ function filter_tags($var) {
  
 Además de {\tt HTMLawed}, Elgg utiliza el método \texttt{htmlspecialchars()} que es una función que se encuentra nativa de PHP y se suele utilizar para codificar caracteres especiales en el input del usuario, caracteres como {\tt "<"} to {\tt "\&lt"}, {\tt ">"} to {\tt "\&gt"}, etc.
 Este método es invocado en \texttt{dropdown.php}, \texttt{text.php}, 
-and \texttt{url.php} que se encuentran dentro de la carpeta \path{vendor/elgg/elgg/views/default/output/}.
+and \texttt{url.php} que se encuentran dentro del directorio \path{vendor/elgg/elgg/views/default/output/}.
 Nuevamente hemos comentado esta contramedida para poder hacer posibles los ataques.
 
 % *******************************************
@@ -412,18 +412,18 @@ CSP no solamente sirve para restringir código JavaScript, también puede restri
 % -------------------------------------------
 \subsection{Configuración de los Sitios Web del Experimento} 
 
-Para hacer los experimentos usando CSP, vamos a configurar varios sitios webs dentro de la carpeta de la imagen docker ubicada en \texttt{Labsetup/image\_www}, dentro de esta carpeta existe un archivo llamado \texttt{apache\_csp.conf}. 
-Este archivo define cinco sitios web, que comparten la misma carpeta, pero que usarán diferentes archivos ubicados en esta carpeta.
+Para hacer los experimentos usando CSP, vamos a configurar varios sitios webs dentro del directorio de la imagen docker ubicada en \texttt{Labsetup/image\_www}, dentro de este directorio existe un archivo llamado \texttt{apache\_csp.conf}. 
+Este archivo define cinco sitios web, que comparten el mismo directorio, pero que usarán diferentes archivos ubicados en este directorio.
 Los archivos \texttt{example60} y \texttt{example70} son los sitios que hostean código JavaScript.
 Los archivos \texttt{example32a}, \texttt{example32b}, y 
 \texttt{example32c} son tres sitios que tienen diferentes configuraciones CSP. Los detalles de estas configuraciones serán explicados más adelante.
 
 
 \paragraph{Modificando los archivos de configuración}
-En el experimento, Ud. necesitará modificar el archivo de configuración de apache (\texttt{apache\_csp.conf}). Si realiza una modificación directamente sobre el archivo dentro de la carpeta de la imagen, necesitara reconstruir la imagen y reiniciar el contenedor para que los cambios tomen efecto.
+En el experimento, Ud. necesitará modificar el archivo de configuración de apache (\texttt{apache\_csp.conf}). Si realiza una modificación directamente sobre el archivo dentro del directorio de la imagen, necesitara reconstruir la imagen y reiniciar el contenedor para que los cambios tomen efecto.
 
 Ud. también puede modificar el archivo mientras el contenedor está corriendo. La desventaja de esto es que para mantener la imagen del contenedor en un tamaño aceptable, se ha instalado un editor de texto de consola muy simple llamado \texttt{nano}, aunque este editor debería ser suficiente para hacer una edición de este tipo. Si Ud. no se siente cómodo con este aplicativo, puede agregar un comando de instalación en el archivo \texttt{Dockerfile} con su editor de consola preferido e instalarlo.
-Puede encontrar el archivo de configuración \texttt{apache\_csp.conf} en la carpeta \path{/etc/apache2/sites-available} dentro del contenedor.
+Puede encontrar el archivo de configuración \texttt{apache\_csp.conf} en el directorio \path{/etc/apache2/sites-available} dentro del contenedor.
 Una vez hecho los cambios en el archivo, necesitara reiniciar el servidor Apache para que los cambios tomen efecto:
 
 \begin{lstlisting}
