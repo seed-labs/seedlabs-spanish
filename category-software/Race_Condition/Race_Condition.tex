@@ -74,9 +74,9 @@ Existen tres laboratorios relacionados a Race Condition. Uno es el laboratorio d
 % ------------------------------------------- 
 \subsection{Desactivando las Contramedidas}
 
-Ubuntu viene con mecanismos para proteger a los programas frente a los ataques de Race Condition. Uno de ellos funciona restringiendo el acceso a los links simbólicos dentro de  sticky directories (por ejemplo {\tt /tmp}) permitiendo el acceso solamente al creador del link si el directorio no fue creado por quién creo el link simbólico.
-Otro mecanismo de seguridad que fue implementado en Ubuntu 20.04, evita que el usuario root escriba archivos  dentro del directorio \texttt{/tmp}. que no fueron creados por este usuario.
-Como primer paso necesitaremos desactivar estas protecciones, ejecutando los siguientes comandos:
+Ubuntu viene con mecanismos para proteger a los programas frente a los ataques de Race Condition. Uno de ellos funciona restringiendo el acceso a los links simbólicos dentro de  directorios con el bit sticky activado (por ejemplo {\tt /tmp}) permitiendo el acceso solamente al creador del link si el directorio no fue creado por quién es el dueño de este link simbólico.
+Otro mecanismo de seguridad que fue implementado en Ubuntu 20.04, evita que el usuario root escriba archivos dentro del directorio \texttt{/tmp}, que no fueron creados por este usuario (es decir el usuario root).
+Como primer paso necesitamos desactivar estas protecciones, ejecutando los siguientes comandos:
 
 \begin{lstlisting}
 // On Ubuntu 20.04, use the following:
@@ -121,35 +121,14 @@ int main()
 }
 \end{lstlisting}
 
-The program above is a root-owned \setuid program;
-it appends a string of user input to
-the end of a temporary file {\tt /tmp/XYZ}. Since the code runs
-with the root privilege, i.e., its effective use ID is zero, it 
-can overwrite any file. To prevent itself from accidentally
-overwriting other people's file, the program first 
-checks whether the real user ID has the access permission to the file
-{\tt /tmp/XYZ}; that is the purpose of the {\tt access()} call in Line
-\ding{192}.  If the real user ID indeed has 
-the right, the program opens the file in Line \ding{193} and append the user
-input to the file. 
+El programa de arriba tiene como dueño al usuario root y es un programa \setuid; Este programa agrega una cadena ingresada como input por parte del usuario al final del archivo temporal {\tt /tmp/XYZ}. Dado que este programa corre con privilegios de root (es decir su effective user ID es cero), puede sobreescribir cualquier archivo. Para evitar que  accidentalmente sobreescriba los archivos de otros usuarios, lo primero que hace este programa es chequear si el real user ID tiene permisos sobre el archivo {\tt /tmp/XYZ}; para este propósito se usa la función {\tt access()} en la línea \ding{192}. Si el real user ID es el correcto y puede acceder al archivo, el programa abre el archivo (Línea \ding{193}) y procede a escribir la cadena que ingresó el usuario como input.
 
-At first glance the program does not seem to have any problem.
-However, there is a race condition vulnerability in this program: due to the 
-time window between the check ({\tt access}) and 
-the use ({\tt fopen}), there is a possibility that the file used by
-{\tt access()} is different from the file used by {\tt fopen()}, even
-though they have the same file name {\tt /tmp/XYZ}.  If a malicious 
-attacker can somehow makes {\tt /tmp/XYZ} a symbolic link pointing to
-a protected file, such as \texttt{/etc/passwd}, inside the time window, 
-the attacker can cause the user input
-to be appended to \texttt{/etc/passwd}, and can thus gain the root
-privilege. The vulnerable program runs with the root privilege, so
-it can overwrite any file.
+A primera vista el programa parece no tener ningún tipo de problemas. Sin embargo contiene una vulnerabilidad de Race Condition: Debido a que existe una ventana de tiempo entre el chequeo realizado por la función ({\tt access}) y el uso de ({\tt fopen}), existe la posibilidad que el archivo usado en la función {\tt access()} difiera del usado por la función {\tt fopen()}, aunque ambos sean el mismo {\tt /tmp/XYZ}. Si un atacante malicioso dentro de esa ventana de tiempo de alguna forma logra modificar el link simbólico de {\tt /tmp/XYZ} a un archivo privilegiado como lo es \texttt{/etc/passwd}, podría alterar su contenido con el input ingresado en el programa, obteniendo así privilegios de root. Esto es posible debudo a que el programa vulnerable corre con los privilegios del usuario root.
 
 
-\paragraph{Haciendo \setuid al programa.}
-We first compile the above code, and turn its binary into a \setuid program that is owned by the
-root. The following commands achieve this goal:
+\paragraph{Configurando nuestro programa \setuid}
+Primero debemos compilar el código dado a continuación y activar el bit de \setuid en nuestro programa cuyo dueño será el usuario root.
+Para lograr esto deben ejecutar los siguientes comandos:
 
 \begin{lstlisting}
 $ gcc vulp.c -o vulp
@@ -162,7 +141,7 @@ $ sudo chmod 4755 vulp
 % *******************************************
 % SECTION
 % *******************************************
-\section{Task 1: Choosing Our Target}
+\section{Tarea 1: Eligiendo nuestro Target}
 
 We would like to exploit the race condition vulnerability in
 the program.
@@ -203,7 +182,7 @@ in the password field of a user entry, we only need to hit the return key when p
 a password.
 
 
-\paragraph{Task.} To verify whether the magic password works or not, we
+\paragraph{Tarea.} To verify whether the magic password works or not, we
 manually (as a superuser) add the following entry to the end of the \texttt{/etc/passwd} file. 
 Please report whether you can log into the \texttt{test} account without
 typing a password, and check whether you have the root privilege.
@@ -231,7 +210,7 @@ snapshot of the VM. This way, you can easily recover from the mishap.
 % *******************************************
 % SECTION
 % *******************************************
-\section{Task 2: Launching the Race Condition Attack}
+\section{Tarea 2: Lanzando el ataque de Race Condition}
 
 The goal of this task is to exploit the race condition vulnerability in 
 the vulnerable \setuid program listed earlier. The ultimate goal is to gain
@@ -243,7 +222,7 @@ and \texttt{fopen} calls in the vulnerable program.
 % -------------------------------------------
 % SUBSECTION
 % -------------------------------------------
-\subsection{Task 2.A: Simulating a Slow Machine} 
+\subsection{Tarea 2.A: Simular una Máquina Lenta} 
 
 Let us pretend that the machine is very slow, and there is a 10-second time window between
 the \texttt{access()} and \texttt{fopen()} calls. To simulate that, we 
@@ -280,7 +259,7 @@ lrwxrwxrwx 1 seed seed 9 Dec 25 22:20 /tmp/XYZ -> /dev/null
 % -------------------------------------------
 % SUBSECTION
 % ------------------------------------------- 
-\subsection{Task 2.B: The Real Attack}
+\subsection{Tarea 2.B: El Ataque Real}
 
 In the previous task, we have kind of ``cheated'' by asking the vulnerable program
 to slow down, so we can launch the attack. This is definitely not a real attack.
@@ -363,7 +342,7 @@ verifying root privileges.  Then terminate the attack program by
 pressing \texttt{Ctrl-C} in the Terminal window in which you started the program.
 
 
-\paragraph{A Note.}
+\paragraph{Nota.}
 If after 10 minutes, your attack is still not 
 successful, you can stop the attack, and check the ownership
 of the \texttt{/tmp/XYZ} file. If the owner of this file
@@ -378,7 +357,7 @@ an improved attack method.
 % -------------------------------------------
 % SUBSECTION
 % ------------------------------------------- 
-\subsection{Task 2.C: An Improved Attack Method}
+\subsection{Tarea 2.C: Mejorando el Método de Ataque}
 
 In Task 2.B, if you have done everything correctly, but still could not succeed
 in the attack, check the ownership of \texttt{/tmp/XYZ}. You will find out    
@@ -463,14 +442,14 @@ is done correctly, your attack should be able to succeed.
 % *******************************************
 % SECTION
 % *******************************************
-\section{Task 3: Countermeasures}
+\section{Tarea 3: Contramedidas}
 
 
 
 % -------------------------------------------
 % SUBSECTION
 % -------------------------------------------
-\subsection{Task 3.A: Applying the Principle of Least Privilege}
+\subsection{Tarea 3.A: Aplicando el Principio del menor Privilegio}
 
 The fundamental problem of the vulnerable program in this lab is 
 the violation of the {\em Principle of Least Privilege}. 
@@ -492,7 +471,7 @@ observations and provide explanation.
 % -------------------------------------------
 % SUBSECTION
 % ------------------------------------------- 
-\subsection{Task 3.B: Using \ubuntu's Built-in Scheme}
+\subsection{Tarea 3.B: Usando las protecciones nativas de \ubuntu}
 
 Ubuntu 10.10 and later come with a built-in protection scheme against race condition
 attacks. In this task, you need to turn the protection back on using the
