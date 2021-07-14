@@ -1,9 +1,9 @@
-Para empezar el setup del contenedor, deberá de descargarse el archivo \texttt{Labsetup.zip} ubicado en el laboratorio correspondiente dentro del sitio web oficial dentro de la Máquina Virtual prevista por SEED. Una vez descargado deberá descomprimirlo y entrar dentro de la carpeta \texttt{Labsetup} donde encontrará el archivo \texttt{docker-compose.yml} para setear el entorno de laboratorio. Para una información más detallada sobre el archivo \texttt{Dockerfile} y otros archivos relacionados, puede encontrarla dentro del Manual de Usuario del laboratorio en uso, en el sitio web oficial de SEED.
+Para empezar a preparar el contenedor, deberá de descargarse el archivo \texttt{Labsetup.zip} ubicado en el laboratorio correspondiente dentro del sitio web oficial dentro de la Máquina Virtual prevista por SEED. Una vez descargado deberá descomprimirlo y entrar dentro de la carpeta \texttt{Labsetup} donde encontrará el archivo \texttt{docker-compose.yml} para setear el entorno de laboratorio. Para una información más detallada sobre el archivo \texttt{Dockerfile} y otros archivos relacionados, puede encontrarla dentro del Manual de Usuario del laboratorio en uso, en el sitio web oficial de SEED.
 
-Si esta es su primera experiencia haciendo el setup del laboratorio usando contenedores es recomendable leer este manual.
+Si esta es su primera experiencia haciendo el setup del laboratorio usando contenedores es recomendable que lea el manual anteriormente mencionado.
 
-A continuación, se listarán los comandos más usados en Docker y Compose.
-Ya que estos comandos serán usados con mucha frecuencia, hemos creados un conjunto de alias para los mismos, ubicados en del archivo \texttt{.bashrc} dentro de la Máquina Virtual provista por SEED (Ubuntu 20.04)
+A continuación, se muestran los comandos más usados en Docker y Compose.
+Debido a que estos comandos serán usados con mucha frecuencia, hemos creados un conjunto de alias para los mismos, ubicados en del archivo \texttt{.bashrc} dentro de la Máquina Virtual provista por SEED (Ubuntu 20.04)
 
 \begin{lstlisting}
 $ docker-compose build  # Build the container image
@@ -17,7 +17,8 @@ $ dcdown        # Alias for: docker-compose down
 \end{lstlisting}
 
 
-Dado que todoos los contenedores estarán corriendo en un segundo plano. Se deberá proceder a correr comandos para interactuar con los mismos, una de las operaciones fundamentales a hacer con un contenedor es obtener una shell sobre el mismo. Usaremos \texttt{"docker ps"} para encontrar el ID del contenedor deseado y ejecutaremsos\texttt{"docker exec"} para correr una shell en ese contenedor.
+Dado que todos los contenedores estarán corriendo en un segundo plano. Necesitamos correr comandos para interactuar con los mismos, una de las operaciones fundamentales es obtener una shell en el contenedor. 
+Para este propósito usaremos \texttt{"docker ps"} para encontrar el ID del contenedor deseado y ejecutaremsos\texttt{"docker exec"} para correr una shell en ese contenedor.
 Hemos creado un alias para ello dentro del archivo \texttt{.bashrc}
 
 \begin{lstlisting}
@@ -38,5 +39,5 @@ root@9652715c8e0a:/#
 //       be sufficient, as long as they are unique among all the containers. 
 \end{lstlisting}
 
-En caso de problemas al momento de hacer el setup del entorno de laboratorio y obtener posibles soluciones, por favor consulte la sección ``Common Problems'' en el manual ofrecido por SEED. 
+En caso de problemas configurando el entorno, por favor consulte la sección ``Common Problems'' en el manual ofrecido por SEED. 
 
