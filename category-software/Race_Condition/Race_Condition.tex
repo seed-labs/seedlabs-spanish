@@ -165,11 +165,11 @@ Por favor reporte si puede loguearse en el sistema usando el usuario  \texttt{te
 test:U6aMy0wojraho:0:0:test:/root:/bin/bash
 \end{lstlisting}
 
-Después de hacer esta tarea, elimine la entrada agregada anteriormente en el archivo \texttt{/etc/passwd}. En la próxima tarea, haremos que esta entrada sea agregada como un usuario normal y no como un usuario privilegiado. Claramente esto no será posible, pero lo lograremos explotando la vulnerabilidad de Race Condition de nuestro programa vulnerable que correrá con privilegios de root.
+Después de hacer esta tarea, elimine la entrada agregada anteriormente en el archivo \texttt{/etc/passwd}. En la próxima tarea, haremos que esta entrada sea añadida como un usuario normal y no como un usuario privilegiado. Claramente esto no es posible en una situación normal, pero lo haremos explotando la vulnerabilidad de Race Condition de nuestro programa vulnerable que correrá con privilegios de root.
 
 
 \paragraph{Advertencia.}
-En el pasado, muchos estudiantes han vaciado accidentalmente el archivo {\tt /etc/passwd} durante el ataque (esto puede ocurrir porque se pueden race conditions a nivel kernel). Si Ud. pierde este archivo, no podrá loguearse en el sistema. Para evitar esta situación, recomendamos que se haga una copia del archivo original o se realize un snapshot de la Máquina Virtual, de esta manera habrá forma de recuperar el estado anterior del sistema ante cualquier problema que pueda surgir.
+En el pasado, muchos estudiantes al ejecutar el ataque han vaciado accidentalmente el archivo {\tt /etc/passwd} (esto puede ocurrir porque se pueden dar race conditions a nivel kernel). Si Ud. pierde este archivo, no podrá loguearse en el sistema. Para evitar esta situación, recomendamos que se haga una copia del archivo original o se realize un snapshot de la Máquina Virtual, de esta manera se podrá volver el estado anterior del sistema ante cualquier problema que pueda surgir.
 
 
 
@@ -183,11 +183,9 @@ El objetivo de este ataque es explotar la vulnerabilidad de Race Condition de nu
 % -------------------------------------------
 % SUBSECTION
 % -------------------------------------------
-\subsection{Tarea 2.A: Simular una Máquina Lenta} 
+\subsection{Tarea 2.A: Simulando una Máquina Lenta} 
 
-Let us pretend that the machine is very slow, and there is a 10-second time window between
-the \texttt{access()} and \texttt{fopen()} calls. To simulate that, we 
-add a \texttt{sleep(10)} between them. The program will look like the following:
+Haremos de cuenta que nuestro programa se encuentra corriendo en una máquina lenta, y hay un diferencial de tiempo de 10 segundos entre las llamadas a las funciones \texttt{access()} y \texttt{fopen()}. Para simular esto, usaremos la función \texttt{sleep(10)} de la siguiente manera:
 
 \begin{lstlisting}
 if (!access(fn, W_OK)) {
@@ -196,20 +194,11 @@ if (!access(fn, W_OK)) {
      ...
 \end{lstlisting}
  
-With this addition, the \texttt{vulp} program (when re-compiled)
-will pause and yield control to the operating system for 10 seconds.
-Your job is to manually do something, so when the program resumes
-after 10 seconds, the program can help you
-add a root account to the system. Please 
-demonstrate how you would achieve this. 
+Al recompilar el programa \texttt{vulp} una vez agregado este cambio en el código, este será pausado y le cederá el control al sistema operativo durante 10 segundos.
+Su tarea es hacer algo de forma manual, de forma tal que cuando el programa retome la ejecución (después de 10 segundos), el programa lo ayude a agregar una cuenta root en el sistema. Por favor demuestre como logró hacer esto.
 
-You won't be able to modify the file name \texttt{/tmp/XYZ}, because 
-it is hardcoded in the program, but you can use symbolic links to 
-change the meaning of this name. For example, you can make 
-\texttt{/tmp/XYZ} a symbolic link to the \texttt{/dev/null} file. 
-When you write to \texttt{/tmp/XYZ}, the actual content will be written
-to \texttt{/dev/null}. See the following example (the \texttt{"f"} option 
-means that if the link exists, remove the old one first): 
+No será posible modificar el archivo \texttt{/tmp/XYZ}, ya que está hardcodeado dentro del código, pero puede cambiar la referencia de su link simbólico. Por ejemplo, puede hacer un link simbólico de \texttt{/tmp/XYZ} a \texttt{/dev/null}, de esta forma el contenido que se ingrese y se quiera escribir a \texttt{/tmp/XYZ} terminará escribiéndose en \texttt{/dev/null}. En el siguiente ejemplo se muestra como crear este link, (la opción \texttt{"f"} removerá todo link simbólico existente sobre un archivo si es que existe alguno y procederá a crear uno nuevo)
+
 
 \begin{lstlisting}
 $ ln -sf /dev/null /tmp/XYZ
@@ -222,32 +211,14 @@ lrwxrwxrwx 1 seed seed 9 Dec 25 22:20 /tmp/XYZ -> /dev/null
 % ------------------------------------------- 
 \subsection{Tarea 2.B: El Ataque Real}
 
-In the previous task, we have kind of ``cheated'' by asking the vulnerable program
-to slow down, so we can launch the attack. This is definitely not a real attack.
-In this task, we will launch the real attack. 
-Before doing this task, make sure that the \texttt{sleep()} statement is removed 
-from the \texttt{vulp} program. 
+En la tarea anterior, se puede decir que de alguna forma hemos hecho ``trampa'' haciendo que el programa corra más lento para poder así lanzar el ataque. Este tipo de escenario definitivamente no es realista. En esta sección procederemos a lanzar el ataque real.
+Antes de hacer esta tarea, asegurése de eliminar la línea que contiene la función  \texttt{sleep()} del programa \texttt{vulp}.
+
+La estrategia más típica es correr el ataque de forma paralela al programa vulnerable, esperando poder hacer esa operación crítica dentro de la ventana de tiempo. Desafortunadamente, es muy difícil poder lograr una sincronización perfecta para esto y es por ello que el éxito del ataque es una cuestión probabilística. La probabilidad de que el ataque sea exitoso es baja si esa ventana de tiempo es corta, pero podemos correr el ataque reiteradas veces para incrementar nuestras posibilidades de éxito.
+Sólo necesitamos explotar la Race Condition una sóla vez.
 
 
-The typical strategy in race condition attacks is to run the attack
-program in parallel to the target program, 
-hoping to be able to do the critical step within that time window.
-Unfortunately, perfect timing is very hard to achieve, so 
-the success of attack is only probabilistic.
-The probability of a successful attack might be quite low if the window
-is small, but we can run the attack many many times. 
-We just need to hit the race condition window once.  
-
-
-\paragraph{Writing the attack program.} In the simulated attack,
-we use the \texttt{"ln -s"} command to make/change symbolic links.
-Now we need to do it in a program.
-We can use {\tt symlink()} in C to create symbolic links.
-Since \linux does not allow one to create a link if the link already exists,
-we need to delete the old link first.
-The following C code snippet shows how to remove a link and then make
-{\tt /tmp/XYZ} point to {\tt /etc/passwd}. Please write your attack 
-program.
+\paragraph{Escribiendo el programa de ataque.} En el ataque simulado de la sección anterior hemos usado \texttt{"ln -s"} para modificar el link simbólico. Ahora debemos hacerlo dentro del programa, podemos usar la función de C {\tt symlink()} para crear este link simbólico. Dado que \linux no permite crear un link si ya existe uno, primero debemos eliminar el existente. El siguiente fragmento de código en C muestra como eliminar un link existente y crear uno nuevo en el archivo {\tt /tmp/XYZ} hacia {\tt /etc/passwd}. Por favor escriba el programa de ataque.
 
 \begin{lstlisting}
 unlink("/tmp/XYZ");
@@ -256,31 +227,17 @@ symlink("/etc/passwd","/tmp/XYZ");
 
 
 
-\paragraph{Running the vulnerable program and monitoring results.}
-Since we need to run the vulnerable program for many
-times, we will write a program to automate this process. 
-To avoid manually typing an input to the vulnerable program \texttt{vulp}, 
-we can use input redirection. Namely, we save our input in a file, and ask
-\texttt{vulp} to get the input from this file using \texttt{"vulp <
-inputFile"}. We can also use pipe (an example will be given later). 
+\paragraph{Corriendo el programa vulnerable y monitoreando los resultados.}
+Debido a que necesitamos correr el programa vulnerable muchas veces, escribiremos un script para automatizar este processo.
+Para evitar escribir a mano el input que recibe el programa vulnerable \texttt{vulp}, podemos usar input redirection. Es decir, crearemos un archivo con nuestro input y obtendremos su contenido desde el programa vulnerable usando \texttt{"vulp < inputFile"}. También podemos usar un pipe (se dará un ejemplo de esto más adelante)
 
-It may take a while before our attack can successfully modify the
-password file, so we need a way to automatically detect whether the attack is
-successful or not. There are many ways to do that; an easy way 
-is to monitor the timestamp of the file.
-The following shell script runs the \texttt{"ls -l"} command, which
-outputs several piece of information about a
-file, including the last modified time. By comparing the outputs of the
-command with the ones produced previously, we can tell
-whether the file has been modified or not. 
+Como se mencionó anterioremente, puede pasar un tiempo hasta que nuestro ataque sea exitoso y pueda modificar el archivo de password, es por esto que necesitamos contar algún tipo de mecanismo para detectar si nuestro ataque fue exitoso o no. Hay muchas formas de lograr esto; la más fácil es monitorear el timestamp del archivo.
+El siguiente shell script corre el comando \texttt{"ls -l"} que imprime información del archivo, incluyendo su última fecha de modificación. Comparando esta información con la obtenida anteriormente, podemos determinar si el archivo fue modificado o no.
 
-The following shell script runs the vulnerable program (\texttt{vulp}) in a loop,
-with the input given by the \texttt{echo} command (via a pipe).  
-You need to decide what should be the actual input. 
-If the attack is successful, i.e.,
-the \texttt{passwd} is modified, the shell script will stop. 
-You do need to be a little bit patient. 
-Normally, you should be able to succeed within 5 minutes. 
+El siguiente shell script ejecuta un loop que se encarga de correr el programa vulnerable (\texttt{vulp}) con el input producido por el comando \texttt{echo} (vía un pipe).
+Es su tarea decidir cual será el contenido de este input.
+Si el ataque es exitoso es decir si el archivo \texttt{passwd} es modificado, el script detendrá su ejecución.
+Necesita tener paciencia, normalmente suele tomar 5 minutos.
 
 \begin{lstlisting}
 #!/bin/bash
@@ -296,22 +253,13 @@ done
 echo "STOP... The passwd file has been changed"
 \end{lstlisting}
 
-\paragraph{Verifying success}
-When your script terminates,
-test the success of your exploit by logging in as the test user and
-verifying root privileges.  Then terminate the attack program by 
-pressing \texttt{Ctrl-C} in the Terminal window in which you started the program.
-
+\paragraph{Verificando el éxito}
+Cuando el script termine su ejecución, verifique que todo haya sido bien logueándose como usuario test y verificando que tenga privilegios de root. Una vez hecho esto termine el proceso del script presionando \texttt{Ctrl-C} en la ventana de la terminal donde ejecutó el ataque.
 
 \paragraph{Nota.}
-If after 10 minutes, your attack is still not 
-successful, you can stop the attack, and check the ownership
-of the \texttt{/tmp/XYZ} file. If the owner of this file
-becomes root, manually delete this file, and try your 
-attack again, until your attack becomes successful. 
-Please document this observation in your lab report. 
-In Task 2.C, we will explain the reason and provide
-an improved attack method. 
+Si después de 10 minutos, el ataque no tiene éxito, detenga el ataque y chequee quien es el dueño del archivo \texttt{/tmp/XYZ}. Si el dueño de este archivo es el usuario root, borre el archivo manualmente y lance el ataque nuevamente hasta que tenga éxito.
+Por favor documente su observación en el informe del laboratorio.
+En la Tarea 2.C, explicaremos el porque de este comportamiento y mejoraremos el ataque.
 
 
 
@@ -320,61 +268,25 @@ an improved attack method.
 % ------------------------------------------- 
 \subsection{Tarea 2.C: Mejorando el Método de Ataque}
 
-In Task 2.B, if you have done everything correctly, but still could not succeed
-in the attack, check the ownership of \texttt{/tmp/XYZ}. You will find out    
-that \texttt{/tmp/XYZ}'s owner has become root (normally, it should be \texttt{seed}). 
-If this happens, your attack will never succeed, because your attack
-program, running with the \texttt{seed} privilege, can no longer remove or
-\texttt{unlink()} it.  
-This is because the \texttt{/tmp}
-folder has a ``sticky'' bit on, meaning that only the owner of the file can
-delete the file, even though the folder is world-writable. 
+En la Tarea 2.B, puede que el ataque no haya funcionado aún si se realizó todo bien, verifique quien es el dueño del archivo \texttt{/tmp/XYZ}. Encontrará que el dueño del archivo \texttt{/tmp/XYZ} es el usuario root (normalmente debería de ser el usuario \texttt{seed}).
 
+Si esto sucede, su ataque jamás funcionará. Esto se debe a que el programa de ataque corre con los privilegios del usuario \texttt{seed} por ende no puede operar sobre el archivo \texttt{/tmp/XYZ} a través de la función \texttt{unlink()}.
+Esto es porque el directorio \texttt{/tmp} tiene activado el ``sticky'' bit, esto quiere decir que sólo el dueño del archivo puede borrarlo, aunque la carpeta tenga permisos de escritura para todos los usuarios del sistema.
 
-In Task 2.B, we let you use the root's privilege to delete \texttt{/tmp/XYZ}, 
-and then try your attack again. The undesirable condition happens randomly,
-so by repeating the attack (with the ``help'' from root), you will eventually
-succeed in Task 2.B. Obviously, getting help from root is not a real attack. 
-We would like to get rid of that, and do it without root's help.
+En la Tarea 2.B, le hemos permitido usar los privilegios de root para borrar el archivo \texttt{/tmp/XYZ} y lanzar el ataque nuevamente. Esta condición no deseada ocurre de forma aleatoria por lo tanto repitiendo el ataque una y otra vez (con la ``ayuda'' del usuario root) puede que hacer que eventualmente el ataque funcione. Obviamente un escenario en donde el usuario root nos provee la ayuda para ser exitosos en el ataque no es un escenario realista, es por eso que queremos evitar esta dependencia y lograr el éxito del ataque sin la ayuda del root.
 
+La razón principal de esta condición no deseada en nuestro programa de ataque, está dada por un problema dentro del mismo, un problema de Race Condition que es exactamente el mismo problema que estamos tratando de explotar en el programa vulnerable, ¡Que ironía!
+En el pasado, cuando descubrimos esta situación, nuestros estudiantes eran notificados y se les decía que debían borrar el archivo y tratar el ataque nuevamente. Gracias a uno de mis estudiantes, quién determinó cual era el problema, pudimos entender lo que estaba pasando y trabajar en una solución que mejore el ataque.
 
-The main reason for that undesirable situation is that 
-our attack program has a problem, a race condition problem, the exact problem that
-we are trying to exploit in the victim program. How ironic!  
-In the past, when we saw that problem, we simply advised students to 
-delete the file and try the attack again. Thanks to one of my students, 
-who was determined to figure out what the problem was. Because of his effort,
-we finally understand why and have an improved solution. 
+El problema radica en que el programa de ataque hace un cambio de contexto justo después de haber borrado el archivo {\tt /tmp/XYZ} (usando \texttt{unlink()}), pero antes de crear el link a otro archivo (usando \texttt{symlink()}).
+Hay que recordar que las acciones de borrado y creación de link simbólicos no son atómicas (estas requieren de dos llamadas al sistema por separado), por lo tanto si un cambio de contexto ocurre en el medio (es decir después de borrar {\tt /tmp/XYZ}) y el programa vulnerable \setuid logra ejecutar {\tt fopen(fn, "a+")}, se creará un nuevo archivo donde el usuario root será el dueño.
+Una vez ocurrido este escenario el programa de ataque no puede hacer cambios en el archivo {\tt /tmp/XYZ} dado que no es el dueño.
 
+Básicamente, el resultado de usar las funciones \texttt{unlink()} y \texttt{symlink()} produce en nuestro programa de ataque una Race Condition. Por lo tanto mientras tratamos de explotar la Race Condition de nuestro programa vulnerable, este de forma accidental ''explota'' una Race Condition en nuestro programa de ataque, contrarrestándo la explotación deseada.
 
-The main reason for the situation to happen is that the attack program is 
-context switched out right after it removes {\tt /tmp/XYZ} (i.e., \texttt{unlink()}),
-but before it links the name to another file (i.e., \texttt{symlink()}. 
-Remember, the action to remove the existing 
-symbolic link and create a new one is not atomic (it involves two 
-separate system calls), so if the context switch occurs in the middle
-(i.e., right after the removal of {\tt /tmp/XYZ}),
-and the target \setuid program gets a chance to run its 
-{\tt fopen(fn, "a+")} statement, it will create a new file with root being the owner.
-After that, your attack program can no longer make changes to {\tt /tmp/XYZ}.
-
-
-Basically, using the \texttt{unlink()} and \texttt{symlink()} approach, 
-we have a race condition in our attack program. Therefore, while we 
-are trying to exploit the race condition in the target program,
-the target program may accidentally ``exploit'' the race condition
-in our attack program, defeating our attack.  
-
-
-To solve this problem, we need to make 
-\texttt{unlink()} and \texttt{symlink()} atomic. Fortunately, there 
-is a system call that allows us to achieve that. More accurately,
-it allows us to atomically swap two symbolic links. 
-The following program first makes two symbolic links \texttt{/tmp/XYZ}
-and \texttt{/tmp/ABC}, and then using the
-\texttt{renameat2} system call to atomically switch them. 
-This allows us to change what \texttt{/tmp/XYZ} points to
-without introducing any race condition. 
+Para resolver este problema, necesitamos que las funciones \texttt{unlink()} y \texttt{symlink()} sean atómicas. Afortunadamente, existe una llamada al sistema que nos permite lograr esto. Siendo más preciso nos permite intercambiar dos links simbólicos de forma atómica.
+El siguiente programa crea dos links simbólicos \texttt{/tmp/XYZ} y \texttt{/tmp/ABC}, usando la llamada al sistema \texttt{renameat2} los intercambia atómicamente.
+Esto nos permite cambiar a donde apunta \texttt{/tmp/XYZ} evitando introducir una Race Condition.
 
 \begin{lstlisting}
 #define _GNU_SOURCE
@@ -394,9 +306,7 @@ int main()
 \end{lstlisting}
 
 
-\paragraph{Tasks.} Please revise your attack program using 
-this new strategy, and try your attack again. If everything 
-is done correctly, your attack should be able to succeed. 
+\paragraph{Tareas.} Por favor realice el ataque nuevamente con esta nueva estrategia, si todo es hecho de manera correcta, su ataque debería de ser exitoso.
 
 
 
@@ -410,23 +320,13 @@ is done correctly, your attack should be able to succeed.
 % -------------------------------------------
 % SUBSECTION
 % -------------------------------------------
-\subsection{Tarea 3.A: Aplicando el Principio del menor Privilegio}
+\subsection{Tarea 3.A: Aplicando el Principio del Menor Privilegio}
 
-The fundamental problem of the vulnerable program in this lab is 
-the violation of the {\em Principle of Least Privilege}. 
-The programmer does understand that the user who runs the program 
-might be too powerful, so he/she introduced {\tt access()} to limit the user's 
-power. However, this is not the proper approach. A better
-approach is to apply the {\em Principle of Least Privilege}; 
-namely, if users do not need certain privilege, the privilege
-needs to be disabled.
+El problema fundamental del programa vulnerable mostrado en este laboratorio es que viola el {\em  Principio del Menor Privilegio}. 
+El programador sabe que quien ejecute este programa puede llegar a ser un usuario potencialmente privilegiado y es ese el sentido del chequeo que se realiza a través de la función {\tt access()} limitar sus privilegios de acceso.
+Sin embargo esta óptica no es la correcta, un mejor enfoque es aplicar el {\em  Principio del Menor Privilegio} este declara que si un usuario no necesita determinado privilegio, ese privilegio no le debe de ser otorgado.
 
-We can use {\tt seteuid{}} system call to temporarily disable
-the root privilege, and later enable it if necessary. Please use 
-this approach to fix the vulnerability in the program, and then
-repeat your attack. Will you be able to succeed? Please report your
-observations and provide explanation.
-
+Podemos usar la llamada al sistema  {\tt seteuid{}} para desactivar temporalmente el privilegio de root y luego activarlo si es necesario. Por favor use esta estrategia para corregir la vulnerabilidad de nuestro programa y repita el ataque. ¿Podrá realizar un ataque exitoso? Por favor reporte sus observaciones y provea las respectivas explicaciones al respecto.
 
 
 % -------------------------------------------
@@ -434,9 +334,8 @@ observations and provide explanation.
 % ------------------------------------------- 
 \subsection{Tarea 3.B: Usando las protecciones nativas de \ubuntu}
 
-Ubuntu 10.10 and later come with a built-in protection scheme against race condition
-attacks. In this task, you need to turn the protection back on using the
-following commands:
+Las versión de Ubuntu 10.10 y posteriores incluyen protecciones nativas para prevenir ataques a vulnerabilidades de Race Condition.
+En esta tarea, ud. deberá de activar estas protecciones usando los siguientes comandos: 
 
 \begin{lstlisting}
 // On Ubuntu 16.04 and 20.04, use the following command:
@@ -446,12 +345,10 @@ $ sudo sysctl -w fs.protected_symlinks=1
 $ sudo sysctl -w kernel.yama.protected_sticky_symlinks=1
 \end{lstlisting}
 
-Conduct your attack after the protection is turned on.  
-Please describe your observations. Please also explain
-the followings: (1) How does this protection scheme work?
-(2) What are the limitations of this scheme?
-
-
+Realice su ataque después de activar estas protecciones.
+Por favor describa sus observaciones y explique los siguientes puntos:
+(1) ¿Cómo funcionan estas protecciones? 
+(2) ¿Cuales son sus limitaciones?
 
 
 
