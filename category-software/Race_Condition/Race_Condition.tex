@@ -33,7 +33,7 @@
 \section{Descripción General}
 
 El objetivo de este laboratorio es que el estudiante gane experiencia en vulnerabilidades de Race Condition, pudiendo pasar de la teoría a la práctica.
-Una vulnerabilidad de Race Condition ocurre cuando múltiples procesos quieren acceder y manipular un determinado dato al mismo tiempo, el resultado de la ejecución será indeterminado, ya que estará dado por el orden en que esos procesos realizaron el acceso. Si un programa tiene una vulnerabilidad del tipo Race Condition, un atacante puede correr un conjunto de procesos en paralelo para hacer un ``race'' contra el programa vulnerable, con la intención de alterar el comportamiento del programa.
+Una vulnerabilidad de Race Condition ocurre cuando múltiples procesos quieren acceder y manipular un determinado dato al mismo tiempo, el resultado de la ejecución será indeterminado, ya que estará dado por el orden en que esos procesos realizaron el acceso al dato en cuestión. Si un programa tiene una vulnerabilidad del tipo Race Condition, un atacante puede correr un conjunto de procesos en paralelo para hacer un ``race'' contra el programa vulnerable, con la intención de alterar su comportamiento.
 
 Para este laboratorio, los estudiantes tendrán disponible un programa con una vulnerabilidad del tipo Race Condition; La tarea será desarrollar un exploit para explotar esta vulnerabilidad y obtener privilegios de root. A su vez cada uno de los estudiantes serán guiados a fin de que puedan atravesar diferentes tipos mitigaciones que son usadas para contrarrestar los ataques de Race Condition.
 Los estudiantes necesitarán evaluar en que situaciones sus ataques serán exitosos y en cuales no, así también explicando el porque de este resultado. 
@@ -49,7 +49,7 @@ Este laboratorio cubre los siguientes tópicos:
 
 
 \paragraph{Lecturas y Videos.}
-Para una cobertura más detallada en Ataque de Race Condition puede consultar
+Para una cobertura más detallada en Ataques de Race Condition puede consultar
 
 \begin{itemize}
 \item Capítulo 7 del Libro de SEED, \seedbook
@@ -58,7 +58,7 @@ Para una cobertura más detallada en Ataque de Race Condition puede consultar
 
 
 \paragraph{Tópicos relacionados.}
-Existen tres laboratorios relacionados a Race Condition. Uno es el laboratorio de Dirty COW, que explota una vulnerabilidad de Race Condition dentro del kernel del sistema operativo (El Capítulo 8 del libro de SEED cubre este ataque). Los otros dos son los laboratorios de Meltdown y Spectre (Capítulos 13 y 14 del libro de SEED). Estos últimos explotan una vulnerabilidad de Race Condition dentro del CPU. Estos cuatro laboratorios proveen una cobertura integral del problema de la vulnerabilidad de Race Condition en diferentes niveles: a nivel aplicación, a nivel kernel y finalmente a nivel hardware.
+Existen tres laboratorios relacionados a Race Condition. Uno es el laboratorio de Dirty COW, que explota una vulnerabilidad de Race Condition dentro del kernel del sistema operativo (Capítulo 8 del libro de SEED cubre este ataque). Los otros dos son los laboratorios de Meltdown y Spectre (Capítulos 13 y 14 del libro de SEED). Estos últimos explotan una vulnerabilidad de Race Condition dentro del CPU. Estos cuatro laboratorios proveen una cobertura integral del problema de la vulnerabilidad de Race Condition en diferentes niveles: a nivel aplicación, a nivel kernel y finalmente a nivel hardware.
 
 
 \paragraph{Entorno de Laboratorio.} \seedenvironmentC
@@ -74,8 +74,8 @@ Existen tres laboratorios relacionados a Race Condition. Uno es el laboratorio d
 % ------------------------------------------- 
 \subsection{Desactivando las Contramedidas}
 
-Ubuntu viene con mecanismos para proteger a los programas frente a los ataques de Race Condition. Uno de ellos funciona restringiendo el acceso a los links simbólicos dentro de  directorios con el bit sticky activado (por ejemplo {\tt /tmp}) permitiendo el acceso solamente al creador del link si el directorio no fue creado por quién es el dueño de este link simbólico.
-Otro mecanismo de seguridad que fue implementado en Ubuntu 20.04, evita que el usuario root escriba archivos dentro del directorio \texttt{/tmp}, que no fueron creados por este usuario (es decir el usuario root).
+Ubuntu viene con mecanismos para proteger a los programas frente a los ataques de Race Condition. Uno de ellos funciona restringiendo el acceso a los links simbólicos dentro de  directorios que poseen el sticky bit activado (por ejemplo {\tt /tmp}) permitiendo el acceso solamente al creador del link si el directorio no fue creado por quién es el dueño de este link simbólico.
+Otro mecanismo de seguridad que fue implementado en Ubuntu 20.04, evita que el usuario root realice cambios en archivos dentro del directorio \texttt{/tmp}, que no fueron creados por este usuario (es decir el usuario root).
 Como primer paso necesitamos desactivar estas protecciones, ejecutando los siguientes comandos:
 
 \begin{lstlisting}
@@ -123,12 +123,12 @@ int main()
 
 El programa de arriba tiene como dueño al usuario root y es un programa \setuid; Este programa agrega una cadena ingresada como input por parte del usuario al final del archivo temporal {\tt /tmp/XYZ}. Dado que este programa corre con privilegios de root (es decir su effective user ID es cero), puede sobreescribir cualquier archivo. Para evitar que  accidentalmente sobreescriba los archivos de otros usuarios, lo primero que hace este programa es chequear si el real user ID tiene permisos sobre el archivo {\tt /tmp/XYZ}; para este propósito se usa la función {\tt access()} en la línea \ding{192}. Si el real user ID es el correcto y puede acceder al archivo, el programa abre el archivo (Línea \ding{193}) y procede a escribir la cadena que ingresó el usuario como input.
 
-A primera vista el programa parece no tener ningún tipo de problemas. Sin embargo contiene una vulnerabilidad de Race Condition: Debido a que existe una ventana de tiempo entre el chequeo realizado por la función ({\tt access}) y el uso de ({\tt fopen}), existe la posibilidad que el archivo usado en la función {\tt access()} difiera del usado por la función {\tt fopen()}, aunque ambos sean el mismo {\tt /tmp/XYZ}. Si un atacante malicioso dentro de esa ventana de tiempo de alguna forma logra modificar el link simbólico de {\tt /tmp/XYZ} a un archivo privilegiado como lo es \texttt{/etc/passwd}, podría alterar su contenido con el input ingresado en el programa, obteniendo así privilegios de root. Esto es posible debudo a que el programa vulnerable corre con los privilegios del usuario root.
+A primera vista el programa parece no tener ningún tipo de problemas. Sin embargo contiene una vulnerabilidad de Race Condition: Debido a que existe una ventana de tiempo entre el chequeo realizado por la función ({\tt access}) y el uso de ({\tt fopen}), existe la posibilidad que el archivo usado en la función {\tt access()} difiera del usado por la función {\tt fopen()}, aunque ambos sean el mismo {\tt /tmp/XYZ}. Si un atacante malicioso dentro de esa ventana de tiempo logra de alguna forma modificar el link simbólico de {\tt /tmp/XYZ} a un archivo privilegiado como lo es \texttt{/etc/passwd}, podría alterar su contenido con el input ingresado en el programa, obteniendo así privilegios de root. Esto es posible debido a que el programa vulnerable corre con los privilegios del usuario root.
 
 
 \paragraph{Configurando nuestro programa \setuid}
 Primero debemos compilar el código dado a continuación y activar el bit de \setuid en nuestro programa cuyo dueño será el usuario root.
-Para lograr esto deben ejecutar los siguientes comandos:
+Para lograr esto se deben ejecutar los siguientes comandos:
 
 \begin{lstlisting}
 $ gcc vulp.c -o vulp
@@ -143,8 +143,8 @@ $ sudo chmod 4755 vulp
 % *******************************************
 \section{Tarea 1: Eligiendo nuestro Target}
 
-Para proceder a explotar la vulnerabilidad de Race Condition dentro del programa, vamos a elegir el archivo \texttt{/etc/passwd} como nuestro target, este archivo no puede ser escrito por usuarios no privilegiados. Explotando esta vulnerabilidad nuestro objetivo final será agregar un registro en este archivo, que será un usuario que tendrá privilegios dde root.
-Dentro del archivo \texttt{/etc/passwd}, cada línea del mismo es una entrada y cadda entrada representa un usuario del sistema, cada usuario tiene tiene campos que están separados por el caracter de dos puntos (:). La entrada para el usuario root se muestra a continuación:
+Para proceder a explotar la vulnerabilidad de Race Condition dentro del programa, vamos a elegir el archivo \texttt{/etc/passwd} como nuestro target, este archivo no puede ser escrito por usuarios no privilegiados. Explotando esta vulnerabilidad nuestro objetivo final será agregar un registro en este archivo, que será un usuario que tendrá privilegios de root.
+Dentro del archivo \texttt{/etc/passwd}, cada línea del mismo es una entrada y cada entrada representa un usuario del sistema, cada usuario tiene tiene campos que están separados por el caracter de dos puntos (:). La entrada para el usuario root se muestra a continuación:
 
 \begin{lstlisting}
 root:x:0:0:root:/root:/bin/bash
@@ -154,7 +154,7 @@ En esta entrada, el tercer campo de este usuario (el campo de user ID) tiene un 
 
 Cada entrada de este archivo, contiene un campo de password, este es el segundo campo. En el ejemplo anterior este campo tiene el valor de \texttt{"x"} lo que indica que el password para este usuario esta siendo guardado en otro archivo llamado \texttt{/etc/shadow} (shadow file). Si somos fieles a este ejemplo entonces al aprovecharnos de la vulnerabilidad de Race Condition, deberíamos de modifiar dos archivos, el archivo password y el archivo shadow, lo cual no es difícil de hacer pero existe una forma más sencilla. En vez de poner el valor \texttt{"x"} en el campo de la entrada que corresponde al usuario, podemos poner un password de esta manera el sistema operativo no irá a buscarlo al archivo shadow.
 
-El campo de password no contiene el password actual; este contiene el password hasheado a través de un algoritmo de hashing de una sóla vía (one-way hashing). Para obtener este valor, se puede agregar un usuario nuevo al sistema usando el comando  \texttt{adduser} y obtener su hash correspondiente desde el archivo shadow o podríamos simplemente copiar el valor de la entrada del usuario \texttt{seed} ya que sabemos que su password es  \texttt{dees}.
+El campo de password no contiene el password actual en texto plano; este contiene el password hasheado a través de un algoritmo de hashing de una sóla vía (one-way hashing). Para obtener este valor, se puede agregar un usuario nuevo al sistema usando el comando  \texttt{adduser} y obtener su hash correspondiente desde el archivo shadow o podríamos simplemente copiar el valor de la entrada del usuario \texttt{seed} ya que sabemos que su password es  \texttt{dees}.
 Hay algo interesante para mencionar, existe un valor mágico para las cuentas sin password que es usado por \ubuntu al ser booteado usando el modo live CD, este valor mágico es \texttt{U6aMy0wojraho} (no confundir el sexto caracter con la letra \texttt{O} ya que es un cero). Si se coloca este valor en el campo del password para un usuario cualquiera, estaríamos usando un usuario sin password, de forma tal que podríamos loguearnos con un enter al momento que el prompt del sistema nos pregunte por el password.
 
 Para verificar si el password mágico funciona o no. Necesitamos agregar siguiente  entrada como usuario privilegiado al final del archivo \texttt{/etc/passwd}.
@@ -178,14 +178,14 @@ En el pasado, muchos estudiantes al ejecutar el ataque han vaciado accidentalmen
 % *******************************************
 \section{Tarea 2: Lanzando el Ataque de Race Condition}
 
-El objetivo de este ataque es explotar la vulnerabilidad de Race Condition de nuestro programa vulnerable con el bit de \setuid activado que ya hemos mencionado anteriormente. La meta final es obtener privilegios de root. La parte más crítica de este ataque es hacer que el archivo \texttt{/tmp/XYZ} apunte al archivo de password, dentro de la ventana tiempo que existe entre la invocación de las funciones \texttt{access} y \texttt{fopen}.
+El objetivo de este ataque es explotar la vulnerabilidad de Race Condition en nuestro programa vulnerable con el bit de \setuid activado. La meta final es obtener privilegios de root. La parte más crítica de este ataque es hacer que el archivo \texttt{/tmp/XYZ} apunte al archivo de password, dentro de la ventana tiempo que existe entre la invocación de las funciones \texttt{access} y \texttt{fopen}.
 
 % -------------------------------------------
 % SUBSECTION
 % -------------------------------------------
 \subsection{Tarea 2.A: Simulando una Máquina Lenta} 
 
-Haremos de cuenta que nuestro programa se encuentra corriendo en una máquina lenta, y hay un diferencial de tiempo de 10 segundos entre las llamadas a las funciones \texttt{access()} y \texttt{fopen()}. Para simular esto, usaremos la función \texttt{sleep(10)} de la siguiente manera:
+Haremos de cuenta que nuestro programa se encuentra corriendo en una máquina lenta, y hay un lapso de tiempo de 10 segundos después de la llamada a la función \texttt{access()}. Para simular esto, usaremos la función \texttt{sleep(10)} de la siguiente manera:
 
 \begin{lstlisting}
 if (!access(fn, W_OK)) {
@@ -197,7 +197,7 @@ if (!access(fn, W_OK)) {
 Al recompilar el programa \texttt{vulp} una vez agregado este cambio en el código, este será pausado y le cederá el control al sistema operativo durante 10 segundos.
 Su tarea es hacer algo de forma manual, de forma tal que cuando el programa retome la ejecución (después de 10 segundos), el programa lo ayude a agregar una cuenta root en el sistema. Por favor demuestre como logró hacer esto.
 
-No será posible modificar el archivo \texttt{/tmp/XYZ}, ya que está hardcodeado dentro del código, pero puede cambiar la referencia de su link simbólico. Por ejemplo, puede hacer un link simbólico de \texttt{/tmp/XYZ} a \texttt{/dev/null}, de esta forma el contenido que se ingrese y se quiera escribir a \texttt{/tmp/XYZ} terminará escribiéndose en \texttt{/dev/null}. En el siguiente ejemplo se muestra como crear este link, (la opción \texttt{"f"} removerá todo link simbólico existente sobre un archivo si es que existe alguno y procederá a crear uno nuevo)
+No será posible modificar el archivo \texttt{/tmp/XYZ}, ya que está hardcodeado dentro del código, pero puede cambiar la referencia de su link simbólico. Por ejemplo, puede hacer un link simbólico de \texttt{/tmp/XYZ} a \texttt{/dev/null}, de esta forma el contenido que se ingrese y se quiera escribir en \texttt{/tmp/XYZ} terminará escribiéndose en \texttt{/dev/null}. En el siguiente ejemplo se muestra como crear este link, (la opción \texttt{"f"} removerá todo link simbólico existente sobre un archivo si es que existe alguno y procederá a crear uno nuevo)
 
 
 \begin{lstlisting}
