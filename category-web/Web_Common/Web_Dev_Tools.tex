@@ -16,9 +16,9 @@
 \label{web:sec:httpheaderlive}
 
 La versión de Firefox 60 de nuestra Máquina Virtual de Ubuntu 16.04 no soporta el plugin \texttt{LiveHTTPHeader}, que fue usado en nuestra Máquina Virtual de Ubuntu 12.04.
-Dada esta situación, \texttt{"HTTP Header Live"} será usado en su lugar.
-Las instrucciones de como habilitar y usar este plugin se muestran en la figura Figure~\ref{web:fig:httpheader} solamente haga click en el ícono marcado en \ding{192}; aparecerá una barra lateral en la izquierda, asegúrese que \texttt{HTTP Header Live} este seleccionada en la posición \ding{193}. Luego haga click en cualquier link dentro de la página, todas los Requests HTTP serán capturados y mostrados dentro de la barra lateral marcada por \ding{194}.
-Si hace click en cualquiera Request HTTP, se abrirá un pop-up que mostrará el Request HTTP seleccionado. Desafortunadamente hay un bug en este plugin (que aún se encuentra en desarrollo); no se mostrará nada dentro de este pop-up al menos que ud. cambie el tamaño del pop-up (Al parecer el evento de re-drawing no es disparado automáticamente cuando se abre el popup, pero cambiando su tamaño ocasiona que este evento sea disparado y en consecuencia se renderize el contenido en pantalla)
+Dada esta situación, se usará \texttt{"HTTP Header Live"} como reemplazo.
+Las instrucciones de como habilitar y usar este plugin se muestran en la figura Figure~\ref{web:fig:httpheader} solamente haga click en el ícono mosotrado en el marcador \ding{192}; aparecerá una barra lateral en la izquierda, asegúrese que \texttt{HTTP Header Live} este seleccionada en la posición mostrada en el marcador \ding{193}. Luego haga click en cualquier link dentro de la página, todas los Requests HTTP serán capturados y mostrados dentro de la barra lateral mostrada en el marcador  \ding{194}.
+Si hace click en cualquiera Request HTTP, se abrirá un pop-up que mostrará el Request HTTP seleccionado. Desafortunadamente hay un bug en este plugin (que aún se encuentra en desarrollo); no se mostrará nada dentro de este pop-up al menos que ud. cambie el tamaño del pop-up (Al parecer el evento de re-drawing se ejecuta automáticamente cuando se abre el pop-up, pero cambiando su tamaño ocasiona que este evento sea disparado y en consecuencia se renderize el contenido en pantalla)
 
 
 \begin{figure}[htb]
@@ -72,8 +72,8 @@ Para más detalles del Request, podemos hacer click en un Request HTTP específi
 
 Los detalles del Request seleccionado serán mostrados en el panel de la derecha.
 La Figure~\ref{fig:webdevtools_03_post_headers} muestra los detalles del Request de Login en el Tab de 
-\texttt{Headers} (Los detalles incluyendo el método del Request, la URL y Cookie). En el panel derecho se pueden observar los Headers de la respuesta como también los del request.
-Para chequear los parámetros involucrados en un request HTTP, podemos usar el tab \texttt{Params}. La Figure~\ref{fig:webdevtools_03_post_params} nos muestra los parámetros enviados en el request del login que se envía a Elgg, estos incluyen el \texttt{username}  t el \texttt{password}. Esta herramienta puede ser usada para inspeccionar tanto Request HTTP GET como Request HTTP POST.
+\texttt{Headers} (Estos detalles incluyen el método del Request, la URL y la Cookie). En el panel derecho se pueden observar los Headers de la respuesta como también los del request.
+Para chequear los parámetros involucrados en un request HTTP, podemos usar el tab \texttt{Params}. La Figure~\ref{fig:webdevtools_03_post_params} nos muestra los parámetros enviados en el request del login que se envía a Elgg, estos incluyen el \texttt{username} y el \texttt{password}. Esta herramienta puede ser usada para inspeccionar tanto Request HTTP GET como POST.
 
 \begin{figure}[htb]
  \centering

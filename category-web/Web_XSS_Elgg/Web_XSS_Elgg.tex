@@ -30,7 +30,7 @@
 
 El Cross-site scripting (XSS) es un tipo de vulnerabilidad muy frecuente en aplicaciones web. Esta vulnerabillidad permite que un atacante pueda introducir código malicioso dentro del navegador de la víctima. A través de este código malicioso el atacante puede robar información sensible de la víctima (Por Ejemplo: Credenciales, Cookies de Sesión). Las políticas de acceso de control de los navegadores (Same Origin Policy) que se utilizan para proteger las credenciales pueden ser evadidas mediante la explotación de las vulnerabilidades del tipo XSS.
 
-Para demostrar lo que los atacantes pueden hacer explotando vulnerabilidades XSS, hemos configurado una apicación web de red social, llamada {\tt Elgg} dentro de nuestra Máquina Virtual de Ubuntu.
+Para demostrar lo que los atacantes pueden hacer explotando vulnerabilidades XSS, hemos configurado una apicación web de red social, llamada {\tt Elgg} en nuestra Máquina Virtual.
 {\tt Elgg} es una aplicación web muy popular de código abierto que implementa una serie de contramedidas para mitigar amenazas XSS. A su vez para demostrar como funcionan los ataques XSS, y con el objetivo de hacer vulnerable Elgg a este tipo de ataques, hemos desactivado esas contramedidas en nuestra instalación.
 Sin estas contramedidas, los usuarios pueden publicar cualquier mensaje arbitrario, incluyendo código JavaScript en los perfiles de usuarios.
 
@@ -48,7 +48,7 @@ El objetivo final de este ataque es poder propagar el gusano XSS entre los difer
 
 
 \paragraph{Lecturas.}
-Para una cobertura más en detalle sobre los Ataques de Cross-Site Scripting se puede consultar 
+Para una cobertura más detallada en Ataques de Cross-Site Scripting se puede consultar 
 \begin{itemize}
 \item Capítulo 10 SEED Book, \seedbook
 \end{itemize}
@@ -70,7 +70,7 @@ Para una cobertura más en detalle sobre los Ataques de Cross-Site Scripting se 
 % -------------------------------------------
 \subsection{Configuración DNS} 
 
-Para este laboratorio hemos configurado multiples sitios web hosteados en el contenedor \texttt{10.9.0.5}. En primera medida hay que mapear los nombres de dominio del servidor web con sus IPs. Para ello deberá agregar las siguientes entradas en el archivo \texttt{/etc/hosts}.
+Para este laboratorio hemos configurado multiples sitios web hosteados en el contenedor \texttt{10.9.0.5}. Lo primero que hay que hacer es mapear los nombres de dominio del servidor web con sus IPs. Para ello deberá agregar las siguientes entradas en el archivo \texttt{/etc/hosts}.
 Para poder modificar este archivo ud. debe contar con privilegios de root:
 
 \begin{lstlisting}
@@ -99,9 +99,10 @@ Para poder modificar este archivo ud. debe contar con privilegios de root:
 % -------------------------------------------
 \subsection{Aplicación Web Elgg}
 
-Para este laboratorio usaremos una aplicación web llamada {\tt Elgg}, {\tt Elgg} es una aplicación de redes sociales basadas en la web.
-Este aplicativo ya esta configurado en las imágenes provistas en los contenedores y su URL es \url{http://www.seed-server.com}.
-Usaremos dos contenedores, el primero será el encargado de correr el servidor web y su IP es (\texttt{10.9.0.5}) y el segundo será el encargado de correr el servidor de base de datos MySQL y su IP es (\texttt{10.9.0.6}). 
+Para este laboratorio usaremos una aplicación web llamada {\tt Elgg}.
+{\tt Elgg} es una aplicación de redes sociales basadas en la web.
+Esta aplicación web ya esta configurada en las imágenes provistas en los contenedores y su URL es \url{http://www.seed-server.com}.
+Usaremos dos contenedores, el primero será el encargado de correr el servidor web  (\texttt{10.9.0.5}) y el segundo será el encargado de correr el servidor de base de datos MySQL (\texttt{10.9.0.6}). 
 Las direcciones IPs para ambos contenedores están hardcodeadas en múltiples lugares de los archivos de configuración del proyecto, por lo tanto se recomienda no cambiarlos en el archivo \texttt{docker-compose.yml}
 
 % MySQL database
@@ -129,9 +130,9 @@ Al hacer copy and paste del código en el archivo PDF, muy a menudo, las comilla
 \subsection{Preparación: Breve Introducción a \texttt{"HTTP Header Live"}}
 
 En este laboratorio necesitaremos crear Requests HTTP. 
-Para observar como luce un Request HTTP válido en Elgg, debemos ser capaces de capturar y analizar dichas peticiones.
+Para observar como luce un Request HTTP válido en Elgg, debemos ser capaces de capturar y analizar dichos requests.
 Para este propósito usaremos un add-on para Firefox llamado \texttt{"HTTP Header Live"}. Antes de empezar el laboratorio, el estudiante debería estar familiarizado con esta herramienta.
-Las instrucciones de como utilizarla están descriptas en esta guía sección (\S~\ref{web:sec:httpheaderlive}).
+Las instrucciones de como utilizarla están descriptas en esta sección (\S~\ref{web:sec:httpheaderlive}).
 
 
 
@@ -140,8 +141,8 @@ Las instrucciones de como utilizarla están descriptas en esta guía sección (\
 % ------------------------------------------- 
 \subsection{Tarea 1: Posteando un Mensaje Malicioso que abre una Ventana de Alerta}
 
-El objetivo de esta Tarea es embeber código Javascript dentro de su perfil dentro de la aplicación {\tt Elgg}, esto hará que cuando un usuario visite su perfil este código sea ejecutado y se le desplegará una ventana de alerta. 
-A continuación se mostrará el código que deberá ser embebido:
+El objetivo de esta Tarea es embeber código Javascript dentro de su perfil en la aplicación {\tt Elgg}, esto hará que cuando un usuario visite su perfil este código sea ejecutado y se le muestre una ventana de alerta. 
+A continuación se muestra el código que debe ser embebido:
 
 \begin{lstlisting}
 <script>alert('XSS');</script> 
@@ -149,7 +150,7 @@ A continuación se mostrará el código que deberá ser embebido:
 El código anterior debe ser colocado dentro de su perfil (Por ejemplo. en el campo de la descripción), esto hará que quién visite su perfil vea una ventana de alerta.
 
 
-En este caso, el código JavaScript es lo suficientemente corto como para ser ingresado en el campo de descripción, en caso que desee correr un código más largo pero se encuentre limitado por la cantidad de caracteres a ingresar en el campo del formulario, se puede usar un archivo JavaScript cargándolo desde una ubicación remota usando el atributo {\tt src} dentro del tag {\tt <script>}  A continuación se detalla el ejemplo:
+En este caso, el código JavaScript es lo suficientemente corto como para ser ingresado en el campo de descripción, en caso que desee correr un código más largo pero se encuentre limitado por la cantidad de caracteres a ingresar en el campo del formulario, se puede usar un archivo JavaScript cargándolo desde una ubicación remota usando el atributo {\tt src} dentro del tag {\tt <script>}  A continuación se muestra el ejemplo:
 \begin{lstlisting}
 <script type="text/javascript" 
         src="http://www.example.com/myscripts.js">
@@ -163,8 +164,8 @@ En el ejemplo anterior, la página cargará el archivo JavaScript desde \url{htt
 % ------------------------------------------- 
 \subsection{Tarea 2: Posteando un Mensaje Malicioso para Mostrar las Cookies}
 
-El objetivo de esta Tarea es embeber código Javascript dentro de su perfil en {\tt Elgg}, esto hará que cuando un usuario visite su perfil este código sea ejecutado y se abrirá una ventana de alerta. 
-A continuación se mostrará el código que deberá ser embebido:
+El objetivo de esta Tarea es embeber código Javascript dentro de su perfil en {\tt Elgg}, esto hará que cuando un usuario visite su perfil este código sea ejecutado y se abrirá una ventana de alerta con las cookies. 
+A continuación se muestra el código que debe ser embebido:
 \begin{lstlisting}
 <script>alert(document.cookie);</script> 
 \end{lstlisting}
@@ -176,7 +177,7 @@ A continuación se mostrará el código que deberá ser embebido:
 % ------------------------------------------- 
 \subsection{Tarea 3: Robar las Cookies de la Víctima}
 
-En la tarea anterior hemos utilizado código JavaScript malicioso donde el atacante puede imprimir las cookies de un usuario, pero solamente ese usuario puede ver las cookies y no el atacante. En esta tarea el atacante podrá recibir y tener acceso a las cookies de la víctima.
+En la tarea anterior hemos utilizado código JavaScript malicioso donde el atacante puede imprimir las cookies de un usuario, pero solamente el usuario que está visitando el perfil puede ver sus propias cookies y no el atacante. En esta tarea el atacante podrá recibir y tener acceso a las cookies de la víctima.
 Para lograr esto, el código JavaScript necesitará enviar estas cookies en un Request HTTP al atacante.
 
 Esto se puede hacer insertando código JavaScript malicioso que agrega un elemento {$<$img$>$} en el DOM y donde su atributo {\tt src} apunte a la máquina del atacante. 
@@ -237,9 +238,9 @@ window.onload = function () {
 </script>
 \end{lstlisting}
 
-El código de arriba debe ser ingresado dentro del campo \texttt{"About Me"} en el perfil de la página de Samy.
+El código mostrado anteriormente debe ser ingresado dentro del campo \texttt{"About Me"} en el perfil de la página de Samy.
 Este campo tiene dos modos de edición: Editor Mode (usado por defecto) y Text Mode.
-El Editor Mode agrega código HTML en el texto que es ingresado, mientras que el Text Mode no lo hace. Dado que no queremos agregar código extra dentro de nuestro programa malicioso, el Text mode tiene que ser activado antes de insertar el código JavaScript de ataque. Para activar el Text Mode se debe clickear en \texttt{"Edit HTML"} que está ubicado en la parte superior derecha del campo \texttt{"About Me"}
+El Editor Mode agrega código HTML extra en el texto que es ingresado, mientras que el Text Mode no lo hace. Dado que no queremos agregar código extra dentro de nuestro programa malicioso, el Text mode tiene que ser activado antes de insertar el código JavaScript de ataque. Para activar el Text Mode se debe clickear en \texttt{"Edit HTML"} que está ubicado en la parte superior derecha del campo \texttt{"About Me"}
 
 \paragraph{Preguntas.} Por favor responda las siguientes preguntas:
 
@@ -260,7 +261,7 @@ El Editor Mode agrega código HTML en el texto que es ingresado, mientras que el
 El objetivo de esta tarea es modificar el perfil de la víctima cuando esta visite el perfil de Samy. Más precisamente modificar el campo \texttt{"About Me"} de la víctima. Para ello escribiremos un gusano XSS, este no se auto-propagará;  Lo haremos auto-propagable en la Tarea 6.
 
 Al igual que en la tarea anterior, necesitaremos escribir un programa de JavaScript malicioso que falsifique Requests HTTP directamente desde el navegador de la víctima, sin la intervención del atacante.
-Para modificar el perfil de la víctia, primero debemos entender como es que un usuario legítimo edita o modifica su perfil en {\tt Elgg}. Más específicamente, necesitamos averiguar como se construye un Request HTTP POST para realizar la modificación del perfil del usuario.
+Para modificar el perfil de la víctima, primero debemos entender como es que un usuario legítimo edita o modifica su perfil en {\tt Elgg}. Más específicamente, necesitamos averiguar como se construye un Request HTTP POST para realizar la modificación del perfil del usuario.
 Para este propósito usaremos la herramienta \texttt{HTTP} inspection tool de Firefox.
 
 Una vez entendido como es el Request HTTP Post que permite modificar el perfil del usuario, podemos escribir un programa JavaScript para enviar la misma petición HTTP. Hemos provisto un código JavaScript base que ayuda a completar esta tarea.
@@ -295,7 +296,7 @@ window.onload = function(){
 </script>
 \end{lstlisting}
 
-Al igual que en la Tarea 4, el código de arriba debe ser ingresado dentro del campo \texttt{"About Me"} en el perfil de la página de Samy, y el Text Mode debe estar activado antes de ingresarlo.
+Al igual que en la Tarea 4, el código mostrado anteriormente debe ser ingresado dentro del campo \texttt{"About Me"} en el perfil de la página de Samy, y el Text Mode debe estar activado antes de ingresarlo.
 
 
 \paragraph{Preguntas.} Por favor responda la siguiente pregunta:
@@ -313,7 +314,7 @@ Al igual que en la Tarea 4, el código de arriba debe ser ingresado dentro del c
 % ------------------------------------------- 
 \subsection{Tarea 6: Escribiendo un Gusano XSS Auto-Propagable}
 
-Para convertirse en un gusano real, el programa malicioso de JavaScript debería de poder propagarse por su cuenta. 
+Para convertirse en un gusano real, el programa malicioso de JavaScript debe tener la capacidad de propagarse por su cuenta. 
 Es decir, cada vez que alguien vea el perfil de un usuario infectado, no sólo se modificará el perfil de aquel que lo vea sino que también el gusano infectará a aquellas personas que vean los perfiles de los usuarios que acaban de ser infectados. De esta forma mientras más usuarios vean perfiles infectados, más rapido se propagará el gusano.
 Este fue el mecanismmo usado por el Samy Worm:
 En tan solo 20 horas del 4 de Octubre del 2005 momento en que el gusano se activó, alrededor de un millón de usuarios fueron afectados, convirtiendo a Samy en uno de los virus de más rápida propagación de todos los tiempos.
@@ -321,7 +322,7 @@ En tan solo 20 horas del 4 de Octubre del 2005 momento en que el gusano se activ
 El código JavaScript que hace esto es denominado
 {\em self-propagating cross-site scripting worm}. En esta tarea, Ud. deberá de implementar un gusano similar, que no sólo modificara el perfil de la víctima y agregará al usuario ``Samy'' como amigo, sino que también hará una copia de sí mismo dentro del perfil de la víctima, convirtiendo a la víctima en un atacante.
 
-Para hacer auto-propagable al gusano en el momento en que el código JavaScript malicioso modifica el perfil de la víctima y se copia a sí mismo en el perfil de esta, existen dos técnicas que son las más comunes:
+Para hacer al gusano auto-propagable, en el momento en que el código JavaScript malicioso modifica el perfil de la víctima y se copia a sí mismo en el perfil de esta, existen dos técnicas que son las más comunes:
 
 
 \paragraph{A través de un Link:} Si el gusano se incluye usando el atributo {\tt src} dentro del tag {\tt <script>},
@@ -352,12 +353,12 @@ A continuación se muestra un ejemplo del uso de las APIs del DOM. En el siguien
 \end{lstlisting}
 }
 
-Cabe señalar que {\tt innerHTML} (line \ding{193}) sólo devuelve el código que está dentro del tag de {\tt script} sin incluir los tags de apertura y de cierre, es por eso que necesitamos agregar el tag de inicio {\tt <script id="worm">} (line \ding{192}) y el tag de cierre {\tt </script>} (line \ding{194}).
+Cabe señalar que {\tt innerHTML} (line \ding{193}) sólo devuelve el código que está dentro del tag de {\tt script} sin incluir los tags de apertura y de cierre, es por eso que necesitamos agregar el tag de inicio {\tt <script id="worm">} (Línea \ding{192}) y el tag de cierre {\tt </script>} (Línea \ding{194}).
 
 Cuando la información es enviada en un Request HTTP POST y se usa el valor {\tt
 application/x-www-\\form-urlencoded} para el encabezado HTTP {\tt Content-Type}, el cual es usado en nuestro código, la información que se envía debe ser codificada. El esquema de codificación o el {\tt encoding schema} es llamado \textit{URL encoding}, el objetivo del URL Encoding es reemplazar los caracteres no alfanuméricos con su código ASCII correspondiente, usando el siguiente formato {\tt \%HH}, el signo de porcentaje y dos dígitos hexadecimales. La función {\tt encodeURIComponent()} en la línea \ding{195} es usada para realizar este URL Enconding.
 
-\paragraph{Nota:} Para este laboratorio, Ud. puede utilizar ambas técnicas Link y DOM, pero la técnicas del DOM es obligatoria, debido al nivel de desafio que presenta y que no depende de código JavaScript externo.
+\paragraph{Nota:} Para este laboratorio, Ud. puede utilizar ambas técnicas Link y DOM, pero la técnicas del DOM es obligatoria, debido al nivel de desafio que presenta y también porque su código no depende de la llamada a un recurso externo.
 
 
 
@@ -367,7 +368,7 @@ application/x-www-\\form-urlencoded} para el encabezado HTTP {\tt Content-Type},
 \subsection{Contramedidas en Elgg}
 
 Esta subsección es a modo informativa y no hay una tarea específica para realizar.
-La idea es mosstrar cómo Elgg se defiende contra ataques XSS.
+La idea es mostrar cómo Elgg se defiende contra ataques XSS.
 Elgg ya tiene contramedidas incorporadas, y
 las hemos desactivado para hacer posibles los ataques. Actualmente, Elgg usa dos contramedidas.
 Una es un plugin de seguridad personalizado \texttt{HTMLawed},
@@ -384,9 +385,9 @@ function filter_tags($var) {
 }
 \end{lstlisting}
  
-Además de {\tt HTMLawed}, Elgg utiliza el método \texttt{htmlspecialchars()} que es una función que se encuentra nativa de PHP y se suele utilizar para codificar caracteres especiales en el input del usuario, caracteres como {\tt "<"} to {\tt "\&lt"}, {\tt ">"} to {\tt "\&gt"}, etc.
-Este método es invocado en \texttt{dropdown.php}, \texttt{text.php}, 
-and \texttt{url.php} que se encuentran dentro del directorio \path{vendor/elgg/elgg/views/default/output/}.
+Además de {\tt HTMLawed}, Elgg utiliza el método \texttt{htmlspecialchars()} que es una función nativa de PHP y se suele utilizar para codificar caracteres especiales en el input del usuario, caracteres como {\tt "<"} o {\tt "\&lt"}, {\tt ">"} o {\tt "\&gt"}, etc.
+Este método es invocado en los archivos \texttt{dropdown.php}, \texttt{text.php}, 
+y \texttt{url.php} que se encuentran dentro del directorio \path{vendor/elgg/elgg/views/default/output/}.
 Nuevamente hemos comentado esta contramedida para poder hacer posibles los ataques.
 
 % *******************************************
@@ -395,15 +396,15 @@ Nuevamente hemos comentado esta contramedida para poder hacer posibles los ataqu
 \section{Tarea 7: Evitando Ataques XSS Usando CSP}
 
 El problema fundamental de las vulnerabilidades XSS es que HTML permite mezclar el código con los datos. Por lo tanto para remediar esta situación es necesario que separemos ambas partes (el código y los datos). Existen dos formas de incluir código JavaScript dentro de una página HTML, la primera es por medio de código inline y la segunda es por medio de links.
-El código inline es aquel código que se inserta directamente dentro de la página, mientras que la otra forma es obtener el código es llamando un archivo externo a través de un link y colocarlo dentro de la página.
+El código inline es aquel código que se inserta directamente dentro de la página, mientras que la otra forma es obtener el código llamando un archivo externo a través de un link y colocarlo dentro de la página.
 
 El código inline es de alguna forma el principal culpable de las vulnerabilidades XSS, ya que los navegadores no tienen forma de determinar el origen o la procedencia de este código, ¿Es de un sitio web o un usuario confiable? Sin este conocimiento previo por parte del navegador no hay forma certera que el navegador pueda determinar si el código a ejecutar es seguro o no.
-En contraparte aquel código que es obtenido a través de una fuente externa (es decir un link) le da al navegador una información de importancia que es de donde proviene este código. Los sitios web pueden decirle a los navegadores que fuentes son confiables, esto le permitirá a los navegadores saber que fragmentos de código son seguros para ejecutar y cuales no. Aunque los atacantes puedan usar links para inyectar su código malicioso, estos no podrán colocar ese código en aquellas fuentes en las que el navegador las considera confiables.
+En contraparte aquel código que es obtenido a través de una fuente externa (es decir un link) le da al navegador una información de importancia que es de donde proviene este código. Los sitios web pueden decirle a los navegadores que fuentes son confiables, esto le permitirá a los navegadores saber que fragmentos de código son seguros para ejecutar y cuales no. Aunque los atacantes puedan usar links para inyectar su código malicioso, estos no podrán colocar ese código en aquellas fuentes en las que el navegador confía.
 
 El mecanismo a través del cual los sitios webs le indican a los navegadores que código es confiable y cual no, se llama Content Security Policy (CSP). 
 Este mecanismo esta diseñado para prevenir ataques XSS y de ClickJacking.
 CSP se ha convertido en un standard en la gran mayoría de los navegadores.
-CSP no solamente sirve para restringir código JavaScript, también puede restringir y limitar la carga de otros tipos de recursos que contiene una página web, como pueden ser imagenes, audio y video de acuerdo a su fuente de origen, como también determinar si una página cargar o no una página dentro de un iframe. Aquí, sólo nos centraremos en el uso de CSP para prevenir ataques XSS.
+CSP no solamente sirve para restringir código JavaScript, también puede restringir y limitar la carga de otros tipos de recursos que contiene una página web, como pueden ser imagenes, audio y video de acuerdo a su fuente de origen, como también determinar si una página puede cargar o no una página dentro de un iframe. Aquí, sólo nos centraremos en el uso de CSP para prevenir ataques XSS.
 
 
 
@@ -413,7 +414,7 @@ CSP no solamente sirve para restringir código JavaScript, también puede restri
 \subsection{Configuración de los Sitios Web del Experimento} 
 
 Para hacer los experimentos usando CSP, vamos a configurar varios sitios webs dentro del directorio de la imagen docker ubicada en \texttt{Labsetup/image\_www}, dentro de este directorio existe un archivo llamado \texttt{apache\_csp.conf}. 
-Este archivo define cinco sitios web, que comparten el mismo directorio, pero que usarán diferentes archivos ubicados en este directorio.
+Este archivo define cinco sitios web, que comparten el mismo directorio, pero que usan diferentes archivos ubicados dentro del mismo.
 Los archivos \texttt{example60} y \texttt{example70} son los sitios que hostean código JavaScript.
 Los archivos \texttt{example32a}, \texttt{example32b}, y 
 \texttt{example32c} son tres sitios que tienen diferentes configuraciones CSP. Los detalles de estas configuraciones serán explicados más adelante.
@@ -422,7 +423,7 @@ Los archivos \texttt{example32a}, \texttt{example32b}, y
 \paragraph{Modificando los archivos de configuración}
 En el experimento, Ud. necesitará modificar el archivo de configuración de apache (\texttt{apache\_csp.conf}). Si realiza una modificación directamente sobre el archivo dentro del directorio de la imagen, necesitara reconstruir la imagen y reiniciar el contenedor para que los cambios tomen efecto.
 
-Ud. también puede modificar el archivo mientras el contenedor está corriendo. La desventaja de esto es que para mantener la imagen del contenedor en un tamaño aceptable, se ha instalado un editor de texto de consola muy simple llamado \texttt{nano}, aunque este editor debería ser suficiente para hacer una edición de este tipo. Si Ud. no se siente cómodo con este aplicativo, puede agregar un comando de instalación en el archivo \texttt{Dockerfile} con su editor de consola preferido e instalarlo.
+Ud. también puede modificar el archivo mientras el contenedor está corriendo. La desventaja de esto es que para mantener la imagen del contenedor en un tamaño aceptable, se ha instalado un editor de texto de consola muy simple llamado \texttt{nano}, aunque este editor debería ser más que suficiente para hacer una edición de este tipo. Si Ud. no se siente cómodo con este aplicativo, puede agregar un comando de instalación en el archivo \texttt{Dockerfile} con su editor de consola preferido e instalarlo.
 Puede encontrar el archivo de configuración \texttt{apache\_csp.conf} en el directorio \path{/etc/apache2/sites-available} dentro del contenedor.
 Una vez hecho los cambios en el archivo, necesitara reiniciar el servidor Apache para que los cambios tomen efecto:
 
@@ -433,7 +434,7 @@ Una vez hecho los cambios en el archivo, necesitara reiniciar el servidor Apache
 
 \paragraph{Configuración DNS}
 Accederemos a los sitios web descriptos más abajo desde nuestra Máquina Virtual. 
-Para acceder a ellos usando sus respectivas URLs, deberá agregar las siguientes líneas en el archivo \texttt{/etc/hosts} (Si es que no lo ha hecho antes), de esta foorma los hostnames serán mapeados a la dirección IP del contenedor que será el servidor web (\texttt{10.9.0.5}). 
+Para acceder a ellos usando sus respectivas URLs, deberá agregar las siguientes líneas en el archivo \texttt{/etc/hosts} (Si es que no lo ha hecho antes), de esta forma los hostnames serán mapeados a la dirección IP del contenedor que será el servidor web (\texttt{10.9.0.5}). 
 Para realizar el cambio en este archivo deberá hacerlo con privilegios de root (usando sudo)
 
 \begin{lstlisting}
@@ -493,11 +494,11 @@ document.getElementById('area3').innerHTML = "OK";
 % -------------------------------------------
 \subsection{Estableciendo Políticas CSP}  
 
-Las políticas CSP son establecidas a través de Encabezados HTTP. Típicamente existen dos formas para setear estos encabezados, la primera es a través de un servidor web (Como puede ser Apache) y la segunda es a través de la aplicación web.
-En este experimento, estaremos usando ambas formas.
+Las políticas CSP son establecidas por medio de Headers HTTP. Típicamente existen dos formas para setear estos headers, la primera es a través de un servidor web (Como puede ser Apache) y la segunda es a través de la aplicación web.
+En este experimento usaremos las dos formas.
 
 \paragraph{Configuración CSP en Apache}
-El Servidor Apache puede establecer Encabezados HTTP para todas sus respuestas, por ende podemos usar Apache para establecer políticas CSP. En nuestra configuración hemos configurados tres sitios web, pero solamente el segundo \texttt{example32b}  establece políticas CSP (marcado con \ding{110})
+El Servidor Apache puede establecer Headers HTTP para todas sus respuestas, por ende podemos usar Apache para establecer políticas CSP. En nuestra configuración hemos configurados tres sitios web, pero solamente el segundo \texttt{example32b}  establece políticas CSP (marcado con \ding{110})
 De esta forma cuando visitemos  \texttt{example32b} Apache será el encargado de especificar los encabezados de esta política CSP en todas las respuestas relacionadas a este sitio.
 
 
@@ -531,7 +532,7 @@ De esta forma cuando visitemos  \texttt{example32b} Apache será el encargado de
 
 \paragraph{Configuración CSP en Aplicaciones Web}
 Para el tercer \texttt{VirtualHost} dentro de nuestro archivo de configuración (marcado con \ding{108}), no hemos establecido ninguna política CSP.
-Sin embargo su punto entrada en vez de ser \texttt{index.html} es un archivo php llamado  \texttt{phpindex.php}, que será el encargado de generar una respuesta HTTP agregando encabezados CSP usando código PHP.
+Sin embargo su punto entrada en vez de ser \texttt{index.html} es un archivo php llamado  \texttt{phpindex.php}, que será el encargado de generar una respuesta HTTP agregando headers para establecer políticas de CSP por medio de código PHP.
 
 \begin{lstlisting}
 <?php

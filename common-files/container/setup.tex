@@ -1,4 +1,4 @@
-Para empezar a preparar el contenedor, deberá de descargarse el archivo \texttt{Labsetup.zip} ubicado en el laboratorio correspondiente dentro del sitio web oficial dentro de la Máquina Virtual prevista por SEED. Una vez descargado deberá descomprimirlo y entrar dentro de la carpeta \texttt{Labsetup} donde encontrará el archivo \texttt{docker-compose.yml} para setear el entorno de laboratorio. Para una información más detallada sobre el archivo \texttt{Dockerfile} y otros archivos relacionados, puede encontrarla dentro del Manual de Usuario del laboratorio en uso, en el sitio web oficial de SEED.
+Para empezar a preparar el contenedor, deberá de descargarse el archivo \texttt{Labsetup.zip} ubicado en el laboratorio correspondiente dentro del sitio web oficial y copiarlo dentro de la Máquina Virtual prevista por SEED. Una vez descargado deberá descomprimirlo y entrar dentro del directorio \texttt{Labsetup} donde encontrará el archivo \texttt{docker-compose.yml} que servirá para setear el entorno de laboratorio. Para una información más detallada sobre el archivo \texttt{Dockerfile} y otros archivos relacionados, puede encontrarla dentro del Manual de Usuario del laboratorio en uso, en el sitio web oficial de SEED.
 
 Si esta es su primera experiencia haciendo el setup del laboratorio usando contenedores es recomendable que lea el manual anteriormente mencionado.
 
@@ -18,7 +18,7 @@ $ dcdown        # Alias for: docker-compose down
 
 
 Dado que todos los contenedores estarán corriendo en un segundo plano. Necesitamos correr comandos para interactuar con los mismos, una de las operaciones fundamentales es obtener una shell en el contenedor. 
-Para este propósito usaremos \texttt{"docker ps"} para encontrar el ID del contenedor deseado y ejecutaremsos\texttt{"docker exec"} para correr una shell en ese contenedor.
+Para este propósito usaremos \texttt{"docker ps"} para encontrar el ID del contenedor deseado y ingresaremos \texttt{"docker exec"} para correr una shell en ese contenedor.
 Hemos creado un alias para ello dentro del archivo \texttt{.bashrc}
 
 \begin{lstlisting}
