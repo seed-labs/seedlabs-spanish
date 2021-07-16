@@ -232,7 +232,7 @@ Debido a que necesitamos correr el programa vulnerable muchas veces, escribiremo
 Para evitar escribir a mano el input que recibe el programa vulnerable \texttt{vulp}, podemos usar input redirection. Es decir, crearemos un archivo con nuestro input y obtendremos su contenido desde el programa vulnerable usando \texttt{"vulp < inputFile"}. También podemos usar un pipe (se dará un ejemplo de esto más adelante)
 
 Como se mencionó anterioremente, puede pasar un tiempo hasta que nuestro ataque sea exitoso y pueda modificar el archivo de password, es por esto que necesitamos contar algún tipo de mecanismo para detectar si nuestro ataque fue exitoso o no. Hay muchas formas de lograr esto; la más fácil es monitorear el timestamp del archivo.
-El siguiente shell script corre el comando \texttt{"ls -l"} que imprime información del archivo, incluyendo su última fecha de modificación. Comparando esta información con la obtenida anteriormente, podemos determinar si el archivo fue modificado o no.
+El siguiente shell script corre el comando \texttt{"ls -l"} que imprime información del archivo, incluyendo su fecha de modificación. Comparando esta información con la obtenida anteriormente, podemos determinar si el archivo fue modificado o no.
 
 El siguiente shell script ejecuta un loop que se encarga de correr el programa vulnerable (\texttt{vulp}) con el input producido por el comando \texttt{echo} (vía un pipe).
 Es su tarea decidir cual será el contenido de este input.
@@ -254,7 +254,7 @@ echo "STOP... The passwd file has been changed"
 \end{lstlisting}
 
 \paragraph{Verificando el éxito}
-Cuando el script termine su ejecución, verifique que todo haya sido bien logueándose como usuario test y verificando que tenga privilegios de root. Una vez hecho esto termine el proceso del script presionando \texttt{Ctrl-C} en la ventana de la terminal donde ejecutó el ataque.
+Cuando el script termine su ejecución, verifique que todo haya ido bien, logueándose como usuario test y verificando que tenga privilegios de root. Una vez hecho esto termine el proceso del script presionando \texttt{Ctrl-C} en la ventana de la terminal donde ejecutó el ataque.
 
 \paragraph{Nota.}
 Si después de 10 minutos, el ataque no tiene éxito, detenga el ataque y chequee quien es el dueño del archivo \texttt{/tmp/XYZ}. Si el dueño de este archivo es el usuario root, borre el archivo manualmente y lance el ataque nuevamente hasta que tenga éxito.
@@ -268,7 +268,7 @@ En la Tarea 2.C, explicaremos el porque de este comportamiento y mejoraremos el 
 % ------------------------------------------- 
 \subsection{Tarea 2.C: Mejorando el Método de Ataque}
 
-En la Tarea 2.B, puede que el ataque no haya funcionado aún si se realizó todo bien, verifique quien es el dueño del archivo \texttt{/tmp/XYZ}. Encontrará que el dueño del archivo \texttt{/tmp/XYZ} es el usuario root (normalmente debería de ser el usuario \texttt{seed}).
+En la Tarea 2.B, puede ser que el ataque no haya funcionado, aún si se realizó todo bien, verifique quien es el dueño del archivo \texttt{/tmp/XYZ}. Encontrará que el dueño del archivo \texttt{/tmp/XYZ} es el usuario root (normalmente debería de ser el usuario \texttt{seed}).
 
 Si esto sucede, su ataque jamás funcionará. Esto se debe a que el programa de ataque corre con los privilegios del usuario \texttt{seed} por ende no puede operar sobre el archivo \texttt{/tmp/XYZ} a través de la función \texttt{unlink()}.
 Esto es porque el directorio \texttt{/tmp} tiene activado el ``sticky'' bit, esto quiere decir que sólo el dueño del archivo puede borrarlo, aunque la carpeta tenga permisos de escritura para todos los usuarios del sistema.
@@ -285,7 +285,7 @@ Una vez ocurrido este escenario el programa de ataque no puede hacer cambios en 
 Básicamente, el resultado de usar las funciones \texttt{unlink()} y \texttt{symlink()} produce en nuestro programa de ataque una Race Condition. Por lo tanto mientras tratamos de explotar la Race Condition de nuestro programa vulnerable, este de forma accidental ''explota'' una Race Condition en nuestro programa de ataque, contrarrestándo la explotación deseada.
 
 Para resolver este problema, necesitamos que las funciones \texttt{unlink()} y \texttt{symlink()} sean atómicas. Afortunadamente, existe una llamada al sistema que nos permite lograr esto. Siendo más preciso nos permite intercambiar dos links simbólicos de forma atómica.
-El siguiente programa crea dos links simbólicos \texttt{/tmp/XYZ} y \texttt{/tmp/ABC}, usando la llamada al sistema \texttt{renameat2} los intercambia atómicamente.
+El siguiente programa crea dos links simbólicos \texttt{/tmp/XYZ} y \texttt{/tmp/ABC}, usando la llamada al sistema \texttt{renameat2} que los intercambia atómicamente.
 Esto nos permite cambiar a donde apunta \texttt{/tmp/XYZ} evitando introducir una Race Condition.
 
 \begin{lstlisting}
