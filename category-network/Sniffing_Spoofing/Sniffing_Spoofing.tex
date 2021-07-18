@@ -152,19 +152,10 @@ Estas son las diferencias:
 % ******************************************* 
 \section{Set 1 de Tareas: Usando Scapy para el Sniffing and Spoofing de Paquetes}
 
+Se pueden utilizar muchas herramientas para hacer sniffing y spoofing pero la mayoría ofrece funciones limitadas. Scapy es diferente: puede ser usada no sólo como una herramienta sino también como módulo para construir herramientas de sniffing y spoofing es decir podemos integrar funcionalidades de Scapy en nuestros propios programas. En este Set de Tareas usaremos Scapy.
 
-Many tools can be used to do sniffing and spoofing, but most of them only provide 
-fixed functionalities. Scapy is different: it can be used not only as a tool, 
-but also as a building block to construct other sniffing and spoofing
-tools, i.e., we can integrate the Scapy functionalities into our own
-program.  In this set of tasks, we will use Scapy for each task. 
-
-
-To use Scapy, we can write a Python program, and then execute this program
-using Python. See the following example. We should run Python using the 
-root privilege because the privilege is required for spoofing packets. 
-At the beginning of the program (Line~\ding{192}), 
-we should import all Scapy's modules.
+Para usar Scapy, podemos escribir un programa en Python y ejecutarlo usando este interpréte. Vea el siguiente ejemplo. Debemos correr este programa de Python usando privilegios de root, dado que son necesarios para realizar operaciones de spoofing sobre paquetes.
+Al comienzo del programa (Línea \ding{192}), importamos todos los módulos de Scapy.
 
 \begin{lstlisting}
 # view mycode.py
@@ -187,11 +178,8 @@ a.show()
 # mycode.py 
 \end{lstlisting}
 
+Podemos utilizar el modo interactivo de Python y correr nuestro programa línea a línea. Esto puede ser más conveniente si necesitamos cambiar de forma frecuente nuestro código en un experimento.
 
-We can also get into the interactive mode of Python and
-then run our program one line at a time at the Python prompt. 
-This is more convenient if we need to change our code 
-frequently in an experiment.
 
 \begin{lstlisting}
 # python3
@@ -210,12 +198,8 @@ frequently in an experiment.
 % ------------------------------------------- 
 \subsection{Tarea 1.1: Sniffing de Paquetes}  
 
-
-Wireshark is the most popular sniffing tool, and it is easy to use. We will use it throughout 
-the entire lab. However, it is difficult to use Wireshark as a building block 
-to construct other tools. We will use Scapy for that purpose. The objective of this task is to
-learn how to use Scapy to do packet sniffing in Python programs. 
-A sample code is provided in the following:
+Una de las herramientas más populares para hacer sniffing es Wireshark, el uso de esta herramienta es sencillo y la usaremos durante todo el laboratorio. Sin embargo es difícil usar Wireshark para integrarlo a nuestras aplicaciones y crear módulos con diversas funcionalidades. Para este propósito usaremos Scapy. El objetivo de esta Tarea es aprender a usar Scapy para hacer sniffing de paquetes a través de programas de Python.
+A continuación se da un ejemplo:
 
 
 \begin{lstlisting}
@@ -228,14 +212,9 @@ def print_pkt(pkt):
 pkt = sniff(iface='br-c93733e9f913', filter='icmp', prn=print_pkt)
 \end{lstlisting}
 
-
-The code above will sniff the packets on the \texttt{br-c93733e9f913}
-interface. Please read the instruction in the lab setup section
-regarding how to get the interface name. 
-If we want to sniff on multiple interfaces, we can
-put all the interfaces in a list, and assign it to \texttt{iface}.
-See the following example: 
-
+El código mostrado anteriormente, hará sniffing de todos los paquetes en la interfaz \texttt{br-c93733e9f913}. Por favor lea las instrucciones en la sección del Setup del Contenedor para saber como obtener esta interfaz.
+Si queremos hacer sniffing en más de una interfaz, podemos usar una lista de python y asignarlas a una variable, en este caso la llamaremos \texttt{iface}.
+A continuación se da un ejemplo:
 
 \begin{lstlisting}
 iface=['br-c93733e9f913', 'enp0s3']

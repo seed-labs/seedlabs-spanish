@@ -1,17 +1,5 @@
-When we use the provided Compose file to create
-containers for this lab, a new network is created
-to connect the VM and the containers. The
-IP prefix for this network is \texttt{10.9.0.0/24},
-which is specified in the \texttt{docker-compose.yml}
-file. The IP address assigned to our VM is
-\texttt{10.9.0.1}. We need to find the name of
-the corresponding network interface on our VM, because we
-need to use it in our programs.
-The interface name is the concatenation of \texttt{br-}
-and the ID of the network created by Docker.
-When we use \texttt{ifconfig} to list network interfaces,
-we will see quite a few. Look for the IP address
-\texttt{10.9.0.1}.
+Cuando usamos el archivo de Compose para generar los contenedores para el laboratorio, se crea una nueva red que conecta a la Máquina Virtual y a los contenedores. El prefijo de esta red es \texttt{10.9.0.0/24} y se configura dentro del archivo \texttt{docker-compose.yml}. La dirección IP que se asigna a nuestra Máquina Virtual es \texttt{10.9.0.1}. Vamos a necesitar encontrar el nombre de cada una de las interfaces de red en nuestra Máquina Virtual ya que las utilizaremos en nuestros programas. El nombre de la interfaz ess la concatenación de \texttt{br-} y el ID de red creado por Docker.
+Cuando usamos \texttt{ifconfig} para listar las interfaces de red, veremos algunas de ellas. Observe la dirección IP \texttt{10.9.0.1}.
 
 
 \begin{lstlisting}
@@ -21,9 +9,7 @@ $ ifconfig
         ...
 \end{lstlisting}
 
-
-Another way to get the interface name is to use the \texttt{"docker network"} command to
-find out the network ID ourselves (the name of the network is \texttt{seed-net}:
+Otra forma de obtener el nombre de la interfaz es usar el comando \texttt{"docker network"} y encontrar el id de red por nuestra cuenta (el nombre de la red es \texttt{seed-net})
 
 \begin{lstlisting}
 $ docker network ls

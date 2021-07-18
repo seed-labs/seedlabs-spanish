@@ -1,20 +1,9 @@
-In this lab, the attacker needs to be able to sniff packets,
-but running sniffer programs inside a container has problems, because
-a container is effectively attached to a virtual switch, 
-so it can only see its own traffic, and it is never going to see 
-the packets among other containers. To solve this problem,
-we use the \texttt{host} mode for the attacker container. This
-allows the attacker container to see all the traffics. The following
-entry used on the attacker container:
+En este laboratio, el atacante va a necesitar sniffear los paquetes, pero correr el programa de sniffing dentro del contenedor del atacante tiene sus inconvenientes, ya que el contenedor está atachado a un switch virtual y sólo podrá ver su propio tráfico y no el del resto de los contenedores. Para solucionar este problema, usaremos el modo \texttt{host} para el contenedor del atacante. Esto permite que el contenedor del atacante vea el tráfico de toda la red. La siguiente entrada es usada para el contenedor del atacante:
 
 \begin{lstlisting}
 network_mode: host
 \end{lstlisting}
 
-When a container is in the \texttt{host} mode,  it sees
-all the host's network interfaces, and it even has the same
-IP addresses as the host. Basically, it is put in the
-same network namespace as the host VM. However, the container
-is still a separate machine, because its other namespaces are
-still different from the host.
+Cuando un contenedor está en modo \texttt{host}, este puede ver todas las interfaces de red de los hosts que la componen, inclusive tiene la misma dirección IP como si fuera el host principal. Básicamente es ponerlo en el mismo espacio de red como si fuera la Máquina Virtual de Host. Sin embargo, el contenedor sigue siendo una máquina diferente.
+
 
