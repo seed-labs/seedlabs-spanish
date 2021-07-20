@@ -222,11 +222,7 @@ iface=['br-c93733e9f913', 'enp0s3']
  
 
 
-\paragraph{Tarea 1.1A.} In the above program, for each captured
-packet, the callback function \texttt{print\_pkt()} will be invoked; this function will print out some of
-the information about the packet. Run the program with the root privilege and demonstrate that
-you can indeed capture packets. After that, run the program again, but without using the root
-privilege; describe and explain your observations. 
+\paragraph{Tarea 1.1A.} En el programa anterior, por cada paquete capturado, la función \texttt{print\_pkt()} será invocada como un callback; esta función mostrará información detallada del paquete. Ejecute el programa con privilegios de root y demuestre como captura los paquetes. Después de eso corra el programa sin privilegios de root; Describa y explique sus observaciones.
  
 \begin{lstlisting}
 // Make the program executable 
@@ -242,20 +238,12 @@ $ sniffer.py
 \end{lstlisting}
 
 
-\paragraph{Tarea 1.1B.} Usually, when we sniff packets, we are only
-interested certain types of packets. We can do that by setting 
-filters in sniffing. Scapy's filter use the 
-BPF (Berkeley Packet Filter) syntax; you can find the BPF manual 
-from the Internet. Please set the following filters and demonstrate 
-your sniffer program again (each filter should be set separately):
+\paragraph{Tarea 1.1B.} Generalmente, cuando hacemos sniffing de paquetes, estamos interesados en ciertos tipos de paquetes y no en todos. Para ello usaremos filtros al hacer el sniffing, estos filtros provistos por Scapy usan la sintáxis BPF (Berkeley Packet Filter); Puede encontrar más información sobre BPF en el manual oficial. Por favor  use los siguientes filtros mencionados a continuación y corra el programa nuevamente (Cada filtro debe ser seteado en forma separada):
 
 \begin{itemize} 
- \item Capture only the ICMP packet
- \item Capture any TCP packet that comes from a particular IP and with 
- a destination port number 23. 
- \item Capture packets comes from or to go to a particular subnet. You can
- pick any subnet, such as \texttt{128.230.0.0/16}; you should not 
- pick the subnet that your VM is attached to. 
+ \item Capturar solamente paquetes ICMP.
+ \item Capturar cualquier paquete TCP que provenga de una IP y cuyo puerto destino sea el puerto 23.
+  \item Capturar paquetes que vienen o se dirigen hacia una subnet en particular. Puede elegir cualquier subnet como \texttt{128.230.0.0/16}; no debería de elegir la subnet a la cual su Máquina Virtual está atachada.
 \end{itemize} 
 
 
@@ -265,15 +253,9 @@ your sniffer program again (each filter should be set separately):
 % ------------------------------------------- 
 \subsection{Tarea 1.2: Spoofing de Paquetes ICMP}
 
-As a packet spoofing tool, Scapy allows us to set the fields of 
-IP packets to arbitrary values. The objective of this 
-task is to spoof IP packets with an arbitrary source IP address. 
-We will spoof ICMP echo request packets, and send them to another VM on
-the same network. We will use Wireshark to observe
-whether our request will be accepted by the receiver. If it is accepted, an
-echo reply packet will be sent to the spoofed IP address. 
-The following code shows an example of how to spoof an ICMP packets.
-
+Como cualquier herramienta de spoofing, Scapy nos permite establecer los valores de los campos de un paquete IP . El objetivo de esta Tarea consiste en spoofear paquetes IP con una dirección IP origen arbitraria.
+Haremos el spoofing sobre paquetes echo request ICMP , y los enviaremos hacia otra Máquina Virtual en la misma red. Usaremos Wireshark para ver si nuestro paquete es aceptado por la máquina destino. Si este paquete es aceptado, se enviará un paquete ICMP echo reply a la dirección IP de origen.
+El código a continuación muestra un ejemplo de como spoofear paquetes ICMP.
 
 \begin{lstlisting}
 >>> from scapy.all import *
@@ -286,14 +268,7 @@ The following code shows an example of how to spoof an ICMP packets.
 Sent 1 packets.
 \end{lstlisting}
  
-
-In the code above, Line~\ding{192} creates an IP object from the IP class; 
-a class attribute is defined for each IP header field. We
-can use \texttt{ls(a)} or \texttt{ls(IP)} to see all 
-the attribute names/values. We can also use a.show() and IP.show() to do
-the same. Line~\ding{193} shows how to set the destination 
-IP address field. If a field is not set, a default value will be 
-used. 
+La línea \ding{192} del código mostrado anteriormente, crea un objeto IP usando la clase IP; para cada campo del encabezado IP la clase define un atributo. Podemos usar \texttt{ls(a)} o \texttt{ls(IP)} para ver todos los atributes en forma clave/valor que están disponibles para esa clase. También se puede usar a.show() y IP.show() con el mismo fin. La línea \ding{193} muetra como setear el campo que corresponde a la IP de destino del objeto IP. Si este campo no recibe ningún valor, se usará un valor por defecto.
 
 \begin{lstlisting}
 >>> ls(a)
@@ -313,17 +288,7 @@ options    : PacketListField         = []              ([])
 \end{lstlisting}
  
 
-Line~\ding{194} creates an ICMP object. The default type is echo request.
-In Line~\ding{195}, we stack \texttt{a} and \texttt{b} together to 
-form a new object. The \texttt{/} operator is overloaded by the
-IP class, so it no longer represents division; instead, it means 
-adding \texttt{b} as the payload field of \texttt{a} and modifying
-the fields of \texttt{a} accordingly. As a result, we get a new 
-object that represent an ICMP packet. We can now send out this packet 
-using \texttt{send()} in Line~\ding{196}. Please make any necessary change
-to the sample code, and then demonstrate that you can spoof an ICMP echo
-request packet with an arbitrary source IP address. 
-
+La línea \ding{194} crea un objeto ICMP. El tipo por defecto es un echo request. En la línea \ding{195}, se apilarán \texttt{a} y \texttt{b} para formar un nuevo objeto. Esto realiza a través de la sobrecarga del operador \texttt{/} que implementa la clase IP, este operador no representa una división en este caso; este hará que se agregue  \texttt{b} como campo de payload de \texttt{a}, modificando este campo de forma transparente al programador. Como resultado se obitene un nuevo objeto que representa un paquete ICMP. En la línea \ding{196} se envía este paquete usando \texttt{send()}. Por favor realice los cambios necesarios en el código anterior y demuestre que puede spoofear un paquete ICMP del tipo echo request usando una dirección IP origen arbitraria.
 
 
 % -------------------------------------------
@@ -331,21 +296,9 @@ request packet with an arbitrary source IP address.
 % ------------------------------------------- 
 \subsection{Tarea 1.3: Traceroute} 
 
-The objective of this task is to use Scapy to estimate the distance, in
-terms of number of routers, between your VM and a selected destination.  
-This is basically what is implemented by the \texttt{traceroute} tool. 
-In this task, we will write our own tool. The idea is quite
-straightforward: just send an packet (any type) to the destination, with
-its Time-To-Live (TTL) field set to 1 first. This packet will be dropped by
-the first router, which will send us an ICMP error message, telling us 
-that the time-to-live has exceeded. That is how we get the IP address of
-the first router. We then increase our TTL field to 2, send out another
-packet, and get the IP address of the second router. We will repeat this
-procedure until our packet finally reach the destination. It should be
-noted that this experiment only gets an estimated result, because in
-theory, not all these packets take the same route (but in practice, they may
-within a short period of time). The code in the following shows one round 
-in the procedure. 
+El objetivo de esta Tarea es usar Scapy para estimar la distancia, en términos de número de routers entre su Máquina Virtual y un destino que se seleccione. Está función es la que implementa una herramienta como \texttt{traceroute}.
+En este tarea, escribiremos nuestra propia herramienta. La idea es sencilla: sólo hay que enviar cualquier tipo de paquete a un destino con el valor del campo Time-To-Live (TTL) seteado en 1 como primer paso. Este paquete será dropeado por el primer router que enviará un 
+ICMP error message, avisándonos que se ha superado el time-to-live. Así es como obtenemos la dirección IP de nuestro primer router. El paso siguiente será incrementar el valor del campo time-to-live a 2, repetir el proceso y obtener la dirección IP del segundo router. Repetiremos este proceso hasta que nuestro paquete llegue al destino deseado. Cabe aclarar que en este experimento sólo obtendremos un resultado aproximado, en teoría no todos los paquetes que se envían siguen el mismo camino (pero en la práctica, podrían hacerlo por un breve período de tiempo). El código a continuación muestra el procedimiento:
 
 
 \begin{lstlisting}
@@ -356,12 +309,8 @@ b = ICMP()
 send(a/b)
 \end{lstlisting}
 
-
-If you are an experienced Python programmer, you can write your tool 
-to perform the entire procedure automatically. If you are new to Python
-programming, you can do it by manually changing the TTL field in 
-each round, and record the IP address based on your observation 
-from Wireshark. Either way is acceptable, as long as you get the result. 
+Si es un programador experimentado de Python, puede escribir su herramienta
+para realizar todo el procedimiento de forma automática. Si eres nuevo en Python, puede hacerlo cambiando manualmente el campo TTL en cada ronda de ejecución, y registrar la dirección IP basado su observación de Wireshark. Cualquier tipo de implementación es aceptable siempre y cuando se consiga el objettivo.
 
 
 % -------------------------------------------
@@ -369,25 +318,11 @@ from Wireshark. Either way is acceptable, as long as you get the result.
 % ------------------------------------------- 
 \subsection{Tarea 1.4: Sniffing y luego Spoofing}  
 
-In this task, you will combine the sniffing and spoofing techniques
-to implement the following sniff-and-then-spoof program.
-You need two machines on the same LAN: the VM and the user container. 
-From the user container, you
-{\tt ping} an IP X. This will generate an ICMP echo
-request packet. If X is alive, the {\tt ping} program will receive
-an echo reply, and print out the response. Your sniff-and-then-spoof
-program runs on the VM, which monitors the LAN through packet sniffing. Whenever it
-sees an ICMP echo request, regardless of what the target IP address is,
-your program should immediately send out an echo reply using the
-packet spoofing technique. Therefore, regardless of whether machine X
-is alive or not, the {\tt ping} program will always receive
-a reply, indicating that X is alive. You need to use Scapy
-to do this task. In your report, you need to provide evidence to demonstrate 
-that your technique works. 
+En esta Tarea, combinará técnicas de sniffing y de spoofing para implementar un programa de sniff-and-then-spoof.
+Necesitará correr dos máquinas en la missma LAN: la Máquina Virtual y un contenedor de usuario. Desde el contenedor de usuario hará un {\tt ping} a una IP X. Esto generará un paquete ICMP echo request. Si X está vivo, el programa {\tt ping} recibirá un echo reply y mostrará la respuesta. Su programa de sniff-and-then-spoof estará corriendo en la Máquina Virtual, que monitorea la LAN a través del paquet sniffing. Cada vez que vea un ICMP echo request, sin importar cual sea la dirección IP de donde provenga, el programa debería de enviar un echo reply usando la técnica de packet spoofing. Además, sin importar si la máquina X esté viva o no, el programa {\tt ping} siempre recibirá una respuesta que indique que X está viva. Para llevar a cabo esta Tarea necesitará usar Scapy. En su informe de laboratorio deberá poner la evidencia que demuestre que su técnica funciona.
 
-In your experiment, you should \texttt{ping} the following three IP addresses
-from the user container. 
-Report your observation and explain the results. 
+En su experimento, debería de hacer \texttt{ping} a las siguientes direcciones IP del contenedor de usuario.
+Reporte su observación y explique los resultados.
 
 \begin{lstlisting}
 ping 1.2.3.4     # a non-existing host on the Internet
@@ -395,10 +330,8 @@ ping 10.9.0.99   # a non-existing host on the LAN
 ping 8.8.8.8     # an existing host on the Internet
 \end{lstlisting}
 
-\paragraph{Pista:} You need to understand how the ARP protocol works in order to 
-correctly explain your observation. You also need to know a little bit 
-about routing. The following command help you find the router
-for a specified destination:
+
+\paragraph{Pista:} Para poder explicar correctamente sus observaciones, debería de entender como funciona el protocolo ARP. También necesita saber un poco sobre routing. El comando a continuación lo ayudará a encontrar el router para un destino específico:
 
 \begin{lstlisting}
 ip route get 1.2.3.4 
@@ -412,9 +345,8 @@ ip route get 1.2.3.4
 % ******************************************* 
 \section{Set 2 de Tareas: Escribiendo programas para hacer sniffing y spoofing}
 
-For this set up of tasks, you should compile the C code 
-inside the host VM, and then run the code inside the container. 
-
+Para este conjunto de Tareas, debe compilar código en C en la Máquina Virtual Host y correrlo dentro del contenedor.
+s
 % -------------------------------------------
 % SUBSECTION
 % ------------------------------------------- 
@@ -481,7 +413,7 @@ Tim Carstens has also written a tutorial on how to use
 available at \url{http://www.tcpdump.org/pcap.htm}.  
  
 
-\paragraph{Tarea 2.1A: Understanding How a Sniffer Works}
+\paragraph{Tarea 2.1A: Entendiendo como funciona un Sniffer}
 In this task, students need to write a sniffer program to 
 print out the source and destination IP addresses of each captured 
 packet. Students can type in the above code or download the sample code from the 
@@ -491,22 +423,22 @@ program can run successfully and produces expected
 results. In addition, please answer the following questions:
 
 \begin{itemize}
-\item \textbf{Question 1.} Please use your own words to describe the sequence of the 
+\item \textbf{Pregunta 1.} Please use your own words to describe the sequence of the 
 library calls that are essential for sniffer programs. This 
 is meant to be a summary, not detailed explanation like the 
 one in the tutorial or book.
  
-\item \textbf{Question 2.} Why do you need the root privilege to run a sniffer program? Where
+\item \textbf{Pregunta 2.} Why do you need the root privilege to run a sniffer program? Where
 does the program fail if it is executed without the root privilege?
 
 
-\item \textbf{Question 3.} Please turn on and turn off the promiscuous mode in your sniffer
+\item \textbf{Pregunta 3.} Please turn on and turn off the promiscuous mode in your sniffer
 program. Can you demonstrate the difference when this mode is on and off? Please describe how
 you can demonstrate this.
 \end{itemize}
 
 
-\paragraph{Tarea 2.1B: Writing Filters.}
+\paragraph{Tarea 2.1B: Escribiendo Filtros.}
 Please write filter expressions for your sniffer program 
 to capture each of the followings. You can find online 
 manuals for \pcap filters.
@@ -597,13 +529,13 @@ if(sendto(sd, buffer, ip_len, 0, (struct sockaddr *)&sin,
 
 
 
-\paragraph{Task 2.2A: Write a spoofing program.}
+\paragraph{Tarea 2.2A: Escriba un programa de spoofing.}
 Please write your own packet spoofing program in C. You need 
 to provide evidences (e.g., Wireshark packet trace) to show that your 
 program successfully sends out spoofed IP packets.
 
 
-\paragraph{Task 2.2B: Spoof an ICMP Echo Request.}
+\paragraph{Tarea 2.2B: Haga Spoof de un ICMP Echo Request.}
 Spoof an ICMP echo request packet on behalf of another machine (i.e., 
 using another machine's IP address as its source IP address). This packet 
 should be sent to a remote machine on the Internet (the machine must be
@@ -612,19 +544,19 @@ you can see the echo reply coming back from the remote machine.
 
 
 
-\paragraph{Questions.} Please answer the following questions.
+\paragraph{Preguntas.} Por favor responda las siguientes preguntas.
 
 \begin{itemize}
-\item \textbf{Question 4.}
+\item \textbf{Pregunta 4.}
 Can you set the IP packet length field to an arbitrary value,
 regardless of how big the actual packet is? 
 
 
-\item \textbf{Question 5.} 
+\item \textbf{Pregunta 5.} 
 Using the raw socket programming, do you have to calculate the 
 checksum for the IP header? 
 
-\item \textbf{Question 6.} 
+\item \textbf{Pregunta 6.} 
 Why do you need the root privilege to run the programs that 
 use raw sockets? Where does the program fail if executed without the root 
 privilege?
@@ -673,7 +605,7 @@ of comments) in your report.
 % -------------------------------------------
 % SUBSECTION
 % ------------------------------------------- 
-\subsection{Filling in Data in Raw Packets}
+\subsection{Llenado de Datos en los Raw Packets}
 
 
 When you send out a packet using raw sockets, you basically construct 
