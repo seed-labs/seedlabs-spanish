@@ -352,15 +352,11 @@ s
 % ------------------------------------------- 
 \subsection{Tarea 2.1: Escribiendo el programa para hacer Packet Sniffing}
 
-Sniffer programs can be easily written using the \pcap library. With \pcap, 
-the task of 
-sniffers becomes invoking a simple sequence of procedures
-in the \pcap library. At the end of the sequence,
-packets will be put in buffer for further processing
-as soon as they are captured. All the details 
-of packet capturing are handled by the \pcap library.
-The SEED book provides a sample code, showing how  to write a simple sniffer program using 
-\pcap. We include the sample code in the following (see the book for detailed explanation). 
+Los Sniffers pueden ser escritos usando la librería \pcap. Usar \pcap facilita la tarea del desarrollo de un sniffer ya que implica invocar una serie de funciones de la librería \pcap. Al final de cada secuencia, los paquetes serán colocados en un buffer para un procesamiento posterior, a medida que vayan siendo capturados.
+Todos los detalles de la captura de paquetes son manejados por la librería \pcap.
+El libro de SEED ofrece un código de ejemplo, que muestra como escribir un sniffer simple usando \pcap. 
+A continuación el código de ejemplo (Vea el libro para una explicación más detallada):
+
 
 \begin{lstlisting}
 #include <pcap.h>
@@ -407,91 +403,44 @@ int main()
 // For example: gcc -o sniff sniff.c -lpcap
 \end{lstlisting}
 
-
-Tim Carstens has also written a tutorial on how to use 
-\pcap library to write a sniffer program. The tutorial is 
-available at \url{http://www.tcpdump.org/pcap.htm}.  
+Tim Carstens ha escrito un tutorial que explica como usar la librería \pcap para escribir un sniffer. El tutorial puede ser accedido desde este link \url{http://www.tcpdump.org/pcap.htm}
  
 
 \paragraph{Tarea 2.1A: Entendiendo como funciona un Sniffer}
-In this task, students need to write a sniffer program to 
-print out the source and destination IP addresses of each captured 
-packet. Students can type in the above code or download the sample code from the 
-SEED book's website (\url{https://www.handsonsecurity.net/figurecode.html}). 
-Students should provide screenshots as evidences to show that their sniffer
-program can run successfully and produces expected 
-results. In addition, please answer the following questions:
+En esta Tarea, los estudiantes deberán escribir un programa sniffer para mostrar la dirección IP de origen y destino de cada paquete capturado. Los estudiantes pueden descargarse el código de ejemplo del libro de SEED (\url{https://www.handsonsecurity.net/figurecode.html}). 
+Los estudiantes deberán de proveer screenshots que muestren que su programa sniffer corra bien y produzca los resultados esperados. Por favor responda las siguientes preguntas:
+
 
 \begin{itemize}
-\item \textbf{Pregunta 1.} Please use your own words to describe the sequence of the 
-library calls that are essential for sniffer programs. This 
-is meant to be a summary, not detailed explanation like the 
-one in the tutorial or book.
- 
-\item \textbf{Pregunta 2.} Why do you need the root privilege to run a sniffer program? Where
-does the program fail if it is executed without the root privilege?
+\item \textbf{Pregunta 1.} Por favor explique con sus propias palabras la secuencia de llamados que realiza la librería y que son esenciales para el sniffer. Esta explicación no debe ser tan detallada como la del libro o el 
 
+\item \textbf{Pregunta 2.} ¿Por qué se necesitan privilegios de root para correr el programa sniffer? ¿En dónde falla el programa si es ejecutado sin privilegios de root?
 
-\item \textbf{Pregunta 3.} Please turn on and turn off the promiscuous mode in your sniffer
-program. Can you demonstrate the difference when this mode is on and off? Please describe how
-you can demonstrate this.
+\item \textbf{Pregunta 3.} Por favor active y desactive el modo promiscuo en su programa sniffer. ¿Puede mostrar la diferencia cuando este modo está activado y desactivado? Por favor describa como puede demostrar esto.
 \end{itemize}
-
 
 \paragraph{Tarea 2.1B: Escribiendo Filtros.}
-Please write filter expressions for your sniffer program 
-to capture each of the followings. You can find online 
-manuals for \pcap filters.
-In your lab reports, you need to include screenshots to show
-the results after applying each of these filters. 
+Por favor escriba filtros en su programa sniffer.
+Puede usar los manuales que están en la red para obtener más información sobre los filtros en \pcap.
+En su informe de laboratorio, incluya screenshots que muestren los resultados después de aplicar cada uno de los filtros que se piden a continuación.
 \begin{itemize}
-\item Capture the ICMP packets between two specific hosts.
-\item Capture the TCP packets with a destination port number 
-      in the range from 10 to 100.  
+\item Capturar paquetes ICMP entre dos hosts diferentes.
+\item Capturar paquetes TCP cuyo puerto destino este en el rango de 10 a 100.
 \end{itemize}
-
 
 
 \paragraph{Tarea 2.1C: Sniffing Passwords.}
-Please show how you can use your sniffer program to capture the 
-password when somebody is using \telnet on the 
-network that you are monitoring. You may need to modify
-your sniffer code to print out the data part of a captured TCP 
-packet (\telnet uses TCP). It is acceptable if you print out the entire data part, and then
-manually mark where the password (or part of it) is.
-
-
-
+Por favor muestre como puede usar su programa sniffer para capturar passwords cuando alguien use \telnet en la red que está monitoreando. Es posible que necesite modificar el código de su sniffer para mostrar la parte de los datos que son capturados en el paquete TCP (\telnet usa TCP). Puede imprimir toda la parte de los datos y marcar manualmente donde se encuentra el password (o parte de este).
 
 % -------------------------------------------
 % SUBSECTION
 % ------------------------------------------- 
 \subsection{Tarea 2.2: Spoofing}
 
-When a normal user sends out a packet, operating systems
-usually do not allow the user to set all the fields in the protocol 
-headers (such as TCP, UDP, and IP headers). OSes will
-set most of the fields, while only allowing users to 
-set a few fields, such as the destination IP address, 
-the destination port number, etc.  However, if 
-users have the root privilege, they can set any 
-arbitrary field in the packet headers. This is 
-called packet spoofing, and it can be done through
-{\em raw sockets}. 
+Cuando un usuario no privilegiado envía un paquete, los sistemas operativos usualmente no le permiten establecer los valores para todos los campos que componen los encabezados de un protocolo (como TCP, UDP y encabezados IP). Los sistemas operativos se encargarán de llenar estos campos, permitiendo que este tipo de usuarios puedan establecer valores para unos pocos campos (dirección IP de desttino, puerto de destino, etc). Sin embargo, si el usuario tiene privilegios de root, pueden establecer valores para cualquier campo en los encabezados del paquete. Esto es llamado packet spoofing y se puede hacer usando {\em raw sockets}. 
 
 
-Raw sockets give programmers the absolute control over the packet 
-construction, allowing programmers to construct any arbitrary packet, including 
-setting the header fields and the payload. Using raw sockets is 
-quite straightforward; it involves four steps: (1) create a raw socket,
-(2) set socket option, (3) construct the packet, and (4) send 
-out the packet through the raw socket. There are 
-many online tutorials that can teach you how to 
-use raw sockets in C programming. We have linked some tutorials
-to the lab's web page. Please read them, and learn how to 
-write a packet spoofing program. We show a simple skeleton of 
-such a program. 
-
+Los Raw sockets le dan al programador absoluto control sobre la construcción de un paquete, permitiéndole crear cualquier tipo de paquete arbitrario, esto incluye establecer los valores de su encabezados y su payload. El uso de los raw sockets es bastante simple; involucra cuatro pasos: (1) crear el raw socket, (2) configurar sus opciones, (3) construir el paquete, (4) enviar el paquete a través del raw socket. Existen muchos tutoriales online que enseñan como programar raw sockets en C. Hemos agregado alguno de ellos en la página oficial del laboratorio. Por favor leálos y aprenda a escribir un programa para hacer spoofing de paquetes. A continuación se brinda un código genérico de un sniffer que deberá de ser completado:
 
 \begin{lstlisting}
 int sd;
@@ -530,12 +479,11 @@ if(sendto(sd, buffer, ip_len, 0, (struct sockaddr *)&sin,
 
 
 \paragraph{Tarea 2.2A: Escriba un programa de spoofing.}
-Please write your own packet spoofing program in C. You need 
-to provide evidences (e.g., Wireshark packet trace) to show that your 
-program successfully sends out spoofed IP packets.
+Por favor escriba su propio programa de spoofing en C. Para demostrar que su programa funciona y realiza el spoofing de paquetes IP, deberá de proveer evidencias (Por ejemplo, un packet trace usando Wireshark).
 
 
 \paragraph{Tarea 2.2B: Haga Spoof de un ICMP Echo Request.}
+
 Spoof an ICMP echo request packet on behalf of another machine (i.e., 
 using another machine's IP address as its source IP address). This packet 
 should be sent to a remote machine on the Internet (the machine must be
@@ -548,18 +496,14 @@ you can see the echo reply coming back from the remote machine.
 
 \begin{itemize}
 \item \textbf{Pregunta 4.}
-Can you set the IP packet length field to an arbitrary value,
-regardless of how big the actual packet is? 
+¿Es posible modificar el campo length de un paquete IP usando cualquier valor, sin importar cuan grande sea el paquete en cuestión? 
 
 
 \item \textbf{Pregunta 5.} 
-Using the raw socket programming, do you have to calculate the 
-checksum for the IP header? 
+Al programar con raw sockets, ¿Débe de calcular el checksum para un encabezado IP?
 
 \item \textbf{Pregunta 6.} 
-Why do you need the root privilege to run the programs that 
-use raw sockets? Where does the program fail if executed without the root 
-privilege?
+¿Por qué necesita privilegios de root para correr un programa que usa raw sockets? ¿Donde falla el programa si no se ejecuta con privilegios de root?
 
 \end{itemize}
  
@@ -573,25 +517,9 @@ privilege?
 % ------------------------------------------- 
 \subsection{Tarea 2.3: Sniff y luego Spoof}
 
-In this task, you will combine the sniffing and spoofing techniques
-to implement the following sniff-and-then-spoof program. 
-You need two VMs on the same LAN. From VM A, you 
-{\tt ping} an IP X. This will generate an ICMP echo 
-request packet. If X is alive, the {\tt ping} program will receive 
-an echo reply, and print out the response. Your sniff-and-then-spoof
-program runs on VM B, which monitors the LAN through packet sniffing. Whenever it 
-sees an ICMP echo request, regardless of what the target IP address is,
-your program should immediately send out an echo reply using the 
-packet spoofing technique. Therefore, regardless of whether machine X
-is alive or not, the {\tt ping} program will always receive 
-a reply, indicating that X is alive. You need to write such a program in C, and
-include screenshots in your report to show that 
-your program works. Please also attach the code (with adequate amount 
-of comments) in your report.
-
-
-
-
+En esta Tarea, va a combinar las técnicas de sniffing y spoofing para implementar un programa de sniff-and-then-spoof.
+Para lograr esto, necesita tener dos Máquinas Virtuales en la misma LAN. Desde la máquina A hará {\tt ping} hacia una IP X. Esto va a generar un paquete  ICMP echo 
+request. Si X está viva, el programa de {\tt ping} recibirá una echo reply y mostrará la respuesta. Su programa de sniff-and-then-spoof correrá en la Máquina B que va a monitorear la LAN usando packet sniffing. Cada vez que vea un paquete ICMP echo request, sin importar cual es la dirección IP destino, el programa deberá de enviar inmediatamente un paquete ICMP echo reply usando la técnica de packet spoofing. Además, sin importar si la máquina X este viva o no, el programa de {\tt ping} siempre recibirá una reply, indicando que X está viva. Su tarea es escribir un programa de estas características usando C y incluir screenshots en su informe de laboratorio que muestren que su programa funciona. Por favor también incluya el código de su programa.
 
 
 
@@ -607,18 +535,10 @@ of comments) in your report.
 % ------------------------------------------- 
 \subsection{Llenado de Datos en los Raw Packets}
 
+Cuando envía un paquete usando raw sockets, básicamente lo que se está haciendo es construir un paquete dentro de un buffer, de forma tal que cuando es necesario enviar rste paquete, se le da al sistema operativo el buffer y el tamaño del paquete. 
+Trabajar directamente sobre este buffer no es fácil, una forma habitual de trabajar con este tipo de datos es hacer typecasting del buffer (o parte del mismo) dentro de estructuras, como IP header, así puede acceder a los elementos de ese buffer usando los campos de esas estructuras.
+Puede definir diferentes estructuras dentro de su programa como pueden ser los headers para IP, ICMP, TCP, UDP y otras más. El siguiente ejemplo muestra como se puede construir un paquete UDP:
 
-When you send out a packet using raw sockets, you basically construct 
-the packet inside a buffer, so when you need to send it out, you simply
-give the operating system the buffer and the size of the packet. 
-Working directly on the buffer is not easy, so a common way is to
-typecast the buffer (or part of the buffer) into 
-structures, such as IP header structure, so you can refer to the elements
-of the buffer using the fields of those structures. 
-You can define the IP, ICMP, TCP, UDP and other header structures in your 
-program. The following example show how you can construct an UDP packet:
-
- 
 \begin{lstlisting}
 struct ipheader {
    type  field;
