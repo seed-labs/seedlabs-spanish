@@ -483,14 +483,7 @@ Por favor escriba su propio programa de spoofing en C. Para demostrar que su pro
 
 
 \paragraph{Tarea 2.2B: Haga Spoof de un ICMP Echo Request.}
-
-Spoof an ICMP echo request packet on behalf of another machine (i.e., 
-using another machine's IP address as its source IP address). This packet 
-should be sent to a remote machine on the Internet (the machine must be
-alive). You should turn on your Wireshark, so if your spoofing is successful, 
-you can see the echo reply coming back from the remote machine. 
-
-
+Haga spoof de un paquete ICMP echo request en nombre de otra máquina (es decir, use la dirección IP de otra máquina que no sea la suya como dirección IP origen). Este paquete debería ser enviado a una máquina remota en Internet (debe estar online). Abra ell Wireshark y si su spoofing es exitoso debería de recibir un paquete ICMP echo reply como respuesta de la máquina remota.
 
 \paragraph{Preguntas.} Por favor responda las siguientes preguntas.
 
@@ -507,9 +500,6 @@ Al programar con raw sockets, ¿Débe de calcular el checksum para un encabezado
 
 \end{itemize}
  
-
-
-
 
 
 % -------------------------------------------
@@ -572,23 +562,10 @@ udp->field = ...;
 % ------------------------------------------- 
 \subsection{Network/Host Byte Order y Conversiones}
 
+Es necesario prestar atención a la red y su host byte order. Si usa una CPU con una arquitectura x86, el host byte order de esta arquitectura es llamado {\em Little Endian}, mientras que en las redes se usa {\em Big Endian}. Esto quiere decir que los datos que se envíen dentro de un buffer de paquetes usarán ese network byte order; si esto no sucede, el paquete no estará bien formado. Actuallmente no necesita preocuparse sobre la Endianesss que su máquina usa, ni sobre la portabilidad de su programa.
 
-You need to pay attention to the network and host byte orders. If you use 
-x86 CPU, your host byte order uses {\em Little Endian}, while 
-the network byte order uses {\em Big Endian}. Whatever the data you put 
-into the packet buffer has to use the network byte order; if you do not 
-do that, your packet will not be correct. You actually do not need to worry
-about what kind of Endian your machine is using, and you actually should not worry
-about if you want your program to be portable. 
-
-
-What you need to do is to always remember to convert your data to the
-network byte order when you place the data into the buffer, and convert
-them to the host byte order when you copy the data from the buffer to 
-a data structure on your computer. If the data is a single byte, you do not
-need to worry about the order, but if the data is a {\tt short}, 
-{\tt int}, {\tt long}, or a data type that consists of more than one byte, 
-you need to call one of the following functions to convert the data:
+Lo que debe recordar siempre es convertir los datos que son colocados en el buffer al network byte order en cuestión y convertirlos al host byte order cuando son copiados del buffer a la estructura de datos en su computadora. Si el dato tiene un sólo byte, no necesita realizar la conversión, pero si el dato es {\tt short}, 
+{\tt int}, {\tt long} o es un tipo de dato que tiene más de un byte, necesitará llamar a algunas de las siguientes funciones para realizar la conversión:
 
 \begin{lstlisting}
 htonl(): convert unsigned int from host to network byte order.
@@ -598,14 +575,8 @@ ntohs(): reverse of htons().
 \end{lstlisting}
 
 
-You may also need to use {\tt inet\_addr()}, {\tt inet\_network()},
-{\tt inet\_ntoa()}, {\tt inet\_aton()} to convert 
-IP addresses from the dotted decimal form (a string) to a
-32-bit integer of network/host byte order. You can get their 
-manuals from the Internet.
-
-
- 
+También puede usar {\tt inet\_addr()}, {\tt inet\_network()},
+{\tt inet\_ntoa()}, {\tt inet\_aton()} para convertir direccioones IP con notación decimal con puntos (cadena) en un entero de 32-bits con network/host byte order. También puede consultar manuales en internet sobre estas funciones.
 
 % *******************************************
 % SECTION
