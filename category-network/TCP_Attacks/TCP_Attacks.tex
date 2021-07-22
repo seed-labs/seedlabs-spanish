@@ -16,7 +16,7 @@
 \newcommand{\telnet} {\texttt{telnet}\xspace}
 \newcommand{\tcpFigs}{./Figs}
 
-\lhead{\bfseries SEED Labs -- TCP/IP Attack Lab}
+\lhead{\bfseries SEED Labs -- Laboratorio de Ataques TCP/IP}
 
 \begin{document}
 
@@ -27,7 +27,7 @@
 
 
 \begin{center}
-{\LARGE TCP/IP Attack Lab}
+{\LARGE Laboratorio de Ataques TCP/IP}
 \end{center}
 
 \seedlabcopyright{2018 - 2020}
@@ -37,7 +37,7 @@
 % *******************************************
 % SECTION
 % ******************************************* 
-\section{Overview}
+\section{Descripción General}
 
 
 The learning objective of this lab is for students to gain first-hand
@@ -62,50 +62,44 @@ In this lab, students will conduct several attacks on TCP.
 This lab covers the following topics:
 
 \begin{itemize}[noitemsep]
-\item The TCP protocol
-\item TCP SYN flood attack, and SYN cookies 
-\item TCP reset attack
-\item TCP session hijacking attack
-\item Reverse shell 
-\item A special type of TCP attack, the Mitnick attack, is covered 
-in a separate lab. 
+\item El protocolo TCP
+\item Ataque - TCP SYN flood y SYN cookies 
+\item Ataque - TCP reset 
+\item Ataque - TCP session hijacking
+\item Shell Reversa
+\item En un laboratorio aparte se cubre un tipo especial de ataque llamado El Ataque de Mitnick o Mitnick Attack
 \end{itemize}
 
 
-\paragraph{Readings and videos.}
-Detailed coverage of the TCP attacks can be found in the following:
+\paragraph{Lecturas y Videos.}
+Para una cobertura más detallada sobre Ataques TCP puede consultar
 
 \begin{itemize}
-\item Chapter 16 of the SEED Book, \seedbook
-\item Section 6 of the SEED Lecture, \seedisvideo
+\item Capítulo 16 del libro de SEED, \seedbook
+\item Sección 6 del curso de SEED en Udemy, \seedisvideo
 \end{itemize}
 
 
-\paragraph{Lab environment.} \seedenvironmentC
+\paragraph{Entorno de Laboratorio.} \seedenvironmentC
 
 
 
 % *******************************************
 % SECTION
 % ******************************************* 
-\section{Lab Environment}
+\section{Entorno de Laboratorio}
 
-
-In this lab, we need to have at least three machines. We use 
-containers to set up the lab environment. Figure~\ref{tcp:fig:labsetup}
-depicts the lab setup. 
-We will use the attacker container to launch attacks, while using the other 
-three containers as the victim and user machines. 
-We assume all these machines are on the same LAN. 
-Students can also use three virtual machines for this lab, 
-but it will be much more convenient to use containers. 
+Para este laboratorio, necesitamos tener al menos tres máquinas. Usaremos contenedores para configurar el entorno del laboratorio. La Figura \ref{tcp:fig:labsetup} describe la configuración del entorno.
+Usaremos el contenedor del atacante para atacar mientras que los tres contenedores restantes serán la máquina víctima y la de los usuarios.
+Se asume que todas las máquinas están en la misma LAN.
+Los estudiantes pueden optar por usar máquinas virtuales en vez de contenedores, aunque la última opción es más conveniente.
 
 
 \begin{figure}[htb]
 \begin{center}
 \includegraphics[width=0.8\textwidth]{\commonfolder/Figs/OneLan.pdf}
 \end{center}
-\caption{Lab environment setup}
+\caption{Configuración del entorno}
 \label{tcp:fig:labsetup}
 \end{figure}
  
@@ -126,7 +120,7 @@ but it will be much more convenient to use containers.
 % -------------------------------------------
 % SUBSECTION
 % -------------------------------------------
-\subsection{Container Setup and Commands}
+\subsection{Setup del Contenedor y sus Comandos}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \input{\commonfolder/container/setup}
@@ -136,24 +130,18 @@ but it will be much more convenient to use containers.
 % -------------------------------------------
 % SUBSECTION
 % -------------------------------------------
-\subsection{About the Attacker Container}
+\subsection{El Contenedor del Atacante}
 
-In this lab, we can either use the VM or the attacker container
-as the attacker machine. If you look at the Docker Compose file, you will
-see that the attacker container is configured differently from the other
-containers.
-
+Para este laboratorio, podemos usar la Máquina Virtual o el Contenedor como la máquina del Atacante. Si hecha un vistazo al archivo de Docker Compose, verá que el contenedor del Atacante está configurado de manera diferente del resto de los contenedores. 
 
 \begin{itemize}
-\item \textit{Shared folder.} When we use the attacker container
-to launch attacks, we need to put the attacking code inside
-the attacker container.
+\item \textit{Directorio Compartido.} Cuando usemos el contenedor del atacante para lanzar los ataques, necesitamos poner el código de ataque dentro del contenedor.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \input{\commonfolder/container/volumes}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
-\item \textit{Host mode.}
+\item \textit{Modo Host.}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \input{\commonfolder/container/host_mode}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -709,12 +697,10 @@ shell on the target server.
 
 % *******************************************
 % SECTION
-% ******************************************* 
-\section*{Acknowledgment}
+% *******************************************
+\section{Agradecimientos}
 
-I would like to thank CSender (GitHub ID), Eric Dong, and Chao Gong,
-for their suggestions on improving the SYN flooding attack
-task in this lab. 
+\input{\commonfolder/acknowledgments}
 
 
 \end{document}

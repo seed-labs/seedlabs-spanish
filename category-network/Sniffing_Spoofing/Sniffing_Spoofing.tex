@@ -57,7 +57,6 @@ Para una cobertura más detallada sobre Sniffing y Spoofing puede consultar
 
 \begin{itemize}
 \item Capítulo 15 del Libro de SEED, \seedbook
-
 \item Sección 2 del curso de SEED en Udemy, \seedisvideo
 \end{itemize}
 
@@ -80,7 +79,7 @@ Ambos Sets de Tareas son independientes; los instructores en base al background 
 % ******************************************* 
 \section{Configuración del entorno usando Contenedores} 
 
-En este laboratorio, usaremoos dos máquinas conectadas a la misma LAN. Podemos usar dós Máquinas Virtuales o dos Contenedores. 
+En este laboratorio, usaremos dos máquinas conectadas a la misma LAN. Podemos usar dós Máquinas Virtuales o dos Contenedores. 
 La Figura \ref{fig:labsetup} describe la configuración del entorno de laboratorio utilizando Contenedores.
 Realizaremos todos los ataques desde el Contenedor del atacante, mientras que el otro contenedor será la máquina del usuario.
 
@@ -198,7 +197,7 @@ Podemos utilizar el modo interactivo de Python y correr nuestro programa línea 
 % ------------------------------------------- 
 \subsection{Tarea 1.1: Sniffing de Paquetes}  
 
-Una de las herramientas más populares para hacer sniffing es Wireshark, el uso de esta herramienta es sencillo y la usaremos durante todo el laboratorio. Sin embargo es difícil usar Wireshark para integrarlo a nuestras aplicaciones y crear módulos con diversas funcionalidades. Para este propósito usaremos Scapy. El objetivo de esta Tarea es aprender a usar Scapy para hacer sniffing de paquetes a través de programas de Python.
+Una de las herramientas más populares para hacer sniffing es Wireshark, aprender a usar esta herramienta es sencillo y la usaremos durante todo el laboratorio. Sin embargo es difícil usar Wireshark para integrarlo a nuestras aplicaciones y crear módulos con diversas funcionalidades. Para este propósito usaremos Scapy. El objetivo de esta Tarea es aprender a usar Scapy para hacer sniffing de paquetes a través de programas de Python.
 A continuación se da un ejemplo:
 
 
@@ -296,7 +295,7 @@ La línea \ding{194} crea un objeto ICMP. El tipo por defecto es un echo request
 % ------------------------------------------- 
 \subsection{Tarea 1.3: Traceroute} 
 
-El objetivo de esta Tarea es usar Scapy para estimar la distancia, en términos de número de routers entre su Máquina Virtual y un destino que se seleccione. Está función es la que implementa una herramienta como \texttt{traceroute}.
+El objetivo de esta Tarea es usar Scapy para estimar la distancia, en términos de número de routers entre su Máquina Virtual y un destino que elija. Está función es la que implementa una herramienta como \texttt{traceroute}.
 En este tarea, escribiremos nuestra propia herramienta. La idea es sencilla: sólo hay que enviar cualquier tipo de paquete a un destino con el valor del campo Time-To-Live (TTL) seteado en 1 como primer paso. Este paquete será dropeado por el primer router que enviará un 
 ICMP error message, avisándonos que se ha superado el time-to-live. Así es como obtenemos la dirección IP de nuestro primer router. El paso siguiente será incrementar el valor del campo time-to-live a 2, repetir el proceso y obtener la dirección IP del segundo router. Repetiremos este proceso hasta que nuestro paquete llegue al destino deseado. Cabe aclarar que en este experimento sólo obtendremos un resultado aproximado, en teoría no todos los paquetes que se envían siguen el mismo camino (pero en la práctica, podrían hacerlo por un breve período de tiempo). El código a continuación muestra el procedimiento:
 
@@ -562,7 +561,7 @@ udp->field = ...;
 % ------------------------------------------- 
 \subsection{Network/Host Byte Order y Conversiones}
 
-Es necesario prestar atención a la red y su host byte order. Si usa una CPU con una arquitectura x86, el host byte order de esta arquitectura es llamado {\em Little Endian}, mientras que en las redes se usa {\em Big Endian}. Esto quiere decir que los datos que se envíen dentro de un buffer de paquetes usarán ese network byte order; si esto no sucede, el paquete no estará bien formado. Actuallmente no necesita preocuparse sobre la Endianesss que su máquina usa, ni sobre la portabilidad de su programa.
+Es necesario prestar atención a la red y su host byte order. Si usa una CPU con una arquitectura x86, el host byte order de esta arquitectura es llamado {\em Little Endian}, mientras que en las redes se usa {\em Big Endian}. Esto quiere decir que los datos que se envíen dentro de un buffer de un paquete usarán ese network byte order; si esto no sucede, el paquete no estará bien formado. Actualmente no necesita preocuparse sobre el Endianess que su máquina usa, ni sobre la portabilidad de su programa.
 
 Lo que debe recordar siempre es convertir los datos que son colocados en el buffer al network byte order en cuestión y convertirlos al host byte order cuando son copiados del buffer a la estructura de datos en su computadora. Si el dato tiene un sólo byte, no necesita realizar la conversión, pero si el dato es {\tt short}, 
 {\tt int}, {\tt long} o es un tipo de dato que tiene más de un byte, necesitará llamar a algunas de las siguientes funciones para realizar la conversión:
@@ -576,7 +575,7 @@ ntohs(): reverse of htons().
 
 
 También puede usar {\tt inet\_addr()}, {\tt inet\_network()},
-{\tt inet\_ntoa()}, {\tt inet\_aton()} para convertir direccioones IP con notación decimal con puntos (cadena) en un entero de 32-bits con network/host byte order. También puede consultar manuales en internet sobre estas funciones.
+{\tt inet\_ntoa()}, {\tt inet\_aton()} para convertir direcciones IP con notación decimal con puntos (cadena) en un entero de 32-bits network/host byte order. También puede consultar manuales en internet sobre estas funciones.
 
 % *******************************************
 % SECTION
