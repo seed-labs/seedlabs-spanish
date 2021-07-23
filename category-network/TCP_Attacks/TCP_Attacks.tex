@@ -163,10 +163,10 @@ El password de la misma es \texttt{dees}. Puede usar esta cuenta para telnet.
 \end{figure}
  
 
-El SYN Flood es una forma de ataque del tipo DoS, en el cual el atacante envía muchos requests SYN hacia un puerto TCP de la víctima, pero el atacante no tiene la intención de completar el proceso del 3-way handshake. Los atacantes pueden usar una dirección IP spoofeada o optar por descontinuar el proceso.
-A través de este ataque, los atacantes pueden floodear a la cola de las half-opened connections (es decir las conexiones que han seguido hasta el SYN, SYN-ACK pero no dieron el ACK final) en la máquina de víctima, cuando esta cola se llena la víctima no puede recibir más conexiones. La Figura \ref{tcp:fig:synflooding} muestra este ataque.
+El SYN Flood es ataque del tipo DoS, en el cual el atacante envía muchos requests SYN hacia un puerto TCP de la máquina víctima, pero el atacante no tiene la intención de completar el proceso del 3-way handshake. Los atacantes pueden usar una dirección IP spoofeada o optar por descontinuar el proceso.
+A través de este ataque, los atacantes pueden floodear la cola de las half-opened connections (es decir las conexiones que no han terminado de completar el proceso 3-way handshake y han logrado llegar hasta el SYN, SYN-ACK pero no dieron el ACK final) en la máquina de víctima, cuando esta cola se llena la víctima no puede recibir más conexiones. La Figura \ref{tcp:fig:synflooding} muestra este ataque.
 
-El tamaño de la cola es seteada a través de una configuración global del sistema. En los sistemas Ubuntu, podemos chequear las settings usando el siguiente comando. El Sistema Operativo setea este valor basado en el total de memoria que el sistema tiene: mientras más memoria, este valor es más grande.
+El tamaño de la cola es establecido a través de una configuración global del sistema. En los sistemas Ubuntu, podemos chequear esta configuración usando el siguiente comando. El Sistema Operativo establece este valor basado en el total de memoria que el sistema tiene: mientras más memoria, este valor es más grande.
 
 \begin{lstlisting}
 # sysctl net.ipv4.tcp_max_syn_backlog
@@ -174,7 +174,7 @@ net.ipv4.tcp_max_syn_backlog = 128
 \end{lstlisting}
 
 Podemos usar el comando \texttt{"netstat -nat"} para chequear el uso que se está haciendo de esa cola, es decir el número de half-opened conections asociadas a un puerto que está a la escucha.
-El estado de estas conexiones es \texttt {SYN-RECV}. Si se completa el  3-way handshake, el estado de las conexiones será {\tt ESTABLISHED}.
+El estado de estas conexiones es \texttt {SYN-RECV}. Si se completa el 3-way handshake, el estado de las conexiones será {\tt ESTABLISHED}.
 
 
 \paragraph{SYN Cookie como Contramedida:}
@@ -260,7 +260,7 @@ net.ipv4.tcp_synack_retries = 5
     see whether the success rate can be improved. How many instances 
     should you run to achieve a reasonable success rate? 
 
-  \item \textbf{The size of the queue:}  
+  \item \textbf{El tamaño de la cola:}  
     How many half-open connections can be stored in the queue
     can affect the success rate of the attack. 
     The size of the queue be adjusted using the following command:
@@ -317,7 +317,7 @@ the server.
 \end{lstlisting}
 
 
-\paragraph{Note B: Paquetes RST.} 
+\paragraph{Nota B: Paquetes RST.} 
 If you are doing this task using two VMs, i.e., launching the attack from one VM
 against another VM, instead of attacking a container, from the Wireshark,
 you will notice many RST packets (reset). Initially, we thought that 
@@ -347,11 +347,7 @@ It becomes a competition between our code and the VirtualBox.
 % -------------------------------------------
 \subsection{Tarea 1.2: Lanzando el ataque usando C} 
 
-Other than the TCP cache issue, all the issues mentioned in Task 1.1 
-can be resolved if we can send spoofed SYN packets fast enough. We
-can achieve that using C. We provide a C program called \texttt{synflood.c}
-in the lab setup. Please compile
-the program on the VM and then launch the attack on the target machine.
+Exceptuando el problema de la cache TCP, el resto de los inconvenientes mencionados en la Tarea 1.1 pueden ser resuletos si podemos enviar paquetes SYN spoofeados de forma rápida. Podemos lograrlo usando C. Hemos provisto un programa hecho en C llamado \texttt{synflood.c} este archivo se encuentra dentro del directorio del laboratorioo. Por favor compile el programa en la Máquina Virtual y lance el ataque en la máquina vícttima.
 
 \begin{lstlisting}
 // Compile the code on the host VM
@@ -361,10 +357,7 @@ $ gcc -o synflood synflood.c
 # synflood 10.9.0.5 23
 \end{lstlisting}
 
-
-Before launching the attack, please restore the queue size to its 
-original value. Please compare the results with the one 
-using the Python program, and explain the reason behind the difference. 
+Antes de lanzar el ataque, por favor restaure el tamaño de la cola a su tamaño original. Por favor compare los resultados de este ataque con los que ha hecho usando el programa de Python y explique las razones detrás de las diferencias.  
 
  
 
@@ -375,15 +368,14 @@ using the Python program, and explain the reason behind the difference.
 % -------------------------------------------
 \subsection{Tarea 1.3: Activar la Contramedida de SYN Cookie}
 
-Please enable the SYN cookie mechanism, and 
-run your attacks again, and compare the results. 
+Por favor active la protección SYN cookie, corra sus ataques nuevamente y compare los resultados. 
 
 
 
 % *******************************************
 % SECTION
 % *******************************************
-\section {Task 2: TCP RST Attacks on \texttt{telnet} Connections}
+\section {Tarea 2: Ataque TCP RST en Conexiones \texttt{telnet}}
 
 The TCP RST Attack can terminate an established TCP connection between
 two victims. For example, if there is an established \telnet connection (TCP)
