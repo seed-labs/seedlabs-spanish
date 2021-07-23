@@ -39,33 +39,17 @@
 % ******************************************* 
 \section{Descripción General}
 
+El objetivo de este laboratorio es que el estudiante gane experiencia en vulnerabilidades como también en ataques contra esas vulnerabilidades. Los sabios aprenden de sus errores. En la educación de la seguridad informática, estudiamos errores que terminan siendo vulnerabilidades en el software. Estudiar los errores del pasado no sólo ayuda a los estudiantes a entender porque los sistemas son vulnerables, porque un descuido inofensivo en aparencia puede desembocar en un desastre, y porque son necesarios tantos mecanismos de seguridad. Sino que aún más importante ayuda a los estudiantes a entender los patrones comúnes en las vulnerabilidades y evitar cometer los errores del pasado en el futuro. Además usando esas vulnerabilidades como casos de estudio, los estudiantes pueden aprender los principios del diseño seguro, del desarrollo seguro y del testeo en la seguridad informática.
 
-The learning objective of this lab is for students to gain first-hand
-experience on vulnerabilities, as well as on attacks against these
-vulnerabilities. Wise people learn from mistakes. In security education, we
-study mistakes that lead to software vulnerabilities. Studying mistakes
-from the past not only help students understand why systems are vulnerable,
-why a seemly-benign mistake can turn into a disaster, and why many
-security mechanisms are needed. More importantly, it also helps students
-learn the common patterns of vulnerabilities, so they can avoid making
-similar mistakes in the future. Moreover, using vulnerabilities as case
-studies, students can learn the principles of secure design, secure
-programming, and security testing.
-
-The vulnerabilities in the TCP/IP protocols represent a special genre of
-vulnerabilities in protocol designs and implementations; they provide an
-invaluable lesson as to why security should be designed in from the
-beginning, rather than being added as an afterthought. Moreover, studying
-these vulnerabilities help students understand the challenges of network
-security and why many network security measures are needed.
-In this lab, students will conduct several attacks on TCP.
-This lab covers the following topics:
+Las vulnerabilidades en los protolos TCP/IP representan un tipo de género especial dentro de los que son las vulnerabilidades en el diseño y la implementación de los protocolos; Nos muestran una lección fundamental y es que la seguridad debe ser concebida desde el momento en que se empieza a diseñar y no después. Por otra parte estudiar esas vulnerabilidades ayuda a los estudiantes a comprender los desafíos de la seguridad en las redes y porque son necesarias tantas métricas de seguridad en estas.
+En este laboratorio los estudiantes llevarán a cabo varios Ataques contra el protocolo TCP.
+Este laboratorio cubre los siguientes tópicos:
 
 \begin{itemize}[noitemsep]
 \item El protocolo TCP
-\item Ataque - TCP SYN flood y SYN cookies 
-\item Ataque - TCP reset 
-\item Ataque - TCP session hijacking
+\item Ataque de TCP SYN flood y las SYN cookies 
+\item Ataque de TCP reset 
+\item Ataque de TCP session hijacking
 \item Shell Reversa
 \item En un laboratorio aparte se cubre un tipo especial de ataque llamado El Ataque de Mitnick o Mitnick Attack
 \end{itemize}
@@ -156,63 +140,47 @@ Para este laboratorio, podemos usar la Máquina Virtual o el Contenedor como la 
 % -------------------------------------------
 % SUBSECTION
 % -------------------------------------------
-\subsection{The seed Account} 
+\subsection{La cuenta seed} 
 
-In this lab, we need to telnet from one containter to another. 
-We have already created an account called \texttt{seed} inside all
-the containers.
-Its password is \texttt{dees}. You can telnet into this account.  
+Para este laboratorio, necesitamos hacer telnet de un contenedor a otro.
+Hemos creado una cuenta llamada \texttt{seed} dentro de todos los contenedores.
+El password de la misma es \texttt{dees}. Puede usar esta cuenta para telnet.
 
 
 
 % *******************************************
 % SECTION
 % *******************************************
-\section{Task 1: SYN Flooding Attack}
+\section{Tarea 1: Ataque de SYN Flooding}
 
 
 \begin{figure}[htb]
   \begin{center}
     \includegraphics[width=0.9\textwidth]{\tcpFigs/TCP_SYN_Flooding.pdf}
   \end{center}
-  \caption{SYN Flooding Attack}
+  \caption{Ataque SYN Flooding}
   \label{tcp:fig:synflooding}
 \end{figure}
  
 
+El SYN Flood es una forma de ataque del tipo DoS, en el cual el atacante envía muchos requests SYN hacia un puerto TCP de la víctima, pero el atacante no tiene la intención de completar el proceso del 3-way handshake. Los atacantes pueden usar una dirección IP spoofeada o optar por descontinuar el proceso.
+A través de este ataque, los atacantes pueden floodear a la cola de las half-opened connections (es decir las conexiones que han seguido hasta el SYN, SYN-ACK pero no dieron el ACK final) en la máquina de víctima, cuando esta cola se llena la víctima no puede recibir más conexiones. La Figura \ref{tcp:fig:synflooding} muestra este ataque.
 
-SYN flood is a form of DoS attack in which attackers send many SYN
-requests to a victim's TCP port, but the attackers have no intention 
-to finish the 3-way handshake procedure. Attackers either use spoofed 
-IP address or do not continue the procedure. 
-Through this attack, attackers can flood the victim's queue that is 
-used for half-opened connections, i.e. the connections that has finished SYN, SYN-ACK, 
-but has not yet gotten a final ACK back. When this queue is full, 
-the victim cannot take any more connection. Figure~\ref{tcp:fig:synflooding}
-illustrates the attack.
-
-The size of the queue has a system-wide setting.  In Ubuntu OSes, we can check the
-setting using the following command. The OS sets this value based on
-the amount of the memory the system has: the more memory the machine has, 
-the larger this value will be.
+El tamaño de la cola es seteada a través de una configuración global del sistema. En los sistemas Ubuntu, podemos chequear las settings usando el siguiente comando. El Sistema Operativo setea este valor basado en el total de memoria que el sistema tiene: mientras más memoria, este valor es más grande.
 
 \begin{lstlisting}
 # sysctl net.ipv4.tcp_max_syn_backlog
 net.ipv4.tcp_max_syn_backlog = 128
 \end{lstlisting}
 
-We can use command \texttt{"netstat -nat"} to check the usage of the queue, 
-i.e., the number of half-opened connection associated with a listening port. 
-The state for such connections is \texttt {SYN-RECV}. If the 3-way handshake
-is finished, the state of the connections will be {\tt ESTABLISHED}. 
+Podemos usar el comando \texttt{"netstat -nat"} para chequear el uso que se está haciendo de esa cola, es decir el número de half-opened conections asociadas a un puerto que está a la escucha.
+El estado de estas conexiones es \texttt {SYN-RECV}. Si se completa el  3-way handshake, el estado de las conexiones será {\tt ESTABLISHED}.
 
-\paragraph{SYN Cookie Countermeasure:}
-By default, Ubuntu's SYN flooding countermeasure is turned on. This 
-mechanism is called SYN cookie. It will kick in if the machine
-detects that it is under the SYN flooding attack. In our 
-victim server container, we have already turned it off (see the 
-\texttt{sysctls} entry in the \texttt{docker-compose.yml} file).  
-We can use the following \texttt{sysctl} command to turn it on and off:
+
+\paragraph{SYN Cookie como Contramedida:}
+Por defecto Ubuntu tiene una contramedida activada para protegerse del SYN Flooding. Esta protección es llamada SYN cookie, esta entrará en juego si detecta que el sistema está siendo atacado por un ataque del tipo SYN Flooding.
+en nuestro contenedor servidor de la víctima, hemos desactivado esta contramedida (puede ver la entrada \texttt{sysctls} en el archivo \texttt{docker-compose.yml}).
+Para activarla o desactivarla podemos usar el comando \texttt{sysctl}:
 
 \begin{lstlisting}
 # sysctl -a | grep syncookies     (Display the SYN cookie flag) 
@@ -220,13 +188,8 @@ We can use the following \texttt{sysctl} command to turn it on and off:
 # sysctl -w net.ipv4.tcp_syncookies=1 (turn on  SYN cookie)
 \end{lstlisting}
 
-To be able to use \texttt{sysctl} to change the system variables 
-inside a container, the container needs to be 
-configured with the \texttt{"privileged: true"} entry (which is the 
-case for our victim server). 
-Without this setting, if we run the above command,
-we will see the following error message. The container
-is not given the privilege to make the change. 
+Para poder usar \texttt{sysctl} para cambiar los valores globales de las variables del sistema dentro del contenedor, el contenedor necesita estar configurado con la entrada \texttt{"privileged: true"} (en nuestro caso el contenedor víctima).
+Sin esta configuración, si corremos el comando anteriormente mencionado veremos el siguiente mensaje de error. El contenedor no ttiene los privilegios para realizar este cambio.
 
 \begin{lstlisting}
 # sysctl -w net.ipv4.tcp_syncookies=1
@@ -240,14 +203,13 @@ sysctl: setting key "net.ipv4.tcp_syncookies": Read-only file system
 % -------------------------------------------
 % SUBSECTION
 % -------------------------------------------
-\subsection{Task 1.1: Launching the Attack Using Python}
+\subsection{Tarea 1.1: Lanzando el ataque usando Python}
 
-We provide a Python program called \texttt{synflood.py}, but
-we have intentionally left out some essential data in the code. 
-This code sends out spoofed TCP SYN packets, with 
-randomly generated source IP address, source port, and sequence number.
-Students should finish the code and then use it to 
-launch the attack on the target machine:
+Hemos provisto un programa de Python llamado \texttt{synflood.py}, pero
+intencionalmente hemos omitido algunos datos esenciales en el código.
+Este código envía paquetes TCP SYN spoofeadoos, con una dirección IP de origen, el puerto destino y el número de secuencia, generados de forma aleatoria.
+Los estudiantes deberán de completar y terminar el código y usarlo para lanzar el ataque en la máquina víctima.
+
 
 \begin{lstlisting}
 #!/bin/env python3
@@ -267,20 +229,17 @@ while True:
     send(pkt, verbose = 0)
 \end{lstlisting}
 
-Let the attack run for at least one minute, then try to telnet 
-into the victim machine, and see whether you can succeed. Very likely that
-your attack will fail. Multiple issues can contribute to the failure 
-of the attack. They are listed in the following with guidelines 
-on how to address them. 
+Deje que el ataque se ejecute durante al menos un minuto, luego intente hacer telnet en la máquina de la víctima y vea si puede tener éxito. Es muy probable que
+su ataque falle. Esto se debe a que múltiples problemas pueden contribuir al fracaso. del ataque. A continuación se enumeran las posibles causas de estos fallos y como abordarlas.
 
 \begin{itemize}
-  \item \textbf{TCP cache issue:} See Note A below.
+  \item \textbf{Problema de Cache TCP:} Vea la nota abajo
 
-  \item \textbf{VirtualBox issue:} If you are doing the attack from one VM against another VM, 
+  \item \textbf{Problema de VirtualBox:} If you are doing the attack from one VM against another VM, 
     instead of using our container setup, please see Note B below. This is not an issue
     if you are doing the attack using the container setup.
 
-  \item \textbf{TCP retransmission issue:} 
+  \item \textbf{Problema de retransmisión TCP:} 
     After sending out the SYN+ACK packet, the victim machine will wait for 
     the ACK packet. If it does not come in time, TCP will retransmit the SYN+ACK packet. 
     How many times it will retransmit depends on the following kernel parameters (by default,
@@ -326,7 +285,7 @@ $ ss -n state syn-recv sport = :23 | wc -l
 \end{itemize}
 
 
-\paragraph{Note A: A kernel mitigation mechanism.} On Ubuntu 20.04, if machine X
+\paragraph{Nota A: Mecanismo de mitigación del Kernel.} On Ubuntu 20.04, if machine X
 has never made a TCP connection to the victim machine, when the SYN flooding 
 attack is launched, machine X will not be able to telnet into the 
 victim machine. However, if before the attack, machine X
@@ -358,7 +317,7 @@ the server.
 \end{lstlisting}
 
 
-\paragraph{Note B: RST packets.} 
+\paragraph{Note B: Paquetes RST.} 
 If you are doing this task using two VMs, i.e., launching the attack from one VM
 against another VM, instead of attacking a container, from the Wireshark,
 you will notice many RST packets (reset). Initially, we thought that 
@@ -386,7 +345,7 @@ It becomes a competition between our code and the VirtualBox.
 % -------------------------------------------
 % SUBSECTION
 % -------------------------------------------
-\subsection{Task 1.2: Launch the Attack Using C} 
+\subsection{Tarea 1.2: Lanzando el ataque usando C} 
 
 Other than the TCP cache issue, all the issues mentioned in Task 1.1 
 can be resolved if we can send spoofed SYN packets fast enough. We
@@ -414,7 +373,7 @@ using the Python program, and explain the reason behind the difference.
 % -------------------------------------------
 % SUBSECTION
 % -------------------------------------------
-\subsection{Task 1.3: Enable the SYN Cookie Countermeasure}
+\subsection{Tarea 1.3: Activar la Contramedida de SYN Cookie}
 
 Please enable the SYN cookie mechanism, and 
 run your attacks again, and compare the results. 
@@ -525,7 +484,7 @@ not at the content server machine (which does not belong to you).
 % *******************************************
 % SECTION
 % *******************************************
-\section{Task 3: TCP Session Hijacking}
+\section{Tarea 3: TCP Session Hijacking}
 
 
 
@@ -588,7 +547,7 @@ set the \texttt{iface} argument.
 % *******************************************
 % SECTION
 % *******************************************
-\section{Task 4: Creating Reverse Shell using TCP Session Hijacking}
+\section{Tarea 4: Crear una Shell Reversa usando TCP Session Hijacking}
 
 When attackers are able to inject a command to the victim's machine using
 TCP session hijacking, they are not interested in running one simple
