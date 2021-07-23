@@ -233,7 +233,7 @@ Deje que el ataque se ejecute durante al menos un minuto, luego intente hacer te
 su ataque falle. Esto se debe a que múltiples problemas pueden contribuir al fracaso. del ataque. A continuación se enumeran las posibles causas de estos fallos y como abordarlas.
 
 \begin{itemize}
-  \item \textbf{Problema de Cache TCP:} Vea la nota abajo
+  \item \textbf{Problema de Cache TCP:} Vea la Nota A más abajo
 
   \item \textbf{Problema de VirtualBox:} Si está realizando el ataque desde una Máquina Virtual contra otra en vez de usar los contenedores, por favor vea la Nota B más abajo. Esto no ocurre si se hace el ataque usando los contenedores.
 
@@ -256,7 +256,7 @@ stances
 # sysctl -w net.ipv4.tcp_max_syn_backlog=80
 \end{lstlisting}
      
-     Mientras que el ataque este en curso, puede correr uno de los siguientes comandos en el contenedor de la víctima para monitorear cuantos items están en la cola. Cabe notar que un cuarto del espacio en la cola está reservado para ``proven destinations'' (Vea la Nota A) por lo tanto si ponemos un tamaño de 80 su capacidad actual es alrededor de 60.
+     Mientras que el ataque este en curso, puede correr uno de los siguientes comandos en el contenedor de la víctima para monitorear cuantos items están en la cola. Cabe notar que un cuarto del espacio en la cola está reservado para ``destinos probados'' (Vea la Nota A) por lo tanto si ponemos un tamaño de 80 su capacidad actual es alrededor de 60.
      
 \begin{lstlisting}
 $ netstat -tna | grep SYN_RECV | wc -l
@@ -266,30 +266,12 @@ $ ss -n state syn-recv sport = :23 | wc -l
 	Por favor reduzca el tamaño de la cola de the half-open connection en la máquina víctima y vea si puede mejorar el éxito de su ataque.
 \end{itemize}
 
+\paragraph{Nota A: Mecanismo de mitigación del Kernel.} 
+En Ubuntu 20.04, si una Máquina X nunca se ha conectado a la máquina víctima, cuando se lance el ataque de SYN Flooding la Máquina X no podrá hacer telnet en la máquina víctima. Sin embargo, si antes del ataque, la Máquina X ha hecho un telnet (o una conexión TCP) a la máquina víctima, entonces X pareciera ser ``immune'' al ataque de SYN Flooding y podrá conectarse por telnet en la máquina víctima. Pareciera que la máquina víctima recuerda las conexiones exitosas que fueron hechas por la Máquina X en el pasado y usa esta especie de memoria cuando establece futuras conexiones con este cliente. Este tipo de comportamiento no existe en Ubuntu 16.04 y anteriores.
 
-\paragraph{Nota A: Mecanismo de mitigación del Kernel.} On Ubuntu 20.04, if machine X
-has never made a TCP connection to the victim machine, when the SYN flooding 
-attack is launched, machine X will not be able to telnet into the 
-victim machine. However, if before the attack, machine X
-has already made a telnet (or TCP connection) to the victim machine, then X 
-seems to be ``immune'' to the SYN flooding attack, and can
-successfully telnet to the victim machine during the attack. 
-It seems that the victim machine remembers past successful 
-connections, and uses this memory when establishing
-future connections with the ``returning'' client. 
-This behavior does not exist in Ubuntu 16.04 and earlier versions.
-
-This is due to a mitigation of the kernel: 
-TCP reserves one fourth of the backlog queue for ``proven destinations'' 
-if SYN Cookies are disabled. After making a TCP connection
-from \texttt{10.9.0.6} to the server \texttt{10.9.0.5}, we can 
-see that the IP address \texttt{10.9.0.6} is remembered (cached)
-by the server, so they will be using the reserved slots
-when connections come from them, and will thus not be 
-affected by the SYN flooding attack.
-To remove the effect of this mitigation method, we can 
-run the \texttt{"ip tcp\_metrics flush"} command on
-the server. 
+Esto es debidoo a una mitigación del kernel:
+TCP reserva una cuarta parte de la cola de trabajos pendientes para ``destinos probados'' si las SYN Cookies están desactivadas. Después de realizar una conexión TCP de \texttt{10.9.0.6} hacia el servidor \texttt{10.9.0.5}, podemos ver que la dirección IP \texttt{10.9.0.6} es recordada (cacheada) por el servidor, por lo que usarán los slots reservados cuando las conexiones provienen de ellos, y por lo tanto no serán afectados por el ataque de SYN Flooding.
+Para eliminar los efectos de esta mitigación, podemos ejecutar el comando \texttt{"ip tcp\ _metrics flush"} en el servidor.
 
 \begin{lstlisting}
 # ip tcp_metrics show
@@ -300,6 +282,7 @@ the server.
 
 
 \paragraph{Nota B: Paquetes RST.} 
+Si está realizando esta Tarea usando dos Máquinas Virtuales es decir lanzando los ataques de una Máquina Virtual a otra, en lugar de usar los contenedores, notará en Wireshark la presencia de paquetes RST (reset). Inicialmente pensamos que estos paquetes eran generados por el recipiente del paquete SYN+ACK, pero en realidad son generados por el servidor NAT en nuestra configuración.
 If you are doing this task using two VMs, i.e., launching the attack from one VM
 against another VM, instead of attacking a container, from the Wireshark,
 you will notice many RST packets (reset). Initially, we thought that 
@@ -307,21 +290,11 @@ the packets were generated from the recipient of the SYN+ACK packet,
 but it turns out they are generated by the 
 NAT server in our setup. 
 
-Any traffic going out of the VM in our lab setup will go through the NAT server
-provided by VirtualBox. For TCP, NAT creates address translation 
-entries based on the SYN packet. 
-In our attack, the SYN packets generated 
-by the attacker did not go through the NAT (both attacker and victims are behind the 
-NAT), so no NAT entry was created. When the victim sends SYN+ACK packet back to the
-source IP (which is randomly generated by the attacker), this packet will 
-go out through the NAT, but because there is no prior NAT entry
-for this TCP connection, NAT does not know what to do,
-so it sends a TCP RST packet back to the victim. 
+El tráfico saliente de la Máquina Virtual en nuestro laboratorio pasará por un servidor NAT provisto por VirtualBox. Para TCP, NAT se encarga de crear las llamadas entradas de address traslation que están basadas en paquetes SYN.
+En nuestro ataque, los paquetes SYN que generados por el atacante no pasan por el NAT (tanto el atacante como la víctima están detrás del servidor NAT), por lo tanto estas entradas no son creadas. Cuando la vícttima envía un paquete SYN+ACK a la dirección IP de origen (que es generada de forma aleatoria por el atacante), este paquete irá a través de NAT, pero NAT no sabe que hacer dado que no hay una entrada previa para esta conexión TCP por lo tanto terminará enviando un paquete TCP RST a la víctima.
 
-RST packets cause the victim to remove the data from the half-open connection
-queue. Therefore, while we are trying fill up this queue with the attack, 
-VirtualBox helps the victim to remove our records from the queue. 
-It becomes a competition between our code and the VirtualBox. 
+Los paquetes RST hacen que la víctima borre datos de la cola de half-open connection. Entonces mientras nosotros como atacantes tratamos de saturar esta cola con el ataque, VirtualBox ayuda a la víctima a borrar todos los registros de nuestros paquetes de la cola. Convirtiéndose así en una competencia entre nuestro código y VirtualBox.
+
 
 
 % -------------------------------------------
@@ -411,7 +384,7 @@ set the \texttt{iface} argument.
 % -------------------------------------------
 % SUBSECTION
 % ------------------------------------------- 
-\subsection {Task 3: TCP RST Attacks on Video Streaming Applications}
+\subsection {Tarea 3: Ataques TCP RST en Aplicaciones Streaming de Video}
 
 Let us make the TCP RST attack more interesting by experimenting it on 
 the applications that are widely used in nowadays.
