@@ -14,14 +14,14 @@
 
 \newcommand{\bufFigs}{./Figs}
 
-\lhead{\bfseries SEED Labs -- Buffer Overflow Attack Lab (Set-UID Version)}
+\lhead{\bfseries SEED Labs -- Laboratorio de Buffer Overflow (Set-UID Version)}
 
 \def \code#1 {\fbox{\scriptsize{\texttt{#1}}}}
 
 \begin{document}
 
 \begin{center}
-{\LARGE Buffer Overflow Attack Lab (Set-UID Version)}
+{\LARGE Laboratorio de Buffer Overflow (Set-UID Version)}
 \end{center}
 
 \seedlabcopyright{2006 - 2020}
@@ -30,147 +30,105 @@
 % *******************************************
 % SECTION
 % ******************************************* 
-\section{Overview}
+\section{Descripción General}
 
-Buffer overflow is defined as the condition in which a program attempts to
-write data beyond the boundary of a buffer. This
-vulnerability can be used by a malicious user to alter the flow control of
-the program, leading to the execution of malicious code.
-The objective of this lab is for students to gain practical
-insights into this type of vulnerability, and learn how to
-exploit the vulnerability in attacks.
+Un Buffer overflow es un tipo de vulnerabilidad que ocurre cuando un programa intenta escribir una cierta cantidad de datos que sobrepasan los límites permitidos de un buffer de memoria. 
+Esta vulnerabilidad puede ser usada por un atacante malicioso para alterar el flujo de control del programa, permitiendo así la ejecución de código malicioso.
+El objetivo de este laboratorio es poder estudiar este tipo de vulnerabilidad y aprender a explotarla.
 
 
-In this lab, students will be given a program with a buffer-overflow
-vulnerability; their task is to develop a scheme to exploit 
-the vulnerability and finally gain the root privilege.  In addition to the
-attacks, students will be guided to walk through several protection
-schemes that have been implemented in the operating system to counter against 
-buffer-overflow attacks.  Students need to evaluate 
-whether the schemes work or not and explain why. This lab
-covers the following topics:
+Para este laboratorio, los estudiantes tendrán disponible un programa con una vulnerabilidad de buffer overflow.
+La tarea será desarrollar un exploit para explotar el programa y obtener privilegios de root.
+A su vez cada uno de los estudiantes podrá experimentar con diferentes tipos de contramedidades que son implementadas para mitigar este tipo de ataques.
+Los estudiantes necesitarán evaluar en que situaciones sus ataques serán exitosos y en cuales no, así también explicando el porque de este resultado.
+Este laboratorio cubre los siguientes tópicos:
+
 
 \begin{itemize}[noitemsep]
-\item Buffer overflow vulnerability and attack
+\item Buffer overflow - Ataques y Vulnerabilidad
 \item Stack layout 
 \item Address randomization, non-executable stack, and StackGuard
-\item Shellcode (32-bit and 64-bit)
-\item The return-to-libc attack, which aims at 
-defeating the non-executable stack countermeasure, is covered 
-in a separate lab.
+\item Shellcode (32-bits y 64-bits)
+\item El ataque return-to-libc, este ataque apunta a evadir la protección non-executable stack y es cubierto en un laboratorio aparte.
 \end{itemize}
 
 
-\paragraph{Readings and videos.}
-Detailed coverage of the buffer-overflow attack can be found in the following:
+\paragraph{Lecturas y Videos.}
+Para una cobertura más detallada en Ataques de Buffer Overflow puede consultar
 
 \begin{itemize}
-\item Chapter 4 of the SEED Book, \seedbook
-\item Section 4 of the SEED Lecture at Udemy, \seedcsvideo
+\item Capítulo 4 del Libro de SEED, \seedbook
+\item Sección 4 del curso de SEED en Udemy, \seedcsvideo
 \end{itemize}
 
 
-\paragraph{Lab environment.} 
+\paragraph{Entorno de Laboratorio.} 
 \seedenvironmentC
 
 
-\paragraph{Note for instructors.} 
-Instructors can customize this lab by choosing values
-for \texttt{L1}, ..., \texttt{L4}. See    
-Section~\ref{sec:vulnerable_program} for details.
-Depending on the background of students and the time allocated 
-for this lab, instructors can also make the 
-Level-2, Level-3, and Level-4 tasks (or some of them) optional. 
-The Level-1 task is sufficient to cover the basics of 
-the buffer-overflow attacks. Levels 2 to 4
-increase the attack difficulties. 
-All the countermeasure tasks are based on the Level-1 task, 
-so skipping the other levels does not affect those tasks. 
+\paragraph{Nota para los instructores.}
+Los instructores pueden personalizar este laboratorio modificando los valores para \texttt{L1}, ..., \texttt{L4}. Ver Sección \ref{sec:vulnerable_program} para más detalles.
+Dependiendo del conocimiento de los estudiantes y el tiempo asignado al laboratorio, los instructores también pueden hacer opcionales los Levels 2, 3 y 4.
+La Tarea del Level 1 es suficiente para cubrir lo básico en cuanto a los ataques buffer overflow. Los Levels del 2 al 4 incrementan la dificultad de estos ataques.
+Todas las tareas relacionadas a las contramedidas están ligadas a la tarea del Level 1 por lo tanto saltearse los otros niveles no afecta el abordaje de estas tareas.
 
 
 % *******************************************
 % SECTION
 % ******************************************* 
-\section{Environment Setup}
+\section{Configuración del Entorno de Laboratorio}
 
 % -------------------------------------------
 % SUBSECTION
 % ------------------------------------------- 
-\subsection{Turning Off Countermeasures}
+\subsection{Desactivando las Contramedidas}
 
-Modern operating systems have implemented several
-security mechanisms to make the buffer-overflow attack difficult. 
-To simplify our attacks, we need to disable them first. 
-Later on, we will enable them and 
-see whether our attack can still be successful or not.
+Los sistemas operativos modernos, implementan diferentes mecanismos de seguridad para dificultar los ataques de buffer overflow.
+Para simplificar nuestros ataques, primero necesitamos desactivarlos.
+Más adelante los activaremos y veremos si nuestro ataque es exitoso o no.
 
 
 \paragraph{Address Space Randomization.}
-\ubuntu and several other Linux-based systems uses address space
-randomization to randomize the starting address of heap and
-stack. This makes guessing the exact addresses difficult; guessing
-addresses is one of the critical steps of buffer-overflow attacks.  
-This feature can be disabled using the following command:
+Tanto \ubuntu como otros sistemas basados en Linux implementan una medida de seguridad llamada address space randomization que sirve para randomizar la dirección de memoria inicial en el heap y en el stack. Esto hace que sea difícil determinar las direcciones de memoria de forma exacta; poder calcular las direcciones de memorias es un paso crítico en los ataques de buffer overflow.
+Esta contramedida puede ser desactivada usando el siguiente comando:
 
 \begin{lstlisting}
 $ sudo sysctl -w kernel.randomize_va_space=0
 \end{lstlisting}
 
 
-\paragraph{Configuring \texttt{/bin/sh}.} In the recent versions of 
-Ubuntu OS, the \texttt{/bin/sh} symbolic link points to
-the \texttt{/bin/dash} shell. The \texttt{dash} program, as well
-as \texttt{bash},  has implemented a security countermeasure
-that prevents itself from being executed in a \setuid process. 
-Basically, if they detect that they are 
-executed in a \setuid process, they will immediately 
-change the effective user ID to the process's real user ID, essentially
-dropping the privilege. 
+\paragraph{Configurando \texttt{/bin/sh}.} En las versiones más recientes de Ubuntu, el link simbólico de \texttt{/bin/sh} apunta a la shell \texttt{/bin/dash}. La shell \texttt{dash} como así \texttt{bash}, tienen implementada una medida de seguridad que evita que se ejecute en un proceso \setuid. Básicamente, si detectan que están siendo ejecuttadas en un proceso \setuid, cambiarán el effective user ID del proceso al real user ID, esto hará que ya no se ejecute con privilegios elevados.
 
 
-Since our victim program is a \setuid program, and our 
-attack relies on running \texttt{/bin/sh}, the countermeasure
-in \texttt{/bin/dash} makes our attack more difficult. Therefore,
-we will link \texttt{/bin/sh} to another shell that does not 
-have such a countermeasure (in later tasks, we will show that with
-a little bit more effort, the countermeasure in \texttt{/bin/dash}
-can be easily defeated). We have installed a shell program 
-called \texttt{zsh} in our Ubuntu 20.04 VM. The following
-command can be used to link \texttt{/bin/sh} to \texttt{zsh}:
+Dado que nuestro programa vulnerable es un programa \setuid y nuestro ataque se basa en correr una shell \texttt{/bin/sh}, la protección anteriormente mencionada hace que nuestro ataque sea más difícil. Lo que haremos será cambiar el link simbólico de \texttt{/bin/sh} a otra shell que no implemente esta medida de protección (en posteriores tareas, mostraremos como evadir esta protección implementada en \texttt{/bin/dash}). En nuestra Máquina Virtual de Ubuntu 20.04 hemos instalado una shell llamada \texttt{zsh}. El siguiente comando puede ser usado para cambiar el link simbólio de \texttt{/bin/sh} hacia \texttt{zsh}:
 
 \begin{lstlisting}
 $ sudo ln -sf /bin/zsh /bin/sh
 \end{lstlisting}
 
 
-\paragraph{StackGuard and Non-Executable Stack.} These are 
-two additional countermeasures implemented in the system. 
-They can be turned off during the compilation.
-We will discuss them later when we compile the vulnerable program.
+\paragraph{StackGuard y Non-Executable Stack.} Estas son contramedidas adicionales implementadas por el sistema. Pueden ser desactivadas durante la compilación.
+Discutiremos esto al momento de compilar nuestro programa vulnerable.
 
 
 
 % *******************************************
 % SECTION
 % ******************************************* 
-\section{Task 1: Getting Familiar with Shellcode}
+\section{Task 1: Shellcode}
 
-The ultimate goal of buffer-overflow attacks is to inject
-malicious code into the target program, so the code can be 
-executed using the target program's privilege.
-Shellcode is widely used in most code-injection attacks. 
-Let us get familiar with it in this task.
-
+El objetivo final de los ataques a las vulnerabilidades de buffer overflow es poder inyectar código malicioso dentro del programa vulnerable, para que así sea ejecutado con los privilegios con que ese programa está corriendo en el sistema.
+La pieza de código más usada para para conducir este tipo de ataque de inyección de código en un ataque es llamada Shellcode.
+Vamos a adentrarnos un poco en este concepto.
 
 
 % -------------------------------------------
 % SUBSECTION
 % -------------------------------------------
-\subsection{The C Version of Shellcode} 
+\subsection{La versión en C del Shellcode} 
 
-A shellcode is basically a piece of code that launches a shell. 
-If we use C code to implement it, it will look like the following:
-
+Un Shellcode básicamente es una pieza de código que ejecuta una shell.
+Si usamos código en C para implementar, lucirá algo así:
 
 \begin{lstlisting}[language=C]
 #include <stdio.h>
@@ -184,20 +142,16 @@ int main() {
 }
 \end{lstlisting}
  
-Unfortunately, we cannot just compile this code and use the binary code
-as our shellcode (detailed explanation is provided in the SEED book). 
-The best way to write a shellcode is to use assembly code. 
-In this lab, we only provide the binary version of a shellcode,
-without explaining how it works (it is non-trivial).
-If you are interested in how exactly shellcode works 
-and you want to write a shellcode from scratch, you
-can learn that from a separate SEED lab called \textit{Shellcode Lab}.
+Desafortunadamente, no podemos compilar este código y usar el binario resultante como nuestro shellcode (para una explicación más en detalle consulte el libro de SEED).
+La mejor forma de escribir un shellcode es usar código ensamblador.
+En este laboratorio sólo proveemos la versión binaria de un shellcode sin explicar con mucho detalle su funcionamiento. Dado que el funcionamiento de un shellcode está fuera del alcance de este laborattorio, no nos adentraremos en los detalles de su mecánica.
+Si está interesado en saber como funciona un shellcode y quiere escribir un shellcode desde cero, puede consultar nuestro laboratorio \textit{Shellcode Lab}
 
 
 % -------------------------------------------
 % SUBSECTION
 % -------------------------------------------
-\subsection{32-bit Shellcode} 
+\subsection{Shellcode de 32-bits} 
 
 
 \begin{lstlisting}[language={[x86masm]Assembler}] 
@@ -248,7 +202,7 @@ the content for these three arguments.
 % -------------------------------------------
 % SUBSECTION
 % -------------------------------------------
-\subsection{64-Bit Shellcode} 
+\subsection{Shellcodede 64-bits} 
 
 We provide a sample 64-bit shellcode in the following.
 It is quite similar to the 32-bit shellcode, except that 
@@ -278,7 +232,7 @@ syscall
 % -------------------------------------------
 % SUBSECTION
 % -------------------------------------------
-\subsection{Task: Invoking the Shellcode} 
+\subsection{Tarea: Invocando el Shellcode} 
 
 We have generated the binary code from the assembly code above, and
 put the code in a C program called \texttt{call\_shellcode.c} inside
@@ -333,7 +287,7 @@ without this option, the program will fail.
 % *******************************************
 % SECTION
 % ******************************************* 
-\section{Task 2: Understanding the Vulnerable Program}
+\section{Tarea 2: Entendiendo el Programa Vulnerable}
 \label{sec:vulnerable_program}
 
 The vulnerable program used in this lab is called 
@@ -844,5 +798,13 @@ default. Launch the attack; report and explain your observations.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \input{\commonfolder/submission}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+% *******************************************
+% SECTION
+% *******************************************
+\section*{Agradecimientos}
+
+\input{\commonfolder/acknowledgments}
 
 \end{document}
