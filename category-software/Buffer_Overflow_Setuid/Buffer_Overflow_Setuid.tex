@@ -350,21 +350,15 @@ en las siguientes sugerencias:
 % -------------------------------------------
 % SUBSECTION
 % ------------------------------------------- 
-\subsection{Investigation} 
+\subsection{Investigación} 
 
-To exploit the buffer-overflow vulnerability in the target program,
-the most important thing to know is the distance between the 
-buffer's starting position and the place where the return-address
-is stored. We will use a debugging method to find it out.
-Since we have the source code of the target program, we
-can compile it with the debugging flag turned on. That will make it more
-convenient to debug. 
+Una de las cosas más importantes a la hora de explotar el buffer overflow que contiene nuestro programa vulnerable es conocer la distancia que hay entre el comienzo del buffer y el lugar donde se almacena su dirección de retorno.
+Para este propósito usaremos un debugger para descubrirlo.
+Debido a que contamos con el código fuente del programa, lo compilaremos con el flag de debug activado, lo que hará que nuestra tarea de debugging sea más fácil.
 
-We will add the \texttt{-g} flag to \texttt{gcc} command, so debugging information
-is added to the binary. If you run \texttt{make}, the debugging version
-is already created. We will use \texttt{gdb} to debug \texttt{stack-L1-dbg}.  
-We need to create a file called
-\texttt{badfile} before running the program. 
+Tendremos que agregar el flag \texttt{-g} a la hora de usar el comando \texttt{gcc}, esto agregará al binario información de debbuging. Si usa el comando \texttt{make} este lo hará por ud. 
+Usaremos \texttt{gdb} para debuggear \texttt{stack-L1-dbg}.
+Antes de correr el programa necesitamos crear el archivo \texttt{badfile}.
 
 
 \newcommand{\pointleft}{\reflectbox{\ding{221}}\xspace}
@@ -388,25 +382,13 @@ $2 = (char (*)[100]) 0xffffdfac
 gdb-peda$ quit        (*@\pointleft \textbf{exit}@*)
 \end{lstlisting}
 
-\paragraph{Note 1.} When \texttt{gdb} stops inside the \texttt{bof()} function, it 
-stops before the \texttt{ebp} register is set
-to point to the current stack frame, so if we print out the value of 
-\texttt{ebp} here, we will get the caller's \texttt{ebp} value. We need to use 
-\texttt{next} to execute a few instructions and stop 
-after the \texttt{ebp} register is modified to point to the stack
-frame of the \texttt{bof()} function. 
-The SEED book is based on Ubuntu 16.04, and \texttt{gdb}'s behavior is slightly
-different, so the book does not have the \texttt{next} step. 
+  
+\paragraph{Nota 1.} Cuando \texttt{gdb} se detiene dentro de la función \texttt{bof()}, se detiene antes que el valor del registro \texttt{ebp} apunta al stack frame actual, por lo tanto si imprimimos el valor de \texttt{ebp} en este punto, obtendremos el valor de \texttt{ebp} del caller. Necesitamos usar \texttt{next} para ejecutar algunas instrucciones más y que se detenga después que el valor registro \texttt{ebp} sea modificado y apunte al stack frame de la función \texttt{bof()}.
+El libro de SEED está basado en Ubuntu 16.04, en esta versión el comportamiento de \texttt{gdb} es levemente diferente, es por eso que en el libro no verá el paso \texttt{next}.
 
-\paragraph{Note 2.}
-It should be noted that the frame pointer value
-obtained from \texttt{gdb} is different from that during the actual
-execution (without using \texttt{gdb}). This is because \texttt{gdb}  
-has pushed some environment data into the stack before running the debugged program. 
-When the program runs directly without using \texttt{gdb},
-the stack does not have those data, so the actual frame pointer value 
-will be larger. You should keep this in mind when constructing 
-your payload. 
+\paragraph{Nota 2.}
+Cabe aclarar que el valor del frame pointer obtenido en \texttt{gdb} difiere del valor usado en la ejecución del programa sin usar \texttt{gdb}. Esto se debe a que \texttt{gdb} inserta en el stack algunos datos extras antes de la ejecución del debugging que tienen que ver con información propia del entorno del debug.
+Cuando el programa corre sin que se use \texttt{gdb} el stack no contiene estos datos, por lo que el valor del frame pointer puede ser más grande. Debe tener esto en cuenta a la hora de construir su payload.
 
 
 % -------------------------------------------
@@ -414,16 +396,14 @@ your payload.
 % ------------------------------------------- 
 \subsection{Lanzando los Ataques} 
 
-To exploit the buffer-overflow vulnerability in the target program,
-we need to prepare a payload, and save it inside \texttt{badfile}. 
-We will use a Python program to do that.
-We provide a skeleton program called \texttt{exploit.py}, which
-is included in the lab setup file.
-The code is incomplete, and students need to replace some of the essential
-values in the code.
+
+Para explotar la vulnerabilidad de buffer overflow en el programa vulnerable, vamos a necesitar preparar un payload y salvarlo dentro de un archivo (en este documento usaremos el nombre de archivo \texttt{badfile}).
+Usaremos un script en Python para la generación de este archivo. 
+Hemos provisto un script genérico en Python (ubicado en el directorio de nuestro laboratorio) llamado \texttt{exploit.py}.
+Este código está incompleto y será necesario que los estudiantes completen determinados valores dentro de este para llevar a cabo un ataque exitoso.
 
 
-\newcommand{\needtochange}{\ding{73} Need to change \ding{73}}
+\newcommand{\needtochange}{\ding{73} Necesita completarse \ding{73}}
 
 
 \begin{lstlisting}[language=python, caption={\texttt{exploit.py}}]
@@ -456,11 +436,7 @@ with open('badfile', 'wb') as f:
   f.write(content)
 \end{lstlisting}
 
-
-After you finish the above program, run it. This will generate
-the contents for \texttt{badfile}. Then run the vulnerable 
-program {\tt stack}. If your exploit is implemented correctly, you should 
-be able to get a root shell:  
+Al terminar de completar el programa anterior, debe correrlo. Esto generará el contenido para el archivo \texttt{badfile}. Proceda a correr el programa vulnerable {\tt stack}. Si su exploit está implementado de forma correcta, debería de obtener una shell de root.
 
 
 \begin{lstlisting}
@@ -469,15 +445,7 @@ $./stack-L1       // launch the attack by running the vulnerable program
 # <---- Bingo! You've got a root shell! 
 \end{lstlisting}
 
-In your lab report, in addition to providing screenshots to demonstrate
-your investigation and attack, 
-you also need to explain how the values used in your 
-\texttt{exploit.py} are decided. These values are the most 
-important part of the attack, so a detailed explanation can help
-the instructor grade your report. Only demonstrating a successful
-attack without explaining why the attack works will not 
-receive many points. 
-
+En el informe de laboratio, además de proveer screenshots para demostrar los resultados de su investigación y ataque, debe explicar como es que se decidió optar por los valores a completar en el archivo \texttt{exploit.py}. Estos valores son los más importantes para el ataque por lo tanto una explicación detallada puede ayudar al instructor a puntuar su informe de una forma más precisa. El sólo demostrar que el ataque fue exitoso sin explicar porque el ataque funcionó no hará que reciba muchos puntos por parte del instructor.
 
 
 % *******************************************
@@ -485,33 +453,12 @@ receive many points.
 % *******************************************
 \section{Tarea 4: Lanzando el Ataque sin conocer el tamaño del Buffer (Level 2)}
 
-In the Level-1 attack, using \texttt{gdb}, we get to know 
-the size of the buffer. In the real world, this piece of information
-may be hard to get. For example, if the target is a server program
-running on a remote machine, we will not be able to get a copy
-of the binary or source code. In this task, we are going to add a 
-constraint: you can still use \texttt{gdb}, but you are not allowed
-to derive the buffer size from your investigation. Actually, the 
-buffer size is provided in \texttt{Makefile}, but you are not allowed
-to use that information in your attack.
+En el ataque del Level-1, usamos \texttt{gdb} para conocer el tamaño del buffer. En el mundo real esta información puede ser difícil de oobtener. Por ejemplo, si el programa vulnerable estuviese corriendo en una máquina remota, no tendríamos acceso a su código fuente o su binario. En esta Tarea, vamos a agregar una restricción: Se permite el uso de \texttt{gdb} pero no se permite derivar el tamaño del buffer de su investigación. Actualmente, el tamaño del buffer está establecido en el archivo \texttt{Makefile}, pero no se permite usar esta información para su ataque.
 
-Your task is to get the vulnerable program to run your shellcode 
-under this constraint. We assume that you do know the range of the 
-buffer size, which is from 100 to 200 bytes. Another fact that 
-may be useful to you is that, due to the memory alignment,
-the value stored in the 
-frame pointer is always multiple of four (for 32-bit programs). 
+Su tarea es hacer que el programa corra su shellcode teniendo en cuenta esta restricción. Asumimos que el tamaño del buffer se encuentra dentro de un rango de 100 a 200 bytes. Otra información que le puede ser de ayuda es que debido al alineamiento de memoria, los valores almacenados en el frame pointer deben ser siempre múltiplos de cuatro (para programas de 32-bits).
 
-Please be noted, you are only allowed
-to construct one payload that works for any buffer size
-within this range.  You will not get all the credits if you
-use the brute-force method, i.e., trying one buffer size
-each time. The more you try, the easier it will be detected
-and defeated by the victim. That's why minimizing the number
-of trials is important for attacks.
-In your lab report, you need to describe your method,
-and provide evidences. 
-
+Por favor note que sólo se permite construir un payload que funcione para cualquier tamaño del buffer dentro del rango anteriormente mencionado. No obtendrá créditos si lo hace a través de un método de fuerza bruta. Mientras más intente, más fácil será detectar el ataque y mitigarlo por parte de la víctima. Es por eso que es crucial minimizar la cantidad de intentos en el ataque.
+En el informe del laboratorio deberá describir el método que se uso y mostrar las evidencias del ataque.
 
 
 % *******************************************
