@@ -466,37 +466,17 @@ En el informe del laboratorio deberá describir el método que se uso y mostrar 
 % *******************************************
 \section{Tarea 5: Lanzando el ataque en el Programa de 64-bits (Level 3)}
 
-In this task, we will compile the vulnerable program 
-into a 64-bit binary called \texttt{stack-L3}.  
-We will launch attacks on this program. The compilation and setup
-commands are already included in \texttt{Makefile}. Similar to
-the previous task, detailed explanation of your attack needs to be provided 
-in the lab report. 
+En esta tarea, compilaremos el programa vulnerable para 64-bits en un binario llamado \texttt{stack-L3}. Lanzaremos ataques sobre este programa. Los comandos para compilar y configurar el programa están dentro del archivo \texttt{Makefile}. Como viene haciendo en las tareas anteriores, deberá de proveer una explicación detallada de su ataque en el informe del laboratorio.
+
+Debuggear los programas de 64-bits con \texttt{gdb} es similar hacerlo con los de 32-bits, la única diferencia es el nombre del registro del frame pointer.
+En la arquitectura x86 es frame pointer se llama \texttt{ebp}, mientras que en la arquitectura x64 se llama \texttt{rbp}
 
 
-Using \texttt{gdb} to conduct an investigation on 64-bit programs 
-is the same as that on 32-bit programs.
-The only difference is the name of the register for the frame pointer.
-In the x86 architecture,
-the frame pointer is \texttt{ebp}, while in the x64 architecture,
-it is \texttt{rbp}. 
+\paragraph{Desafíos.} En comparación con una máquina de 32-bits los ataques de buffer overflow son más difíciles en una de 64-bits. La parte más compleja son las direcciones de memoria. Debido a que el espacio de direcciones permitido va de \texttt{0x00} a \texttt{0x00007FFFFFFFFFFF}, tendremos por cada dirección de memoria de 8 bytes, 2 bytes que serán ceros.
+Esto será un problema a la hora de construir nuestro payload.
 
-
-\paragraph{Challenges.} Compared to buffer-overflow attacks on 32-bit
-machines, attacks on 64-bit machines is more difficult. The most
-difficult part is the address. Although the x64 architecture
-supports 64-bit address space, only the address from
-\texttt{0x00} through \texttt{0x00007FFFFFFFFFFF} is allowed. That means for
-every address (8 bytes), the highest two bytes are always zeros.
-This causes a problem.
-
-In our buffer-overflow attacks, we need to store at least one address
-in the payload, and the payload will be copied into the stack via
-\texttt{strcpy()}. We know that the \texttt{strcpy()} function
-will stop copying when it sees a zero. Therefore, if zero
-appears in the middle of the payload, the content after the
-zero cannot be copied into the stack. How to solve this
-problem is the most difficult challenge in this attack.
+En nuestros ataques de buffer overflow, necesitamos guardar al menos una dirección de memoria en el payload, este será copiado en el stack usando la función \texttt{strcpy()}. Sabemos que la función \texttt{strcpy()} dejará de copiar datos al encontrarse con un valor cero. Por lo tanto, si un cero
+aparece en el medio del payload, los datos que siguen después de este no serán copiados. Resolver esta cuestión es uno de los desafíos más difíciles.
 
 
 
@@ -506,22 +486,17 @@ problem is the most difficult challenge in this attack.
 % *******************************************
 \section{Tarea 6: Lanzando el ataque en el Programa de 64-bits (Level 4)}
 
-
-The target program (\texttt{stack-L4}) in this task is similar to the one in the Level 2,
-except that the buffer size is extremely small. We set the 
-buffer size to 10, while in Level 2, the buffer size is much larger. 
-Your goal is the same: get the root shell by attacking this \setuid program. 
-You may encounter additional challenges in this attack 
-due to the small buffer size. 
-If that is the case, you need to explain how your have solved 
-those challenges in your attack. 
+El programa vulnerable para esta tarea será \texttt{stack-L4}, este es similar al programa del Level 2, sólo que el tamaño del buffer es mucho más chico. Hemos establecido un tamaño del buffer de 10 bytes, mientras que en el Level 2 este tamaño es bastante más grande. 
+Su objetivo es el mismo; obtener shell de root explotando el programa \setuid.
+Debido al que tamaño del buffer es bastante pequeño, puede encontrarse con varios desafíos a la hora de explotar el programa.
+Si ese es el caso, deberá explicar como ha sorteado estos desafíos en su ataque en el informe del laboratorio.
 
 
 
 % *******************************************
 % SECTION
 % ******************************************* 
-\section{Tarea 7: Evadiendo la protección \texttt{dash}}
+\section{Tarea 7: Evadiendo la protección de \texttt{dash}}
 
 The \texttt{dash} shell in the Ubuntu OS 
 drops privileges when it detects that the effective UID does not 
@@ -568,13 +543,13 @@ syscall
 \end{lstlisting}
 
 
-\paragraph{Experiment.} Compile \texttt{call\_shellcode.c} into
+\paragraph{Experimento.} Compile \texttt{call\_shellcode.c} into
 root-owned binary (by typing \texttt{"make setuid"}). 
 Run the shellcode \texttt{a32.out} and \texttt{a64.out} with or without 
 the \texttt{setuid(0)} system call. Please describe and explain
 your observations. 
 
-\paragraph{Launching the attack again.}
+\paragraph{Lanzando el ataque nuevamente.}
 Now, using the updated shellcode, we can attempt the attack 
 again on the vulnerable program, and this time, with the 
 shell's countermeasure turned on. Repeat your attack
@@ -656,14 +631,10 @@ Let it run overnight. Who knows, you may be very lucky.
 Muchos compiladores como \texttt{gcc} implementan un mecanismo de seguridad llamado \textit{StackGuard} esta protección está destinada a prevenir ataques a programas con vulnerabilidades de buffer overflow. Los programas vulnerables que hemos estado usando tienen esta protección desactivada. 
 En esta tarea, la activaremos para ver que es lo que pasa.
 
-First, repeat the Level-1 attack with the StackGuard off, and make sure that the
-attack is still successful. Remember to turn off the address randomization, because
-you have turned it on in the previous task.
-Then, we turn on the StackGuard protection by
-recompiling the vulnerable \texttt{stack.c} program without the
-\texttt{-fno-stack-protector} flag.
-In \texttt{gcc} version 4.3.3 and above, StackGuard is enabled by
-default. Launch the attack; report and explain your observations.
+Primero, repita el ataque del Level-1 con la protección de StackGuard desactivadda y asegúrese que el ataque sea exitoso. Debido a que en la tarea anterior se ha activado el address randomization, recuerde desactivarlo para esta prueba.
+Luego, active la protección address randomization, recompilando el programa vulnerable \texttt{stack.c} sin el flag \texttt{-fno-stack-protector}.
+En la version 4.3.3 y superior de \texttt{gcc}, StackGuard está activado por defecto. 
+Lance en el ataque; escriba sus observaciones en el informe del laboratorio.
 
 
 
