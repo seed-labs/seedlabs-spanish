@@ -97,7 +97,7 @@ $ sudo sysctl -w kernel.randomize_va_space=0
 \end{lstlisting}
 
 
-\paragraph{Configurando \texttt{/bin/sh}.} En las versiones más recientes de Ubuntu, el link simbólico de \texttt{/bin/sh} apunta a la shell \texttt{/bin/dash}. La shell \texttt{dash} como así \texttt{bash}, tienen implementada una medida de seguridad que evita que se ejecute en un proceso \setuid. Básicamente, si detectan que están siendo ejecuttadas en un proceso \setuid, cambiarán el effective user ID del proceso al real user ID, esto hará que ya no se ejecute con privilegios elevados.
+\paragraph{Configurando \texttt{/bin/sh}.} En las versiones más recientes de Ubuntu, el link simbólico de \texttt{/bin/sh} apunta a la shell \texttt{/bin/dash}. La shell \texttt{dash} como así \texttt{bash}, tienen implementada una medida de seguridad que evita que se ejecute en un proceso \setuid. Básicamente, si detectan que están siendo ejecutadas en un proceso \setuid, cambiarán el effective user ID del proceso al real user ID, esto hará que ya no se ejecute con privilegios elevados.
 
 
 Dado que nuestro programa vulnerable es un programa \setuid y nuestro ataque se basa en correr una shell \texttt{/bin/sh}, la protección anteriormente mencionada hace que nuestro ataque sea más difícil. Lo que haremos será cambiar el link simbólico de \texttt{/bin/sh} a otra shell que no implemente esta medida de protección (en posteriores tareas, mostraremos como evadir esta protección implementada en \texttt{/bin/dash}). En nuestra Máquina Virtual de Ubuntu 20.04 hemos instalado una shell llamada \texttt{zsh}. El siguiente comando puede ser usado para cambiar el link simbólio de \texttt{/bin/sh} hacia \texttt{zsh}:
@@ -117,7 +117,7 @@ Discutiremos esto al momento de compilar nuestro programa vulnerable.
 % ******************************************* 
 \section{Task 1: Shellcode}
 
-El objetivo final de los ataques a las vulnerabilidades de buffer overflow es poder inyectar código malicioso dentro del programa vulnerable, para que así sea ejecutado con los privilegios con que ese programa está corriendo en el sistema.
+El objetivo final de los ataques a las vulnerabilidades de buffer overflow es poder inyectar código malicioso dentro del programa vulnerable, para ques sea ejecutado con los privilegios con que ese programa está corriendo en el sistema.
 La pieza de código más usada para para conducir este tipo de ataque de inyección de código en un ataque es llamada Shellcode.
 Vamos a adentrarnos un poco en este concepto.
 
@@ -217,7 +217,7 @@ syscall
 % -------------------------------------------
 \subsection{Tarea: Invocando el Shellcode} 
 
-Hemos generados el código binario del shellcode hecho en assembler y hemos puesto ese codigo dentro de un programa hecho en C llamado \texttt{call\_shellcode.c} dentro del directorio \texttt{shellcode}. Si desea aprender como generar el código binario por su cuenta, le recomendamos el laboratorio de Shellcode.
+Hemos generados el código binario del shellcode hecho en ensamblador y hemos puesto ese codigo dentro de un programa hecho en C llamado \texttt{call\_shellcode.c} dentro del directorio \texttt{shellcode}. Si desea aprender como generar el código binario por su cuenta, le recomendamos el laboratorio de Shellcode.
 En esta Tarea, haremos un testeo del shellcode.
 
 \begin{lstlisting}[language=C, caption=\texttt{call\_shellcode.c}, label=call_shellcode]
@@ -248,10 +248,9 @@ int main(int argc, char **argv)
 } 
 \end{lstlisting}
 
-El código mostrado anterior incluye las dos copias del shellcode, la de 32-bits y la de 64-bits. Cuando compilamoos el programa usando el flag 
-The code above includes two copies of shellcode, one is 32-bit \texttt{-m32} será usada la versión de 32-bits; si no se usa ese flag será usada la versión de 64-bits. 
-Puede usar el código tipeando \texttt{make} esto tomará como referencia el archivo provisto \texttt{Makefile}.
-Serán creados dos binarios \texttt{a32.out} (32-bits) y  \texttt{a64.out} (64-bits).
+El código mostrado anterior incluye las dos copias del shellcode, la de 32-bits y la de 64-bits. Cuando compilamos el programa usando el flag \texttt{-m32} será usada la versión de 32-bits; si no se usa ese flag será usada la versión de 64-bits. 
+Puede usar el código tipeando \texttt{make} esto tomará como referencia el archivo  \texttt{Makefile}.
+Serán creados dos binarios \texttt{a32.out} (32-bits) y \texttt{a64.out} (64-bits).
 Corralos y describa sus observaciones.
 Cabe aclarar que en la compilación se usa la opción \texttt{execstack} que permite que se ejecute código en el stack: sin esta opción el programa fallará.
 
@@ -265,7 +264,7 @@ Cabe aclarar que en la compilación se usa la opción \texttt{execstack} que per
 \label{sec:vulnerable_program}
 
 El programa vulnerable que usaremos en este laboratorio se llama \texttt{stack.c} y está ubicado dentro del directorio  \texttt{code}.
-Este programa contiene una vulnerabilidad de buffer overflow y es su tarea explotar esta vulnerabilidad y obtener privilegios de root.
+Este programa contiene una vulnerabilidad de buffer overflow. Es su tarea explotar esta vulnerabilidad y obtener privilegios de root.
 El código mostrado a continuación tiene información trivial que fue borrada del archivo original por lo tanto puede notar alguna diferencia entre lo que se muestra acá y el archivo en el directorio.
 
 \begin{lstlisting}[language=C, caption={The vulnerable program (\texttt{stack.c})}]
@@ -306,7 +305,7 @@ int main(int argc, char **argv)
 El programa mostrado anteriormente tiene una vulnerabilidad de buffer overflow. Este recibe el input de un archivo llamado \texttt{badfile}, este input es pasado a un buffer en la función  {\tt bof()}. El input original tiene una longitud máxima de \texttt{517} bytes, pero el buffer en {\tt bof()}  tiene solamente  \texttt{BUF\_SIZE} bytes el cual es menor a \texttt{517}.
 Debido a que {\tt strcpy()} no hace un chequeo del tamaño de los datos del input antes que se copien, se dará una condición de buffer overflow.
 Dado que este programa tiene como dueño al usuario root y es un programa \setuid, la explotación de la vulnerabilidad de buffer overflow por parte de un usuario no privilegiado, puede usarse para obtener privilegios de root.
-Hay que notar que el programa obtiene su input del archivo \texttt{badfile}. Este archivo esta bajo el control del ussuario. Nuestro objetivo será crear el contenido para el archivo \texttt{badfile}, de forma tal que cuando el programa vulnerable copie el contenido de este archivo al buffer, se ejecute una shell con privilegios de root.
+Hay que notar que el programa obtiene su input del archivo \texttt{badfile}. Este archivo esta bajo el control del usuario. Nuestro objetivo será crear el contenido para el archivo \texttt{badfile}, de forma tal que cuando el programa vulnerable copie el contenido de este archivo al buffer, se ejecute una shell con privilegios de root.
 
 
 \paragraph{Compilación.}
@@ -353,7 +352,7 @@ en las siguientes sugerencias:
 \subsection{Investigación} 
 
 Una de las cosas más importantes a la hora de explotar el buffer overflow que contiene nuestro programa vulnerable es conocer la distancia que hay entre el comienzo del buffer y el lugar donde se almacena su dirección de retorno.
-Para este propósito usaremos un debugger para descubrirlo.
+Para este propósito usaremos un debugger.
 Debido a que contamos con el código fuente del programa, lo compilaremos con el flag de debug activado, lo que hará que nuestra tarea de debugging sea más fácil.
 
 Tendremos que agregar el flag \texttt{-g} a la hora de usar el comando \texttt{gcc}, esto agregará al binario información de debbuging. Si usa el comando \texttt{make} este lo hará por ud. 
@@ -383,11 +382,11 @@ gdb-peda$ quit        (*@\pointleft \textbf{exit}@*)
 \end{lstlisting}
 
   
-\paragraph{Nota 1.} Cuando \texttt{gdb} se detiene dentro de la función \texttt{bof()}, se detiene antes que el valor del registro \texttt{ebp} apunta al stack frame actual, por lo tanto si imprimimos el valor de \texttt{ebp} en este punto, obtendremos el valor de \texttt{ebp} del caller. Necesitamos usar \texttt{next} para ejecutar algunas instrucciones más y que se detenga después que el valor registro \texttt{ebp} sea modificado y apunte al stack frame de la función \texttt{bof()}.
+\paragraph{Nota 1.} Cuando \texttt{gdb} se detiene dentro de la función \texttt{bof()}, se detiene antes que el valor del registro \texttt{ebp} apunta al stack frame actual, por lo tanto si imprimimos el valor de \texttt{ebp} en este punto, obtendremos el valor de \texttt{ebp} del caller. Necesitamos usar \texttt{next} para ejecutar algunas instrucciones más y que se detenga después que el valor registro \texttt{ebp} es modificado y quede apuntando al stack frame de la función \texttt{bof()}.
 El libro de SEED está basado en Ubuntu 16.04, en esta versión el comportamiento de \texttt{gdb} es levemente diferente, es por eso que en el libro no verá el paso \texttt{next}.
 
 \paragraph{Nota 2.}
-Cabe aclarar que el valor del frame pointer obtenido en \texttt{gdb} difiere del valor usado en la ejecución del programa sin usar \texttt{gdb}. Esto se debe a que \texttt{gdb} inserta en el stack algunos datos extras antes de la ejecución del debugging que tienen que ver con información propia del entorno del debug.
+Cabe aclarar que el valor del frame pointer obtenido en \texttt{gdb} difiere del valor usado en la ejecución del programa sin usar \texttt{gdb}. Esto se debe a que \texttt{gdb} inserta en el stack algunos datos extras antes de la ejecución del debugging que tienen que ver con información propia del entorno de debug.
 Cuando el programa corre sin que se use \texttt{gdb} el stack no contiene estos datos, por lo que el valor del frame pointer puede ser más grande. Debe tener esto en cuenta a la hora de construir su payload.
 
 
@@ -397,7 +396,7 @@ Cuando el programa corre sin que se use \texttt{gdb} el stack no contiene estos 
 \subsection{Lanzando los Ataques} 
 
 
-Para explotar la vulnerabilidad de buffer overflow en el programa vulnerable, vamos a necesitar preparar un payload y salvarlo dentro de un archivo (en este documento usaremos el nombre de archivo \texttt{badfile}).
+Para explotar la vulnerabilidad de buffer overflow en el programa vulnerable, vamos a necesitar preparar un payload y guardarlo dentro de un archivo (en este documento usaremos el nombre de archivo \texttt{badfile}).
 Usaremos un script en Python para la generación de este archivo. 
 Hemos provisto un script genérico en Python (ubicado en el directorio de nuestro laboratorio) llamado \texttt{exploit.py}.
 Este código está incompleto y será necesario que los estudiantes completen determinados valores dentro de este para llevar a cabo un ataque exitoso.
@@ -445,7 +444,7 @@ $./stack-L1       // launch the attack by running the vulnerable program
 # <---- Bingo! You've got a root shell! 
 \end{lstlisting}
 
-En el informe de laboratio, además de proveer screenshots para demostrar los resultados de su investigación y ataque, debe explicar como es que se decidió optar por los valores a completar en el archivo \texttt{exploit.py}. Estos valores son los más importantes para el ataque por lo tanto una explicación detallada puede ayudar al instructor a puntuar su informe de una forma más precisa. El sólo demostrar que el ataque fue exitoso sin explicar porque el ataque funcionó no hará que reciba muchos puntos por parte del instructor.
+En el informe del laboratorio, además de proveer screenshots para demostrar los resultados de su investigación y ataque, debe explicar como es que se decidió optar por los valores a completar en el archivo \texttt{exploit.py}. Estos valores son los más importantes para el ataque por lo tanto una explicación detallada puede ayudar al instructor a puntuar su informe de una forma más precisa. El sólo demostrar que el ataque fue exitoso sin explicar el porque funcionó no hará que reciba muchos puntos por parte del instructor.
 
 
 % *******************************************
@@ -453,11 +452,11 @@ En el informe de laboratio, además de proveer screenshots para demostrar los re
 % *******************************************
 \section{Tarea 4: Lanzando el Ataque sin conocer el tamaño del Buffer (Level 2)}
 
-En el ataque del Level-1, usamos \texttt{gdb} para conocer el tamaño del buffer. En el mundo real esta información puede ser difícil de oobtener. Por ejemplo, si el programa vulnerable estuviese corriendo en una máquina remota, no tendríamos acceso a su código fuente o su binario. En esta Tarea, vamos a agregar una restricción: Se permite el uso de \texttt{gdb} pero no se permite derivar el tamaño del buffer de su investigación. Actualmente, el tamaño del buffer está establecido en el archivo \texttt{Makefile}, pero no se permite usar esta información para su ataque.
+En el ataque del Level-1, usamos \texttt{gdb} para conocer el tamaño del buffer. En el mundo real esta información puede ser difícil de obtener. Por ejemplo, si el programa vulnerable estuviese corriendo en una máquina remota, no tendríamos acceso a su código fuente o su binario. En esta Tarea, vamos a agregar una restricción: Se permite el uso de \texttt{gdb} pero no se permite derivar el tamaño del buffer de su investigación. Actualmente, el tamaño del buffer está establecido en el archivo \texttt{Makefile}, pero no se permite usar esta información para su ataque.
 
 Su tarea es hacer que el programa corra su shellcode teniendo en cuenta esta restricción. Asumimos que el tamaño del buffer se encuentra dentro de un rango de 100 a 200 bytes. Otra información que le puede ser de ayuda es que debido al alineamiento de memoria, los valores almacenados en el frame pointer deben ser siempre múltiplos de cuatro (para programas de 32-bits).
 
-Por favor note que sólo se permite construir un payload que funcione para cualquier tamaño del buffer dentro del rango anteriormente mencionado. No obtendrá créditos si lo hace a través de un método de fuerza bruta. Mientras más intente, más fácil será detectar el ataque y mitigarlo por parte de la víctima. Es por eso que es crucial minimizar la cantidad de intentos en el ataque.
+Por favor note que sólo se permite construir un payload que funcione para cualquier tamaño del buffer dentro del rango anteriormente mencionado. No obtendrá créditos si lo hace usando brute force. Mientras más intente, más fácil será detectar el ataque y mitigarlo por parte de la víctima. Es por eso que es crucial minimizar la cantidad de intentos en el ataque.
 En el informe del laboratorio deberá describir el método que se uso y mostrar las evidencias del ataque.
 
 
@@ -469,7 +468,7 @@ En el informe del laboratorio deberá describir el método que se uso y mostrar 
 En esta tarea, compilaremos el programa vulnerable para 64-bits en un binario llamado \texttt{stack-L3}. Lanzaremos ataques sobre este programa. Los comandos para compilar y configurar el programa están dentro del archivo \texttt{Makefile}. Como viene haciendo en las tareas anteriores, deberá de proveer una explicación detallada de su ataque en el informe del laboratorio.
 
 Debuggear los programas de 64-bits con \texttt{gdb} es similar hacerlo con los de 32-bits, la única diferencia es el nombre del registro del frame pointer.
-En la arquitectura x86 es frame pointer se llama \texttt{ebp}, mientras que en la arquitectura x64 se llama \texttt{rbp}
+En la arquitectura x86 el frame pointer se llama \texttt{ebp}, mientras que en la arquitectura x64 se llama \texttt{rbp}
 
 
 \paragraph{Desafíos.} En comparación con una máquina de 32-bits los ataques de buffer overflow son más difíciles en una de 64-bits. La parte más compleja son las direcciones de memoria. Debido a que el espacio de direcciones permitido va de \texttt{0x00} a \texttt{0x00007FFFFFFFFFFF}, tendremos por cada dirección de memoria de 8 bytes, 2 bytes que serán ceros.
@@ -504,9 +503,9 @@ En las tareas anteriores, hemos apuntado \texttt{/bin/sh} a otra shell llamada \
 $ sudo ln -sf /bin/dash /bin/sh
 \end{lstlisting}
 
-Para evadir esta protección en un ataque de buffer overflow, debemos de cambiar el real UID para que sea igual al effective UID. Cuando el usuario root es dueño de un programa \setuid, el effective UID es ceroo, entonces debemos de hacer este cambio antes de que el programa haga la invocación de la shell. Esto se logra usando la llamada al sistema \texttt{setuid(0)} antes de la ejecución de \texttt{execve()}  en el shellcode.
+Para evadir esta protección en un ataque de buffer overflow, debemos de cambiar el real UID para que sea igual al effective UID. Cuando el usuario root es dueño de un programa \setuid, el effective UID es cero, entonces debemos de hacer este cambio antes de que el programa haga la invocación de la shell. Esto se logra usando la llamada al sistema \texttt{setuid(0)} antes de la ejecución de \texttt{execve()}  en el shellcode.
 
-El siguiente código en ensamblador muestra como llamar a \texttt{setuid(0)}. El código binario fue puesto dentro dentro del archivo \texttt{call\_shellcode.c}, sólo debe agregar este fragmento al comienzo del shelllcode.
+El siguiente código en ensamblador muestra como llamar a \texttt{setuid(0)}. El código binario fue puesto dentro dentro del archivo \texttt{call\_shellcode.c}, sólo debe agregar este fragmento al comienzo del shellcode.
 
 \begin{lstlisting}[language={[x86masm]Assembler}]
 ; Invoke setuid(0): 32-bit
@@ -547,7 +546,7 @@ $ sudo /sbin/sysctl -w kernel.randomize_va_space=2
 \end{lstlisting}
 
 A continuación usaremos la técnica de brute force para atacar al programa vulnerable de forma repetida, con la intención de que la dirección que ponemos en el archivo  \texttt{badfile} pueda ser la correcta. Solamente lo haremos para el archivo \texttt{stack-L1} que es un programa de 32-bits.
-Puede usar el siguiente script en bash para atacar al programa vulnerable dentro de un loop infinito. Si su ataque es exitoso el script se detendrá; de otra forma seguirá corriendo. Por favor sea paciente, el proceso puede tomar unos minutos, pero si no tiene suerte puede que sea un poco más largo. Por favor describa sus observaciones.
+Puede usar el siguiente script en bash para atacar al programa vulnerable dentro de un loop infinito. Si su ataque es exitoso el script se detendrá; de otra forma seguirá corriendo. Por favor sea paciente, este proceso puede tomar unos minutos, pero si no tiene suerte puede que sea un poco más largo. Por favor describa sus observaciones.
 
 
 \begin{lstlisting}[language=bash]
@@ -604,7 +603,7 @@ Lance en el ataque; escriba sus observaciones en el informe del laboratorio.
 % *******************************************
 % SECTION
 % *******************************************
-\section{Submission}
+\section{Informe del Laboratorio}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \input{\commonfolder/submission}
