@@ -41,7 +41,7 @@
 
 El objetivo de este laboratorio es que el estudiante gane experiencia en vulnerabilidades como también en ataques contra esas vulnerabilidades. Los sabios aprenden de sus errores. En la educación de la seguridad informática, estudiamos errores que terminan siendo vulnerabilidades en el software. Estudiar los errores del pasado no sólo ayuda a los estudiantes a entender porque los sistemas son vulnerables, porque un descuido inofensivo en aparencia puede desembocar en un desastre, y porque son necesarios tantos mecanismos de seguridad. Sino que aún más importante ayuda a los estudiantes a entender los patrones comúnes en las vulnerabilidades y evitar cometer los errores del pasado en el futuro. Además usando esas vulnerabilidades como casos de estudio, los estudiantes pueden aprender los principios del diseño seguro, del desarrollo seguro y del testeo en la seguridad informática.
 
-Las vulnerabilidades en los protolos TCP/IP representan un tipo de género especial dentro de los que son las vulnerabilidades en el diseño y la implementación de los protocolos; Nos muestran una lección fundamental y es que la seguridad debe ser concebida desde el momento en que se empieza a diseñar y no después. Por otra parte estudiar esas vulnerabilidades ayuda a los estudiantes a comprender los desafíos de la seguridad en las redes y porque son necesarias tantas métricas de seguridad en estas.
+Las vulnerabilidades en los protolos TCP/IP representan un tipo de género especial dentro de los que son las vulnerabilidades en el diseño y la implementación de los protocolos; Nos muestran una lección fundamental y es que la seguridad debe ser concebida desde el momento en que se empieza a diseñar y no después. Por otra parte estudiar esas vulnerabilidades ayuda a los estudiantes a comprender los desafíos de la seguridad en las redes y porque son necesarias tantas métricas de seguridad.
 En este laboratorio los estudiantes llevarán a cabo varios Ataques contra el protocolo TCP.
 Este laboratorio cubre los siguientes tópicos:
 
@@ -164,7 +164,7 @@ El password de la misma es \texttt{dees}. Puede usar esta cuenta para telnet.
  
 
 El SYN Flood es ataque del tipo DoS, en el cual el atacante envía muchos requests SYN hacia un puerto TCP de la máquina víctima, pero el atacante no tiene la intención de completar el proceso del 3-way handshake. Los atacantes pueden usar una dirección IP spoofeada o optar por descontinuar el proceso.
-A través de este ataque, los atacantes pueden floodear la cola de las half-opened connections (es decir las conexiones que no han terminado de completar el proceso 3-way handshake y han logrado llegar hasta el SYN, SYN-ACK pero no dieron el ACK final) en la máquina de víctima, cuando esta cola se llena la víctima no puede recibir más conexiones. La Figura \ref{tcp:fig:synflooding} muestra este ataque.
+A través de este ataque, los atacantes pueden saturar (flooding) la cola de las half-opened connections (es decir las conexiones que no han terminado de completar el proceso 3-way handshake y han logrado llegar hasta el SYN, SYN-ACK pero no dieron el ACK final) en la máquina de víctima, cuando esta cola se llena la víctima no puede recibir más conexiones. La Figura \ref{tcp:fig:synflooding} muestra este ataque.
 
 El tamaño de la cola es establecido a través de una configuración global del sistema. En los sistemas Ubuntu, podemos chequear esta configuración usando el siguiente comando. El Sistema Operativo establece este valor basado en el total de memoria que el sistema tiene: mientras más memoria, este valor es más grande.
 
@@ -179,7 +179,7 @@ El estado de estas conexiones es \texttt {SYN-RECV}. Si se completa el 3-way han
 
 \paragraph{SYN Cookie como Contramedida:}
 Por defecto Ubuntu tiene una contramedida activada para protegerse del SYN Flooding. Esta protección es llamada SYN cookie, esta entrará en juego si detecta que el sistema está siendo atacado por un ataque del tipo SYN Flooding.
-en nuestro contenedor servidor de la víctima, hemos desactivado esta contramedida (puede ver la entrada \texttt{sysctls} en el archivo \texttt{docker-compose.yml}).
+en nuestro contenedor que se usa como servidor víctima, hemos desactivado esta contramedida (puede ver la entrada \texttt{sysctls} en el archivo \texttt{docker-compose.yml}).
 Para activarla o desactivarla podemos usar el comando \texttt{sysctl}:
 
 \begin{lstlisting}
@@ -189,14 +189,12 @@ Para activarla o desactivarla podemos usar el comando \texttt{sysctl}:
 \end{lstlisting}
 
 Para poder usar \texttt{sysctl} para cambiar los valores globales de las variables del sistema dentro del contenedor, el contenedor necesita estar configurado con la entrada \texttt{"privileged: true"} (en nuestro caso el contenedor víctima).
-Sin esta configuración, si corremos el comando anteriormente mencionado veremos el siguiente mensaje de error. El contenedor no ttiene los privilegios para realizar este cambio.
+Sin esta configuración, si corremos el comando anteriormente mencionado veremos el siguiente mensaje de error. Esto se debe a que el contenedor no tiene los privilegios para realizar este cambio.
 
 \begin{lstlisting}
 # sysctl -w net.ipv4.tcp_syncookies=1
 sysctl: setting key "net.ipv4.tcp_syncookies": Read-only file system
 \end{lstlisting}
-
-
 
 
 
@@ -230,7 +228,7 @@ while True:
 \end{lstlisting}
 
 Deje que el ataque se ejecute durante al menos un minuto, luego intente hacer telnet en la máquina de la víctima y vea si puede tener éxito. Es muy probable que
-su ataque falle. Esto se debe a que múltiples problemas pueden contribuir al fracaso. del ataque. A continuación se enumeran las posibles causas de estos fallos y como abordarlas.
+su ataque falle. Esto puede deberse a varios problemas. A continuación se enumeran las posibles causas de estos fallos y como abordarlas.
 
 \begin{itemize}
   \item \textbf{Problema de Cache TCP:} Vea la Nota A más abajo
@@ -246,8 +244,8 @@ su ataque falle. Esto se debe a que múltiples problemas pueden contribuir al fr
 net.ipv4.tcp_synack_retries = 5
 \end{lstlisting}
 	
-	Después de realizar 5 retransmisiones, TCP borrará el item correspondiente de la cola half-open connection. Cada vez que un item es boorrado, un nuevo slot se abre. Esto provocará que sus paquetes de ataque y otros paquetes legítimos "luchen" en cierta forma por entrar en este nuevo slot que se liberó. Puede ocurrir que nuestro programa Python no sea lo suficiente rápido y que gane un paquete legítimo en vez del que estamos usando para atacar. Para ganar esta carrera, podemos correr varias instancias en paralelo del programa de ataque en Python. Por favor intente esta estrategia y vea si puede lograr un ataque exitoso.¿Cuántas instancias fueron necesarias para lograr un ataque exitoso?
-stances 
+	Después de realizar 5 retransmisiones, TCP borrará el item correspondiente de la cola half-open connection. Cada vez que un item es borrado, un nuevo slot se abre. Esto provocará que sus paquetes de ataque y otros paquetes legítimos "luchen" en cierta forma por entrar en este nuevo slot que se liberó. Puede ocurrir que nuestro programa Python no sea lo suficiente rápido y que gane un paquete legítimo en vez del que estamos usando para atacar. Para ganar esta carrera, podemos correr varias instancias en paralelo del programa de ataque en Python. Por favor intente esta estrategia y vea si puede lograr un ataque exitoso.¿Cuántas instancias fueron necesarias para lograr un ataque exitoso?
+ 
 
   \item \textbf{El tamaño de la cola:}  
   	La cantidad de conexiones que pueden ser guardadas en la cola de  half-open connections pueden afectar al exito del ataque. El tamaño de la cola puede ser ajustado usando el siguiente comando:
@@ -263,15 +261,15 @@ $ netstat -tna | grep SYN_RECV | wc -l
 $ ss -n state syn-recv sport = :23 | wc -l
 \end{lstlisting}
 
-	Por favor reduzca el tamaño de la cola de the half-open connection en la máquina víctima y vea si puede mejorar el éxito de su ataque.
+	Por favor reduzca el tamaño de la cola de half-open connection en la máquina víctima y vea si puede mejorar el éxito de su ataque.
 \end{itemize}
 
 \paragraph{Nota A: Mecanismo de mitigación del Kernel.} 
-En Ubuntu 20.04, si una Máquina X nunca se ha conectado a la máquina víctima, cuando se lance el ataque de SYN Flooding la Máquina X no podrá hacer telnet en la máquina víctima. Sin embargo, si antes del ataque, la Máquina X ha hecho un telnet (o una conexión TCP) a la máquina víctima, entonces X pareciera ser ``immune'' al ataque de SYN Flooding y podrá conectarse por telnet en la máquina víctima. Pareciera que la máquina víctima recuerda las conexiones exitosas que fueron hechas por la Máquina X en el pasado y usa esta especie de memoria cuando establece futuras conexiones con este cliente. Este tipo de comportamiento no existe en Ubuntu 16.04 y anteriores.
+En Ubuntu 20.04, si una Máquina X nunca se ha conectado a la máquina víctima, cuando se lance el ataque de SYN Flooding la Máquina X no podrá hacer telnet en la máquina víctima. Sin embargo, si antes del ataque, la Máquina X ha hecho un telnet (o una conexión TCP) a la máquina víctima, entonces X pareciera ser ``immune'' al ataque de SYN Flooding y podrá conectarse por telnet en la máquina víctima. Daría la idea que la máquina víctima recuerda las conexiones exitosas que fueron hechas por la Máquina X en el pasado y usa esta especie de memoria cuando establece futuras conexiones con este cliente. Este tipo de comportamiento no existe en Ubuntu 16.04 y anteriores.
 
-Esto es debidoo a una mitigación del kernel:
+Esto es debido a una mitigación del kernel:
 TCP reserva una cuarta parte de la cola de trabajos pendientes para ``destinos probados'' si las SYN Cookies están desactivadas. Después de realizar una conexión TCP de \texttt{10.9.0.6} hacia el servidor \texttt{10.9.0.5}, podemos ver que la dirección IP \texttt{10.9.0.6} es recordada (cacheada) por el servidor, por lo que usarán los slots reservados cuando las conexiones provienen de ellos, y por lo tanto no serán afectados por el ataque de SYN Flooding.
-Para eliminar los efectos de esta mitigación, podemos ejecutar el comando \texttt{"ip tcp\ _metrics flush"} en el servidor.
+Para eliminar los efectos de esta mitigación, podemos ejecutar el comando \texttt{"ip tcp\_metrics flush"} en el servidor.
 
 \begin{lstlisting}
 # ip tcp_metrics show
@@ -283,15 +281,9 @@ Para eliminar los efectos de esta mitigación, podemos ejecutar el comando \text
 
 \paragraph{Nota B: Paquetes RST.} 
 Si está realizando esta Tarea usando dos Máquinas Virtuales es decir lanzando los ataques de una Máquina Virtual a otra, en lugar de usar los contenedores, notará en Wireshark la presencia de paquetes RST (reset). Inicialmente pensamos que estos paquetes eran generados por el recipiente del paquete SYN+ACK, pero en realidad son generados por el servidor NAT en nuestra configuración.
-If you are doing this task using two VMs, i.e., launching the attack from one VM
-against another VM, instead of attacking a container, from the Wireshark,
-you will notice many RST packets (reset). Initially, we thought that 
-the packets were generated from the recipient of the SYN+ACK packet, 
-but it turns out they are generated by the 
-NAT server in our setup. 
 
 El tráfico saliente de la Máquina Virtual en nuestro laboratorio pasará por un servidor NAT provisto por VirtualBox. Para TCP, NAT se encarga de crear las llamadas entradas de address traslation que están basadas en paquetes SYN.
-En nuestro ataque, los paquetes SYN que generados por el atacante no pasan por el NAT (tanto el atacante como la víctima están detrás del servidor NAT), por lo tanto estas entradas no son creadas. Cuando la vícttima envía un paquete SYN+ACK a la dirección IP de origen (que es generada de forma aleatoria por el atacante), este paquete irá a través de NAT, pero NAT no sabe que hacer dado que no hay una entrada previa para esta conexión TCP por lo tanto terminará enviando un paquete TCP RST a la máquina víctima.
+En nuestro ataque, los paquetes SYN que son generados por el atacante no pasan por el NAT (tanto el atacante como la víctima están detrás del servidor NAT), por lo tanto estas entradas no son creadas. Cuando la víctima envía un paquete SYN+ACK a la dirección IP de origen (que es generada de forma aleatoria por el atacante), este paquete irá a través de NAT, pero NAT no sabe que hacer dado que no hay una entrada previa para esta conexión TCP por lo tanto terminará enviando un paquete TCP RST a la máquina víctima.
 
 Los paquetes RST hacen que la víctima borre datos de la cola de half-open connection. Entonces mientras nosotros como atacantes tratamos de saturar esta cola con el ataque, VirtualBox ayuda a la víctima a borrar todos los registros de nuestros paquetes de la cola. Convirtiéndose así en una competencia entre nuestro código y VirtualBox.
 
@@ -302,7 +294,7 @@ Los paquetes RST hacen que la víctima borre datos de la cola de half-open conne
 % -------------------------------------------
 \subsection{Tarea 1.2: Lanzando el ataque usando C} 
 
-Exceptuando el problema de la cache TCP, el resto de los inconvenientes mencionados en la Tarea 1.1 pueden ser resuletos si podemos enviar paquetes SYN spoofeados de forma rápida. Podemos lograrlo usando C. Hemos provisto un programa hecho en C llamado \texttt{synflood.c} este archivo se encuentra dentro del directorio del laboratorioo. Por favor compile el programa en la Máquina Virtual y lance el ataque en la máquina vícttima.
+Exceptuando el problema de la cache TCP, el resto de los inconvenientes mencionados en la Tarea 1.1 pueden ser resuletos si podemos enviar paquetes SYN spoofeados de forma rápida. Podemos lograrlo usando C. Hemos provisto un programa hecho en C llamado \texttt{synflood.c} este archivo se encuentra dentro del directorio del laboratorio. Por favor compile el programa en la Máquina Virtual y lance el ataque en la máquina vícttima.
 
 \begin{lstlisting}
 // Compile the code on the host VM
@@ -328,7 +320,7 @@ Por favor active la protección SYN cookie, corra sus ataques nuevamente y compa
 % *******************************************
 \section {Tarea 2: Ataque TCP RST en Conexiones \texttt{telnet}}
 
-El Ataque TCP RST puede terminar una conexión TCP establecida entre dos víctimas. Por ejemplo, si hay una conexión TCP \telnet establecida entre dos usuarios, usuario A y usuario B, los atacantes pueden spoofear un paquete RST desde A hacia B, rompiendo la conexión establecida entre ellos. Para que este ataque funcione, el paquete TCP RST de ataque deben de ser construidos de forma correcta.
+El Ataque TCP RST puede terminar una conexión TCP establecida entre dos víctimas. Por ejemplo, si hay una conexión TCP \telnet establecida entre dos usuarios, usuario A y usuario B, los atacantes pueden spoofear un paquete RST desde A hacia B, rompiendo la conexión establecida entre ellos. Para que este ataque funcione, el paquete TCP RST de ataque deben de ser construido de forma correcta.
 
 En esta Tarea, tendrá que correr un ataque TCP RST desde una Máquina Virtual para romper la conexión \telnet establecida entre A y B, que serán los contenedores. Para simplificar el laboratorio, asumimos que el atacante y la víctima están en la misma LAN es decir el atacante puede observar el tráfico TCP entre A y B.
 
@@ -403,7 +395,7 @@ a la máquina víctima (que es la máquina que ud. maneja)y no a la máquina del
   \label{tcp:fig:hijacking}
 \end{figure}
  
-El objetivo de un ataque de TCP Session Hijacking es poder "secuestrar" o "piratear" una conexión TCP existente (sesión) entre dos víctimas por medio de la inyección de contenido maliciosoo dentro de la sesión. Si esta conexión es una sesión de \telnet, los atacantes pueden inyectar comandos maliciosos (por ejemplo: borrar un archivo importante) dentro de la sesión, provocando que la víctima los ejecute de forma no intencional. La Figura \ref{tcp:fig:hijacking} muestra el funcionar de este ataque.
+El objetivo de un ataque de TCP Session Hijacking es poder "secuestrar" o "piratear" una conexión TCP existente (sesión) entre dos víctimas por medio de la inyección de contenido maliciosoo dentro de la sesión. Si esta conexión es una sesión de \telnet, los atacantes pueden inyectar comandos maliciosos (por ejemplo: borrar un archivo importante) dentro de la sesión, provocando que la víctima los ejecute de forma no intencional. La Figura \ref{tcp:fig:hijacking} muestra el funcionamiento de este ataque.
 En esta Tarea, necesitará demostrar como puede realizar este ataque de hijacking en una sesión de una conexión \texttt{telnet} entre dos computadoras. Su objetivo es hacer que el servidor \texttt{telnet} logre ejecutar el comando malicioso que ud. elija.
 Para simplificar el laboratorio, asumimos que la máquina del atacante y la máquina de la víctima están en la misma LAN.
 
@@ -439,9 +431,9 @@ Por favor no olvide que al usar la funcion \texttt{sniff} de Scapy debe establec
 \section{Tarea 4: Crear una Shell Reversa usando TCP Session Hijacking}
 
 Cuando los atacantes inyectan un comando en la máquina de la víctima usando
-TCP Session Hijackin, no están interesados en ejecutar un simple
+TCP Session Hijacking, no están interesados en ejecutar un simple
 comando en la máquina víctima; están interesados en ejecutar muchos
-comandos. Obviamente, ejecutar estos comandos durante el ataque de TCP Session Hijackin es un inconveniente. El objetivo del atacante es usar este
+comandos. Obviamente, ejecutar estos comandos durante el ataque de TCP Session Hijacking es un inconveniente. El objetivo del atacante es usar este
 ataque para implantar un backdoor que persista en la máquina víctima y así utilizarlo en ataques futuros.
 
 La forma más típica de implante de backdoors se realiza a través de una shell reversa que es ejecutada en la máquina víctima, esto le da al atacante acceso shell hacia esta máquina.
@@ -452,7 +444,7 @@ En el ataque de TCP session hijacking, el atacante no puede ejecutar comandos de
 En esta Tarea, los estudiantes deberán de mostrar como lograr este objetivo.
 
 Para hacer que una shell \texttt{bash} de una máquina remota conecte con la máquina del atacante, el atacante necesita que haya un proceso en el sistema que este a la espera de una conexión entrante en un determinado puerto. En este ejemplo usaremos \texttt{netcat}. Este programa nos permite establecer un puerto de escucha para una conexión entrante.
-En la demostración que sigue, se muestran dos ventanas, cada una pertenece a una máquina diferentes. La ventana que está arriba de todo es la máquina del atacante \texttt{10.9.0.1}, que ejecuta \texttt{netcat} (\texttt{nc} abreviado) y queda a la escucha en el puerto \texttt{9090}. La ventana de abajo es la máquina de la víctima \texttt{10.9.0.5} y ejecuta el comando para lanzar una shell reversa.
+En la demostración que sigue, se muestran dos ventanas, cada una pertenece a una máquina diferente. La ventana que está arriba de todo es la máquina del atacante \texttt{10.9.0.1}, que ejecuta \texttt{netcat} (\texttt{nc} abreviado) y queda a la escucha en el puerto \texttt{9090}. La ventana de abajo es la máquina de la víctima \texttt{10.9.0.5} y ejecuta el comando para lanzar una shell reversa.
 Al ejecutarse este comando, se observa como en la ventana de la máquina del atacante se establece la shell reversa que está corriendo en \texttt{10.9.0.5}.  
 
 \begin{minipage}{\linewidth}
