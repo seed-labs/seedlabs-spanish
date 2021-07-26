@@ -34,17 +34,17 @@
 
 \section{Descripción General}
 
-Los conceptos de Packet sniffing y spoofing, son dos de lo más importantes en el campo de la seguridad de redes; ambos representan las mayores amenazas en las comunicaciones de redes. Poder entender estas amenazas es esencial para comprender las medidas de seguridad en las redes. Existen muchas herramientas para hacer sniffing y spoofing tales como {\tt Wireshark}, {\tt Tcpdump}, {\tt Netwox}, \texttt{Scapy}, etc.
-Algunas de ellas son ampliamente usadas por expertos en seguridad como así también por atacantes. Saber usar estas herramientas es algo importante para los estudiantes, pero lo que es más importante para ellos en un curso de seguridad de redes es entender como funcionan esas herramientas, es decir como son implementados el sniffing y spoofing de paquetes en el software.
+Los conceptos de Packet Sniffing y Packet Spoofing, son dos de lo más importantes en el campo de la seguridad de redes; ambos representan las mayores amenazas en las comunicaciones de redes. Poder entender estas amenazas es esencial para comprender las medidas de seguridad en las redes. Existen muchas herramientas para hacer sniffing y spoofing tales como {\tt Wireshark}, {\tt Tcpdump}, {\tt Netwox}, \texttt{Scapy}, etc.
+Algunas de ellas son ampliamente usadas por expertos en seguridad como así también por atacantes. Saber usar estas herramientas es algo importante para los estudiantes, pero lo que es más importante para ellos en un curso de seguridad de redes es entender su funcionamiento, es decir como son implementados el sniffing y el spoofing de paquetes en el software.
 
-El objetivo de este laboratorio es doble: El primero es aprender como usar esas herramientas y conocer las tecnologías subyacentes de las mismas.
+El objetivo de este laboratorio es doble: El primero es aprender el uso de estas herramientas y conocer las tecnologías subyacentes de las mismas.
 El segundo será escribir un programa simple para hacer sniffing y spoofing de paquetes y así obtener un conocimiento profundo y detallado de los aspectos técnicos de estos programas.
 Este laboratorio cubre los siguientes tópicos:
 
 
 \begin{itemize}[noitemsep]
 \item Como funciona el Packet Sniffing y Spoofing
-\item Usando la librería {\tt pcap} y Scapy para hacer Packet sniffing
+\item Usar la librería {\tt pcap} y Scapy para hacer Packet sniffing
 \item Usando Raw Sockets y Scapy para hacer Packet spoofing 
 \item Manipulación de paquetes usando Scapy
 \end{itemize}
@@ -125,7 +125,7 @@ Estas son las diferencias:
 
 
 \begin{itemize}
-\item \textit{Directorio Compartido.} Cuando usemos el contenedor del atacante para lanzar los ataques, necesitamos poner el código de ataque dentro del contenedor.
+\item \textit{Directorio Compartido.} Cuando usemos el contenedor del atacante para realizar los ataques, necesitamos poner el código de ataque dentro del contenedor.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \input{\commonfolder/container/volumes}
@@ -149,7 +149,7 @@ Estas son las diferencias:
 % *******************************************
 % SECTION
 % ******************************************* 
-\section{Set 1 de Tareas: Usando Scapy para el Sniffing and Spoofing de Paquetes}
+\section{Set 1 de Tareas: Usando Scapy para el Sniffing y el Spoofing de Paquetes}
 
 Se pueden utilizar muchas herramientas para hacer sniffing y spoofing pero la mayoría ofrece funciones limitadas. Scapy es diferente: puede ser usada no sólo como una herramienta sino también como módulo para construir herramientas de sniffing y spoofing es decir podemos integrar funcionalidades de Scapy en nuestros propios programas. En este Set de Tareas usaremos Scapy.
 
@@ -253,7 +253,7 @@ $ sniffer.py
 \subsection{Tarea 1.2: Spoofing de Paquetes ICMP}
 
 Como cualquier herramienta de spoofing, Scapy nos permite establecer los valores de los campos de un paquete IP . El objetivo de esta Tarea consiste en spoofear paquetes IP con una dirección IP origen arbitraria.
-Haremos el spoofing sobre paquetes echo request ICMP , y los enviaremos hacia otra Máquina Virtual en la misma red. Usaremos Wireshark para ver si nuestro paquete es aceptado por la máquina destino. Si este paquete es aceptado, se enviará un paquete ICMP echo reply a la dirección IP de origen.
+Haremos el spoofing sobre paquetes ICMP echo request , y los enviaremos hacia otra Máquina Virtual en la misma red. Usaremos Wireshark para ver si nuestro paquete es aceptado por la máquina destino. Si este paquete es aceptado, se enviará un paquete ICMP echo reply a la dirección IP de origen.
 El código a continuación muestra un ejemplo de como spoofear paquetes ICMP.
 
 \begin{lstlisting}
@@ -267,7 +267,7 @@ El código a continuación muestra un ejemplo de como spoofear paquetes ICMP.
 Sent 1 packets.
 \end{lstlisting}
  
-La línea \ding{192} del código mostrado anteriormente, crea un objeto IP usando la clase IP; para cada campo del encabezado IP la clase define un atributo. Podemos usar \texttt{ls(a)} o \texttt{ls(IP)} para ver todos los atributes en forma clave/valor que están disponibles para esa clase. También se puede usar a.show() y IP.show() con el mismo fin. La línea \ding{193} muetra como setear el campo que corresponde a la IP de destino del objeto IP. Si este campo no recibe ningún valor, se usará un valor por defecto.
+La línea \ding{192} del código mostrado anteriormente, crea un objeto IP usando la clase IP; para cada campo del encabezado IP la clase define un atributo. Podemos usar \texttt{ls(a)} o \texttt{ls(IP)} para ver todos los atributos en forma clave/valor que están disponibles para esa clase. También se puede usar a.show() y IP.show() con el mismo fin. La línea \ding{193} muetra como setear el campo que corresponde a la IP de destino del objeto IP. Si este campo no recibe ningún valor, se usará un valor por defecto.
 
 \begin{lstlisting}
 >>> ls(a)
@@ -287,7 +287,7 @@ options    : PacketListField         = []              ([])
 \end{lstlisting}
  
 
-La línea \ding{194} crea un objeto ICMP. El tipo por defecto es un echo request. En la línea \ding{195}, se apilarán \texttt{a} y \texttt{b} para formar un nuevo objeto. Esto realiza a través de la sobrecarga del operador \texttt{/} que implementa la clase IP, este operador no representa una división en este caso; este hará que se agregue  \texttt{b} como campo de payload de \texttt{a}, modificando este campo de forma transparente al programador. Como resultado se obitene un nuevo objeto que representa un paquete ICMP. En la línea \ding{196} se envía este paquete usando \texttt{send()}. Por favor realice los cambios necesarios en el código anterior y demuestre que puede spoofear un paquete ICMP del tipo echo request usando una dirección IP origen arbitraria.
+La línea \ding{194} crea un objeto ICMP. El tipo por defecto que usa este objeto es echo request. En la línea \ding{195}, se apilarán \texttt{a} y \texttt{b} para formar un nuevo objeto. Esto realiza a través de la sobrecarga del operador \texttt{/} que implementa la clase IP, este operador no representa una división en este caso; este hará que se agregue  \texttt{b} como el campo de payload de \texttt{a}, modificando este campo de forma transparente al programador. Como resultado se obitene un nuevo objeto que representa un paquete ICMP. En la línea \ding{196} se envía este paquete usando \texttt{send()}. Por favor realice los cambios necesarios en el código anterior y demuestre que puede spoofear un paquete ICMP del tipo echo request usando una dirección IP origen arbitraria.
 
 
 % -------------------------------------------
@@ -309,7 +309,7 @@ send(a/b)
 \end{lstlisting}
 
 Si es un programador experimentado de Python, puede escribir su herramienta
-para realizar todo el procedimiento de forma automática. Si eres nuevo en Python, puede hacerlo cambiando manualmente el campo TTL en cada ronda de ejecución, y registrar la dirección IP basado su observación de Wireshark. Cualquier tipo de implementación es aceptable siempre y cuando se consiga el objettivo.
+para realizar todo el procedimiento de forma automática. Si no lo es puede hacerlo cambiando manualmente el campo TTL en cada ronda de ejecución, y registrar la dirección IP basado su observación de Wireshark. Cualquier tipo de implementación es aceptable siempre y cuando se consiga el objettivo.
 
 
 % -------------------------------------------
@@ -317,8 +317,8 @@ para realizar todo el procedimiento de forma automática. Si eres nuevo en Pytho
 % ------------------------------------------- 
 \subsection{Tarea 1.4: Sniffing y luego Spoofing}  
 
-En esta Tarea, combinará técnicas de sniffing y de spoofing para implementar un programa de sniff-and-then-spoof.
-Necesitará correr dos máquinas en la missma LAN: la Máquina Virtual y un contenedor de usuario. Desde el contenedor de usuario hará un {\tt ping} a una IP X. Esto generará un paquete ICMP echo request. Si X está vivo, el programa {\tt ping} recibirá un echo reply y mostrará la respuesta. Su programa de sniff-and-then-spoof estará corriendo en la Máquina Virtual, que monitorea la LAN a través del paquet sniffing. Cada vez que vea un ICMP echo request, sin importar cual sea la dirección IP de donde provenga, el programa debería de enviar un echo reply usando la técnica de packet spoofing. Además, sin importar si la máquina X esté viva o no, el programa {\tt ping} siempre recibirá una respuesta que indique que X está viva. Para llevar a cabo esta Tarea necesitará usar Scapy. En su informe de laboratorio deberá poner la evidencia que demuestre que su técnica funciona.
+En esta Tarea, combinará las técnicas de sniffing y spoofing para implementar un programa de sniff-and-then-spoof.
+Necesitará correr dos máquinas en la misma LAN: la Máquina Virtual y un contenedor de usuario. Desde el contenedor de usuario hará un {\tt ping} a una IP X. Esto generará un paquete ICMP echo request. Si X está vivo, el programa {\tt ping} recibirá un echo reply y mostrará la respuesta. Su programa de sniff-and-then-spoof estará corriendo en la Máquina Virtual, que monitorea la LAN a través del paquet sniffing. Cada vez que vea un ICMP echo request, sin importar cual sea la dirección IP o de donde provenga, el programa debería de enviar un echo reply usando la técnica de packet spoofing. Además, sin importar si la máquina X esté viva o no, el programa {\tt ping} siempre recibirá una respuesta que indique que X está viva. Para llevar a cabo esta Tarea necesitará usar Scapy. En su informe de laboratorio deberá poner la evidencia que demuestre que su técnica funciona.
 
 En su experimento, debería de hacer \texttt{ping} a las siguientes direcciones IP del contenedor de usuario.
 Reporte su observación y explique los resultados.
@@ -345,13 +345,13 @@ ip route get 1.2.3.4
 \section{Set 2 de Tareas: Escribiendo programas para hacer sniffing y spoofing}
 
 Para este conjunto de Tareas, debe compilar código en C en la Máquina Virtual Host y correrlo dentro del contenedor.
-s
+
 % -------------------------------------------
 % SUBSECTION
 % ------------------------------------------- 
 \subsection{Tarea 2.1: Escribiendo el programa para hacer Packet Sniffing}
 
-Los Sniffers pueden ser escritos usando la librería \pcap. Usar \pcap facilita la tarea del desarrollo de un sniffer ya que implica invocar una serie de funciones de la librería \pcap. Al final de cada secuencia, los paquetes serán colocados en un buffer para un procesamiento posterior, a medida que vayan siendo capturados.
+Los Sniffers pueden ser escritos usando la librería \pcap. Usar \pcap facilita la tarea del desarrollo de un sniffer ya que implica invocar una serie de funcione nativas de la librería. Al final de cada secuencia y a medida que vayan siendo capturados, los paquetes serán colocados en un buffer para un procesamiento posterior.
 Todos los detalles de la captura de paquetes son manejados por la librería \pcap.
 El libro de SEED ofrece un código de ejemplo, que muestra como escribir un sniffer simple usando \pcap. 
 A continuación el código de ejemplo (Vea el libro para una explicación más detallada):
@@ -402,24 +402,24 @@ int main()
 // For example: gcc -o sniff sniff.c -lpcap
 \end{lstlisting}
 
-Tim Carstens ha escrito un tutorial que explica como usar la librería \pcap para escribir un sniffer. El tutorial puede ser accedido desde este link \url{http://www.tcpdump.org/pcap.htm}
+Tim Carstens ha escrito un tutorial que explica como usar la librería \pcap para escribir un sniffer. El tutorial puede ser accedido a tráves de este link \url{http://www.tcpdump.org/pcap.htm}
  
 
 \paragraph{Tarea 2.1A: Entendiendo como funciona un Sniffer}
-En esta Tarea, los estudiantes deberán escribir un programa sniffer para mostrar la dirección IP de origen y destino de cada paquete capturado. Los estudiantes pueden descargarse el código de ejemplo del libro de SEED (\url{https://www.handsonsecurity.net/figurecode.html}). 
-Los estudiantes deberán de proveer screenshots que muestren que su programa sniffer corra bien y produzca los resultados esperados. Por favor responda las siguientes preguntas:
+En esta Tarea, los estudiantes deberán escribir un sniffer para mostrar la dirección IP de origen y destino de cada paquete capturado. Los estudiantes pueden descargarse el código de ejemplo del libro de SEED (\url{https://www.handsonsecurity.net/figurecode.html}). 
+Los estudiantes deberán de proveer screenshots que muestren que su programa sniffer corre bien y este produciendo los resultados esperados. Por favor responda las siguientes preguntas:
 
 
 \begin{itemize}
-\item \textbf{Pregunta 1.} Por favor explique con sus propias palabras la secuencia de llamados que realiza la librería y que son esenciales para el sniffer. Esta explicación no debe ser tan detallada como la del libro o el 
+\item \textbf{Pregunta 1.} Por favor explique con sus propias palabras la secuencia de llamados que realiza la librería y que son esenciales para el sniffer. Esta explicación no debe ser tan detallada como la del libro o el tutorial.
 
-\item \textbf{Pregunta 2.} ¿Por qué se necesitan privilegios de root para correr el programa sniffer? ¿En dónde falla el programa si es ejecutado sin privilegios de root?
+\item \textbf{Pregunta 2.} ¿Por qué se necesitan privilegios de root para correr el sniffer? ¿En dónde falla el programa si es ejecutado sin privilegios de root?
 
-\item \textbf{Pregunta 3.} Por favor active y desactive el modo promiscuo en su programa sniffer. ¿Puede mostrar la diferencia cuando este modo está activado y desactivado? Por favor describa como puede demostrar esto.
+\item \textbf{Pregunta 3.} Por favor active y desactive el modo promiscuo en su  sniffer. ¿Puede mostrar la diferencia cuando este modo está activado y desactivado? Por favor describa como puede demostrar esto.
 \end{itemize}
 
 \paragraph{Tarea 2.1B: Escribiendo Filtros.}
-Por favor escriba filtros en su programa sniffer.
+Por favor escriba filtros en su sniffer.
 Puede usar los manuales que están en la red para obtener más información sobre los filtros en \pcap.
 En su informe de laboratorio, incluya screenshots que muestren los resultados después de aplicar cada uno de los filtros que se piden a continuación.
 \begin{itemize}
@@ -429,17 +429,17 @@ En su informe de laboratorio, incluya screenshots que muestren los resultados de
 
 
 \paragraph{Tarea 2.1C: Sniffing Passwords.}
-Por favor muestre como puede usar su programa sniffer para capturar passwords cuando alguien use \telnet en la red que está monitoreando. Es posible que necesite modificar el código de su sniffer para mostrar la parte de los datos que son capturados en el paquete TCP (\telnet usa TCP). Puede imprimir toda la parte de los datos y marcar manualmente donde se encuentra el password (o parte de este).
+Por favor muestre como puede usar sus sniffer para capturar passwords cuando alguien use \telnet en la red que está monitoreando. Es posible que necesite modificar el código de su sniffer para mostrar la parte de los datos que son capturados en el paquete TCP (\telnet usa TCP). Puede imprimir toda la parte de los datos y marcar manualmente donde se encuentra el password (o parte de este).
 
 % -------------------------------------------
 % SUBSECTION
 % ------------------------------------------- 
 \subsection{Tarea 2.2: Spoofing}
 
-Cuando un usuario no privilegiado envía un paquete, los sistemas operativos usualmente no le permiten establecer los valores para todos los campos que componen los encabezados de un protocolo (como TCP, UDP y encabezados IP). Los sistemas operativos se encargarán de llenar estos campos, permitiendo que este tipo de usuarios puedan establecer valores para unos pocos campos (dirección IP de desttino, puerto de destino, etc). Sin embargo, si el usuario tiene privilegios de root, pueden establecer valores para cualquier campo en los encabezados del paquete. Esto es llamado packet spoofing y se puede hacer usando {\em raw sockets}. 
+Cuando un usuario no privilegiado envía un paquete, los sistemas operativos usualmente no le permiten establecer los valores para todos los campos que componen los encabezados de un paquete que son parte de un protocolo (como TCP, UDP y IP). Los sistemas operativos se encargarán de llenar estos campos, permitiendo que este tipo de usuarios puedan establecer valores sólamente para unos pocos campos (dirección IP de destino, puerto de destino, etc). Sin embargo, si el usuario tiene privilegios de root, puede establecer valores para cualquier campo en los encabezados del paquete. Esto es llamado packet spoofing y se puede hacer usando {\em raw sockets}. 
 
 
-Los Raw sockets le dan al programador absoluto control sobre la construcción de un paquete, permitiéndole crear cualquier tipo de paquete arbitrario, esto incluye establecer los valores de su encabezados y su payload. El uso de los raw sockets es bastante simple; involucra cuatro pasos: (1) crear el raw socket, (2) configurar sus opciones, (3) construir el paquete, (4) enviar el paquete a través del raw socket. Existen muchos tutoriales online que enseñan como programar raw sockets en C. Hemos agregado alguno de ellos en la página oficial del laboratorio. Por favor leálos y aprenda a escribir un programa para hacer spoofing de paquetes. A continuación se brinda un código genérico de un sniffer que deberá de ser completado:
+Los Raw sockets le dan al programador absoluto control sobre la construcción de un paquete, permitiéndole crear cualquier tipo de paquete arbitrario, esto incluye establecer los valores de su encabezados y su payload. El uso de los raw sockets es bastante simple; involucra cuatro pasos: (1) crear el raw socket, (2) configurar sus opciones, (3) construir el paquete, (4) enviar el paquete a través del raw socket. Existen muchos tutoriales online que enseñan como programar raw sockets en C. Hemos agregado alguno de ellos en la página oficial del laboratorio. Por favor leálos y aprenda a escribir un programa para hacer spoofing de paquetes. A continuación se brinda un código genérico de un spoofer que deberá de ser completado:
 
 \begin{lstlisting}
 int sd;
@@ -482,7 +482,7 @@ Por favor escriba su propio programa de spoofing en C. Para demostrar que su pro
 
 
 \paragraph{Tarea 2.2B: Haga Spoof de un ICMP Echo Request.}
-Haga spoof de un paquete ICMP echo request en nombre de otra máquina (es decir, use la dirección IP de otra máquina que no sea la suya como dirección IP origen). Este paquete debería ser enviado a una máquina remota en Internet (debe estar online). Abra ell Wireshark y si su spoofing es exitoso debería de recibir un paquete ICMP echo reply como respuesta de la máquina remota.
+Haga spoof de un paquete ICMP echo request en nombre de otra máquina (es decir, use la dirección IP de otra máquina que no sea la suya como dirección IP origen). Este paquete debería ser enviado a una máquina remota en Internet (debe estar online). Abra el Wireshark y si su spoofing es exitoso debería de recibir un paquete ICMP echo reply como respuesta de la máquina remota.
 
 \paragraph{Preguntas.} Por favor responda las siguientes preguntas.
 
@@ -524,7 +524,7 @@ request. Si X está viva, el programa de {\tt ping} recibirá una echo reply y m
 % ------------------------------------------- 
 \subsection{Llenado de Datos en los Raw Packets}
 
-Cuando envía un paquete usando raw sockets, básicamente lo que se está haciendo es construir un paquete dentro de un buffer, de forma tal que cuando es necesario enviar rste paquete, se le da al sistema operativo el buffer y el tamaño del paquete. 
+Cuando envía un paquete usando raw sockets, básicamente lo que se está haciendo es construir un paquete dentro de un buffer, de forma tal que cuando es necesario enviar este paquete, se le da al sistema operativo el buffer y el tamaño del paquete. 
 Trabajar directamente sobre este buffer no es fácil, una forma habitual de trabajar con este tipo de datos es hacer typecasting del buffer (o parte del mismo) dentro de estructuras, como IP header, así puede acceder a los elementos de ese buffer usando los campos de esas estructuras.
 Puede definir diferentes estructuras dentro de su programa como pueden ser los headers para IP, ICMP, TCP, UDP y otras más. El siguiente ejemplo muestra como se puede construir un paquete UDP:
 
@@ -575,7 +575,7 @@ ntohs(): reverse of htons().
 
 
 También puede usar {\tt inet\_addr()}, {\tt inet\_network()},
-{\tt inet\_ntoa()}, {\tt inet\_aton()} para convertir direcciones IP con notación decimal con puntos (cadena) en un entero de 32-bits network/host byte order. También puede consultar manuales en internet sobre estas funciones.
+{\tt inet\_ntoa()}, {\tt inet\_aton()} para convertir direcciones IP con notación decimal con puntos (cadena) en un entero de 32-bits network/host byte order.  Puede consultar manuales en internet sobre estas funciones.
 
 % *******************************************
 % SECTION
