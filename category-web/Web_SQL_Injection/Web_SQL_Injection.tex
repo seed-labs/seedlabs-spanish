@@ -46,7 +46,7 @@ Este laboratorio cubre los siguientes tópicos:
 \begin{itemize}[noitemsep]
 \item Declaraciones SQL: \texttt{SELECT} y \texttt{UPDATE}
 \item Inyección SQL
-\item Declaraciones Preparadas
+\item Declaraciones Preparadas (Prepared Statements)
 \end{itemize}
 
 
@@ -195,7 +195,7 @@ Su tarea como attacante es loguearse dentro de la aplicación sin conocer las cr
 \begin{center}
 \includegraphics[width=0.7\textwidth]{\sqlFigs/login.jpg}
 \end{center}
-\caption{The Login page}
+\caption{Página de Login}
 \label{sql:fig:login}
 \end{figure}
  
@@ -232,7 +232,6 @@ La declaración SQL mostrada en el código, selecciona la información personalU
 En esta tarea, su objetivo es loguearse en la aplicación web como administrador, de esta forma podrá ver la información de todos los empleados. Asumimos que ud. conoce el usuario del administrador el cual es {\tt admin} pero no conoce su password. Necesita decidir que ingresar como valor en los campos \texttt{Username} y \texttt{Password} para lograr un ataque exitoso.
 	
 
-
 \paragraph{Tarea 2.2: Ataque de Inyección SQL desde la consola.}  
 En esta tarea, debe repetir lo hecho en la Tarea 2.1 pero debe hacerlo sin usar la página web. Puede usar las herramientas de la línea de comandos como puede ser \texttt{curl}, que nos sirve para enviar requests HTTP.
 Cabe mencionar que si quiere incluir múltiples parametros en sus requests HTTP, necesita ponerlos en la URL dentro de un par de comillas de simples; de otra forma los caracteres especiales susados para separar los parámaetros (como \texttt{\&}) serán interpretados por la shell de una forma errónea y cambiándole el significado a lo que es la consulta dentro del aplicativo que hace los requests HTTP. El siguiente ejemplo muestra como enviar un request HTTP GET hacia nuestra aplicación web, usando dos parámetros (\texttt{username} y \texttt{Password}):
@@ -255,19 +254,10 @@ Existe una contramedida para prevenir que se puedan correr dos declaraciones SQL
 % ------------------------------------------- 
 \subsection{Tarea 3: Inyección SQL en la Declaración UPDATE} 
 
-If a SQL injection vulnerability happens to an UPDATE statement, the damage will be more
-severe, because attackers can use the vulnerability to modify databases. 
-In our Employee Management application, there is an Edit Profile page~(Figure~\ref{sql:fig:edit}) 
-that allows employees to
-update their profile information, including nickname, email, address, phone number, and
-password. To go to this page, employees need to log in first. 
+Si la Inyección SQL incluye una declaración UPDATE, el daño que puede ocasionar podría ser severo, los atacantes pueden usar esto para modificar la base de datos.
+En nuestra aplicación, hay una página de edición de perfil (Figura   \ref{sql:fig:edit}) esto le permite a los empleados actualizar su información de perfil, incluyendo su nickname, email, address, phone, number and password. Para visitar esta página los empleados primero necesitan estar logueados.
 
-
-When employees update their information through the Edit Profile page, the
-following SQL UPDATE query will be executed. The PHP code implemented in
-{\tt unsafe\_edit\_backend.php} file is used to update employee's profile
-information. The PHP file is located in the {\tt /var/www/SQLInjection}
-directory.
+Cuando los empleados actualizan su información a través de esta página de edición de perfil, la siguiente consulta SQL UPDATE será ejecutada. El código PHP que implementa esta actualización del perfil del empleado está en el archivo {\tt unsafe\_edit\_backend.php} dentro del directorio {\tt /var/www/SQLInjection}.
 
 
 \begin{lstlisting}
@@ -287,81 +277,47 @@ $conn->query($sql);
 \begin{center}
   \includegraphics[width=0.6\textwidth]{\sqlFigs/editprofile.jpg}
 \end{center}
-\caption{The Edit-Profile page}
+\caption{Página de Edición del Perfil}
 \label{sql:fig:edit}
 \end{figure}
  
 
 
 \paragraph{Tarea 3.1: Modificar su propio salario.}  
-As shown in the Edit Profile page,
-employees can only update their nicknames, emails, addresses, phone numbers, and
-passwords; they are not authorized to change their salaries.  
-Assume that you (Alice) are a disgruntled employee, and your boss Boby did not 
-increase your salary this year. You want to increase your own salary 
-by exploiting the SQL injection vulnerability in
-the Edit-Profile page. Please demonstrate how you can achieve that.
-We assume that you do know that salaries are stored in 
-a column called \texttt{salary}.
+Como se mostró en la página de edición del perfil, los empleados sólo pueden actualizar su nickname, emails, addresses, phone numbers y passwords; no están autorizados para cambiar sus salarios.
+Asuma que ud. (Alice) es una empleada descontenta y su jefe Boby no le ha dado un aumento en lo que va del año. Ud. quiere incrementar su salario y lo hará explotando una vulnerabilidad a través de una Inyección SQL en la página de edición de su perfil. Por favor demuestre como puede lograr esto.
+Asumimos que ud. no sabe que los salarios son guardados en una columna llamada \texttt{salary} dentro de la base de datos.
 
 
 \paragraph{Tarea 3.2: Modificar el salario de otras personas.}
-After increasing your own salary, you decide to punish your boss Boby. You want to reduce his
-salary to 1 dollar. Please demonstrate how you can achieve that. 
-
-
+Después de incrementar su propio salario. ud. decide castigar a su jefe Boby, reduciendo su salario en 1 dolar. Por favor demuestre como puede lograr esto.
 
 \paragraph{Tarea 3.3: Modificar el password de otras personas.}
-After changing Boby's salary, you are still disgruntled, so you
-want to change Boby's password to something that you know, and then you can log into his account
-and do further damage. Please demonstrate how you can achieve that.
-You need to demonstrate that you can 
-successfully log into Boby's account using the new
-password.  One thing worth mentioning here is that the database stores the hash value of
-passwords instead of the plaintext password string. You can again look at
-the {\tt unsafe\_edit\_backend.php} code to see how password is being stored. It
-uses SHA1 hash function to generate the hash value of password. 
+Después de cambiar el salario de Boby, ud. sigue descontenta, y quiere cambiar el password de Boby a un password que ud. conoce, para así podeer acceder a la cuenta de Boby en el sistema y hacer mucho más daño. Por favoor demuestre como puede lograr esto.
+Necesita mostrar que puede loguearse de forma exitosa en la cuenta de Boby usando el nuevo password. 
+Una cosa que cabe mencionar es que la base de datos almacena el hash del password y no su valor en texto plano. Puede hechar un vistazo nuevamente al código que se encarga de realizar este cambio {\tt unsafe\_edit\_backend.php} y validar como se está guardando el password. Se usa la función de hashing SHA1 para generar el valor del passsword.
 
 
 
 
 \subsection{Tarea 4: Contramedida --- Declaraciones Preparadas} 
 
-The fundamental problem of the SQL injection vulnerability is the failure to
-separate code from data. When constructing a SQL statement, the program
-(e.g. PHP program) knows which part is data and which part is code.
-Unfortunately, when the SQL statement is sent to the database, the boundary
-has disappeared; the boundaries that the SQL interpreter sees may be
-different from the original boundaries that was set by the developers.
-To solve this problem, it is important to ensure that the view
-of the boundaries are consistent in the server-side code and in the
-database.  The most secure way is to use 
-\textit{prepared statement}. 
+El problema fundamental de las vulnerabilidades de Inyección SQL es que se falla en separar los datoos del código. Cuando se construye una declaración SQL, el programa (en este caso nuestro programa PHP) sabe cuales son los datos y cual es el código. 
+Desafortunadamente, cuando la declaración SQL es enviada a la base de datos, esta diferenciación desaparece; los límites que el interprete de SQL entiende difieren de los interpretados originalmente por el desarrollador en el código de la aplicación.
+Para resolver este problema, es importante asegurarse que tanto el código del servidor que representa nuestra aplicación y la base de datos interpreten lo mismo. La forma más segura de asegurarse de esto es a través de las \textit{declaraciones preparadas o prepared statements}. 
 
 \begin{figure}
 \centering
 \includegraphics[width=0.8\textwidth]{\sqlFigs/PreparedStatement.pdf}
-\caption{Prepared Statement Workflow}
+\caption{Workflow de las Declaraciones Preparadas o Prepared Statements}
 \label{sql:fig:preparedstatement}
 \end{figure}
 
-
-To understand how prepared statement prevents SQL injection, 
-we need to understand what happens when SQL server receives a query. 
-The high-level workflow of how queries are executed is shown in Figure~\ref{sql:fig:preparedstatement}.
-In the compilation step, queries first go through the parsing and normalization phase, 
-where a query is checked against the syntax and semantics. 
-The next phase is the compilation phase where keywords~(e.g. SELECT, FROM, UPDATE, etc.) 
-are converted into a format understandable to machines. 
-Basically, in this phase, query is interpreted.
-In the query optimization phase, the number of different plans are considered to 
-execute the query,  out of which the best optimized plan is chosen. 
-The chosen plan is store in the cache, so 
-whenever the next query comes in, 
-it will be checked against the content in the cache; if it's already present in the cache,
-the parsing, compilation and query optimization phases will be skipped. 
-The compiled query is then passed to the execution phase 
-where it is actually executed.
+Para entender como las declaraciones preparadas nos ayudan a prevenir Inyecciones SQL, necesitamos entender que ocurre cuando un servidor SQL recibe una consulta.
+En la Figura \ref{sql:fig:preparedstatement} se muestra un diagrama de alto nivel que explica como son ejecutadas las consultas.
+En la fase de compilación, las consultas pasan por un proceso de parseo y normalización, donde se chequea su semántica y sintáctica
+La siguiente fase es la compilación donde palabras como (SELECT, FROM, UPDATE, etc) son convertidas en un formato entendible para las máquinas. Básicamente en esta etapa la consulta es interpretada.
+En la fase de la optimización de la consulta, son consideradas diversas estrategias o planes para ejecutar la consulta de la forma más óptima posible. Estos planes son guardados en una cache en el motor de base de datos, por lo que sí llega la misma consulta esta sera buscada dentro de esa cache y si es encontrada se evitarán las fases de parseo, compilación y optimización. Finalmente la consulta compilada pasa por la fase de ejecución donde se termina de ejecutar por completo.
 
 
 Prepared statement comes into the picture after the compilation but before the execution step. 
