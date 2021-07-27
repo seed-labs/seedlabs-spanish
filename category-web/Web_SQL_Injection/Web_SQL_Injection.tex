@@ -319,20 +319,12 @@ En la fase de compilación, las consultas pasan por un proceso de parseo y norma
 La siguiente fase es la compilación donde palabras como (SELECT, FROM, UPDATE, etc) son convertidas en un formato entendible para las máquinas. Básicamente en esta etapa la consulta es interpretada.
 En la fase de la optimización de la consulta, son consideradas diversas estrategias o planes para ejecutar la consulta de la forma más óptima posible. Estos planes son guardados en una cache en el motor de base de datos, por lo que sí llega la misma consulta esta sera buscada dentro de esa cache y si es encontrada se evitarán las fases de parseo, compilación y optimización. Finalmente la consulta compilada pasa por la fase de ejecución donde se termina de ejecutar por completo.
 
+Las declaraciones preparadas entran en juego después de la compilación pero antes de la ejecución.
+Una declaración preparada pasará por la fase de compilación y será convertida en una consulta pre-compilada con una serie de marcadares que estarán vacíos para los datos. Para correr la consulta pre-compilada los datos deben de ser provistos pero estos datos no pasarán por la fase de compilación; en su lugar irán conectados directamente en la consulta pre-compilada y serán enviados al motor de ejecución.
+Es más, si hay código SQL dentro de los datos, este código será evaluado como si fuese un dato más, sin ningún tipo de significado especial.
+Así es como las declaraciones preparadas nos previenen de posibles ataques de Inyección SQL.
 
-Prepared statement comes into the picture after the compilation but before the execution step. 
-A prepared statement will go through the compilation step, and be turned into
-a pre-compiled query with empty placeholders for data. To run this pre-compiled query,
-data need to be provided, but these data will not go through the compilation step; instead,
-they are plugged directly into the pre-compiled query, and are sent to the execution engine.
-Therefore, even if there is SQL code inside the data, without going through the compilation
-step, the code will be simply treated as part of data, without any special meaning.  
-This is how prepared statement prevents SQL injection attacks.
-
-
-Here is an example of how to write a prepared statement in PHP.  We use a SELECT statement in
-the following example.  We show how to use prepared statement to rewrite the code that is
-vulnerable to SQL injection attacks.
+A continuación mostraremos un ejemplo de como escribir una declaración preparada en PHP. Usamos una declaración SELECT en el código y mostramos como usar una declaración preparada en un código vulnerable a una Inyección SQL.
 
 
 \begin{lstlisting}
@@ -342,8 +334,8 @@ $sql = "SELECT name, local, gender
 $result = $conn->query($sql)
 \end{lstlisting}
 
-The above code is vulnerable to SQL injection attacks. 
-It can be rewritten to the following
+El cóodigo mostrado anteriormente es vulnerable a un ataque de Inyección SQL.
+Puede ser reescrito de la siguiente forma
 
 
 \begin{lstlisting}
@@ -357,89 +349,49 @@ $stmt->bind_result($bind_name, $bind_local, $bind_gender);
 $stmt->fetch();
 \end{lstlisting}
 
+Usando el mecanismo de la declaración preparada, dividimos el proceso de enviar declaraciones SQL a la base de datos en dos pasos.
+El primer paso es enviar la parte del código (es decir la declaración SQL sin los datos), esto se hace por medio del prepare y se puede observar en el fragmento del código anterior, los datos de la consulta son reemplazados por un signo de pregunta (?). Después de este paso, enviamos los datos a la base de datos usando {\tt bind\_param()} que se encarga de enlazar los datos por medio de los signos de pregunta a sus correspondientes equivalentes de la declaración preparada.
+La base de datos interpretará y tratará todo lo que se envie de esta forma como datos y no como código. 
+En el método {\tt bind\_param()}, el primer argumento {\tt "is"} indica los tipos de los parámetros: \texttt{"i"} es para un tipo de dato entero en este caso {\tt \$id} y \texttt{"s"} es para un tipo de dato de cadena en este caso {\tt \$pwd}.
 
-Using the prepared statement mechanism, we divide the process of sending
-a SQL statement to the database into two steps.  
-The first step is to only send the code part, i.e., a SQL statement without 
-the actual the data. This is the prepare step. As we can see from the 
-above code snippet, the actual data are replaced by question
-marks (?).  After this step, we then send the data to the database using 
-{\tt bind\_param()}.
-The database will treat everything sent in this step only as 
-data, not as code anymore. It binds the data to the corresponding
-question marks of the prepared statement. 
-In the {\tt bind\_param()} method, the first argument {\tt "is"} indicates
-the types of the parameters: \texttt{"i"} means  
-that the data in {\tt \$id} has the integer type,
-and \texttt{"s" } means that the data in {\tt \$pwd} has the string type.
-
-
-\paragraph{Tarea.} In this task, we will use the prepared statement mechanism to 
-fix the SQL injection vulnerabilities. For the sake of simplicity, we 
-created a simplified program inside the \texttt{defense} folder. We 
-will make changes to the files in this folder. 
-If you point your browser to the following URL, you will see a page similar
-to the login page of the web application. This page allows you to query an 
-employee's information, but you need to provide the correct 
-user name and password. 
+\paragraph{Tarea.} En esta tarea, usaremos el mecanismo de declaración preparada para arreglar las vulnerabilidades de Inyeccion SQL. Para hacerlo más sencillo, hemos simplificado el programa dentro del directorio \texttt{defense}. Haremos los cambios sobre los archivos dentro de este directorio.
+Si ud. apunta su navegador hacia esta URL, verá una página similar a la de login de la aplicación web. Esta página le permite consultar la información de un empleado pero debe de ingresar el username y el password correcto.
 
 
 \begin{lstlisting}
 URL: http://www.seed-server.com/defense/
 \end{lstlisting}
 
-The data typed in this page will be sent to the 
-server program \texttt{getinfo.php}, which 
-invokes a program called \texttt{unsafe.php}. 
-The SQL query inside this PHP program 
-is vulnerable to SQL injection attacks. Your job is modify the SQL 
-query in \texttt{unsafe.php} using the prepared statement, so
-the program can defeat SQL injection attacks.
-Inside the lab setup folder, the \texttt{unsafe.php} program is 
-in the \path{image_www/Code/defense} folder. You can directly 
-modify the program there. After you are done, you need
-to rebuild and restart the container, or the changes will not
-take effect. 
+Los datos ingresados en esta página serán enviados al programa servidor \texttt{getinfo.php} que invocará un programa llamado \texttt{unsafe.php}.
+La consulta SQL dentro de este programa PHP es vulnerable a un ataque de Inyección SQL. Su tarea es modificar la consulta SQL usando una declaración preparada dentro de \texttt{unsafe.php} y proteger al programa contra este tipo de ataque.
+Dentro del directorio del setup del laboratorio, el archivo \texttt{unsafe.php} está ubicado en el directorio \path{image_www/Code/defense}. Puede modificar el archivo directamente desde ahí y una vez terminado, necesita reconstruir y reiniciar el contenedor o los cambios no tendrán efecto.
 
-You can also modify the file while the container is running.
-On the running container, the \texttt{unsafe.php} program is 
-inside \path{/var/www/SQL_Injection/defense}. 
-The downside of this
-approach is that in order to keep the docker image small,
-we have only installed a very simple text editor called \texttt{nano}
-inside the container. It should be sufficient for simple editing.
-If you do not like this editor, you can always use \texttt{"apt install"} to install
-your favoriate command-line editor inside the container. For example,
-for people who like \texttt{vim}, you can do the following:
+También puede modificar el archivo mientras el contenedor está corriendo.
+En el contenedor corriendo el archivo \texttt{unsafe.php} se encuentra dentro de \path{/var/www/SQL_Injection/defense}.
+La desventaja de esto es que para mantener el tamaño de la imagen del docker pequeña hemos instalado dentro del contenedor, un editor de texto bastante simple llamado \texttt{nano}, si bien este editor debería de ser suficiente para realizar esta tarea, si ud. prefiere instalar otro editor con el que se sienta más a gusto debe usar \texttt{"apt install"} desde la consola para instalarlo. Por ejemplo para instalar \texttt{vim} podemos hacer lo siguiente:
 
 \begin{lstlisting}
 # apt install -y vim 
 \end{lstlisting}
 
-This installation will be discarded after the container is shutdown and destroyed.
-If you want to make it permanent, add the installation command to the \texttt{Dockerfile} 
-inside the \path{image_www} folder. 
- 
+Esta instalación será descartada una vez que el contenedor es apagado y destruido.
+Si quiere hacer esta instalación permanente debería de agregar el comando de instalación en el archivo \texttt{Dockerfile} ubicado en el directorio  \path{image_www}. 
 
 
 \section{Guías}
 \label{sec:guidelines}
 
-\paragraph{Test SQL Injection String.}
-In real-world applications, it may be hard to check whether your SQL injection attack contains
-any syntax error, because usually servers do not return this kind of error messages. 
-To conduct your investigation, you can copy the SQL statement from php source code to the MySQL console. 
-Assume you have the following SQL statement, and the injection string is {\tt ' or 1=1;\#}. 
+\paragraph{Probando Cadena de Inyección SQL.}
+En aplicaciones del mundo real, puede ser difícil chequear cuando un ataque de Inyección SQL contiene un error de sintáxis, generalmente los servidores no devuelven este tipo mensajes de error.
+Para llevar a cabo la investigación, puede copiar la declaración SQL del código PHP en la consola MySQL. Asuma que tiene la siguiente declaración SQL y la cadena para hacer la inyección es {\tt ' or 1=1;\#}. 
 
 \begin{lstlisting}
 SELECT * from credential 
 WHERE name='$name' and password='$pwd';
 \end{lstlisting}
 
-You can replace the value of {\tt \$name} with the
-injection string and test it using the MySQL console. 
-This approach can help you construct a syntax-error 
-free injection string before launching the real attack. 
+Puede reemplazar el valor de {\tt \$name} con la cadena de inyección provista anteriormente y probarla en la consola MySQL.
+Esto le ayudará a crear cadenas de Inyección SQL sin errores de sintaxis antes de llevar a cabo ataques en un escenario real.
 
 
 
