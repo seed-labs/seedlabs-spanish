@@ -33,36 +33,30 @@
 \section{Descripción General}
 
 
-The objective of this lab is to help students understand the Cross-Site Request
-Forgery (CSRF) attack. A CSRF attack involves a victim user, a
-trusted site, and a malicious site. The victim user holds an active session
-with a trusted site while visiting a malicious site. The
-malicious site injects an HTTP request for the trusted site into the victim
-user session, causing damages.
+El objetivo de este laboratorio, es ayudar a que los estudiantes entiendan el ataque de Cross-Site Request Forgery (CSRF). Un ataque de CSRF involucra un usuario víctima, un sitio de confianza y un sitio malicioso. La víctima tene una sesión válida en un sitio de confiana mientras que por otro lado visita un sitio malicioso que inyecta un request HTTP malicioso para ese sitio de confianza dentro de la sesión de la víctima.
 
-In this lab, students  will be attacking a social networking web
-application using the CSRF attack. The open-source social networking application is called 
-\texttt{Elgg}, which has already been installed in our VM.
-\texttt{Elgg} has countermeasures against CSRF, but we have turned them off for the
-purpose of this lab.  This lab covers the following topics:
+En este laboratorio, los estudiantes usarán una aplicación web de red social para realizar ataques CSRF. La aplicación web se llama \texttt{Elgg} y ha sido instalada en nuestra Máquina Virtual. 
+\texttt{Elgg} contiene contramedidas para prevenir ataques CSRF, pero las hemos desactivado para poder realizar los ataques.
+Este laboratorio cubre los siguientes tópicos:
+
 
 \begin{itemize}[noitemsep]
- \item Cross-Site Request Forgery attack
- \item CSRF countermeasures: Secret token and Same-site cookie
- \item HTTP GET and POST requests
+ \item Ataque de Cross-Site Request Forgery 
+ \item Contramedidas para CSRF: Secret token y Same-site cookie
+ \item Requests HTTP GET y POST
  \item JavaScript and Ajax
 \end{itemize}
 
 
-\paragraph{Readings.}
-Detailed coverage of the CSRF attack can be found in the following:
+\paragraph{Lecturas.}
+Para una cobertura más detallada en ataques CSRF puede consultar:
 
 \begin{itemize}
-\item Chapter 10 of the SEED Book, \seedbook
+\item Capítulo 10 del libro de SEED, \seedbook
 \end{itemize}
 
 
-\paragraph{Lab environment.} 
+\paragraph{Entorno de Laboratorio.} 
 \seedenvironmentB 
 \nodependency
 
@@ -71,24 +65,17 @@ Detailed coverage of the CSRF attack can be found in the following:
 % *******************************************
 % SECTION
 % *******************************************
-\section{Lab Environment Setup}
+\section{Configuración del Entorno de Laboratorio}
 
-In this lab, we will use three websites. 
-The first website is the vulnerable Elgg
-site accessible at \url{www.seed-server.com}. The second
-website is the attacker's malicious web site that is used for
-attacking Elgg.  This web site is accessible via
-\url{www.attacker32.com}.  The third website is used 
-for the defense tasks, and its hostname
-is \url{www.example32.com}. 
-We use containers to
-set up the lab environment. 
-
+En este laboratorio, usaremos tres sitios web.
+El primero será nuestro aplicativo web vulnerable Elgg y cuya URL es \url{www.seed-server.com}. El segundo será el sitio malicioso que va a ser usado para el ataque y cuya URL es \url{www.attacker32.com}. El tercero será el sitio usado para las tareas de defensa y su hostname es \url{www.example32.com}.
+Usaremos contenedores para configurar el entorno de laboratorio.
 
 % -------------------------------------------
 % SUBSECTION
 % -------------------------------------------
-\subsection{Container Setup and Commands}
+\subsection{Setup del Contenedor y sus Comandos}
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \input{\commonfolder/container/setup}
@@ -98,7 +85,7 @@ set up the lab environment.
 % -------------------------------------------
 % SUBSECTION
 % -------------------------------------------
-\subsection{Elgg Web Application}
+\subsection{La Aplicación Web Elgg}
 
 We use an open-source web application called Elgg in this lab.
 Elgg is a web-based social-networking application.
@@ -110,7 +97,7 @@ places in the configuration, so please do not change them from
 the \texttt{docker-compose.yml} file.
 
 \vspace{0.1in}
-\paragraph{The Elgg container.}
+\paragraph{El Contenedor de Elgg.}
 We host the Elgg web application using the Apache web server.
 The website setup is included in
 \texttt{apache\_elgg.conf} inside the Elgg image folder.
@@ -129,7 +116,7 @@ the folder where the web application code is stored.
 </VirtualHost>
 \end{lstlisting}
 
-\paragraph{The Attacker container.}
+\paragraph{El Contenedor de Ataque.}
 We use another container (\texttt{10.9.0.105}) for the 
 attacker machine, which hosts a malicious website. 
 The Apache configuration for this website is listed
@@ -154,7 +141,7 @@ We have already placed some code skeletons inside
 this folder. 
 
 
-\paragraph{DNS configuration.}
+\paragraph{Configuración DNS.}
 We access the Elgg website, the attacker 
 website, and the defense site using their respective URLs. 
 We need to add the following entries to the
@@ -189,7 +176,7 @@ the old entries must be removed.
 % *******************************************
 % SECTION
 % ******************************************* 
-\section{Lab Tasks: Attacks}
+\section{Tareas del Laboratorio: Ataques}
 
 
 % -------------------------------------------
