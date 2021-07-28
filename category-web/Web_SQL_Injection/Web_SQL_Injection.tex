@@ -34,13 +34,13 @@
 % ******************************************* 
 \section{Descripción General}
 
-Una Inyección SQL es una técnica de inyección de código que explota vulnerabilidades entre la interfaz de un aplicación web y su servidor de base de datos. Esta vulnerabilidad se presenta cuando el input de un usuario que viaja de la aplicación web hacia el servidor back-end que conecta con la base de datos, no es validado de forma correcta.
+Una Inyección SQL es una técnica de inyección de código que explota vulnerabilidades entre la interfaz de un aplicación web y su servidor de base de datos. Esta vulnerabilidad se da cuando el input de un usuario que se envía de la aplicación web hacia el servidor back-end que conecta con la base de datos, no es validado de forma adecuada.
 
-Muchas aplicaciones web toman el input de los usuarios para construir consultas SQL para obtener información de la base de datos. A su vez las aplicaciones web usan consultas SQL para guardar información en la base de datos. Todas estas son prácticas comunes en el desarrollo de las aplicaciones web. Cuando una consulta SQL no es construida con cuidado, se pueden dar vulnerabilidades de Inyección SQL.
+Muchas aplicaciones web toman el input de los usuarios para construir consultas SQL y así obtener información de la base de datos. A su vez las aplicaciones web usan consultas SQL para guardar información en la base de datos. Todas estas son prácticas comunes en el desarrollo de las aplicaciones web. Cuando una consulta SQL no es construida de manera segura, se pueden dar vulnerabilidades de Inyección SQL.
 Las Inyecciones SQL son uno de los ataques más comunes en aplicaciones web.
 
-En este laboratorio, hemos creado una aplicación web vulnerable a un ataque de Inyección SQL. Esta aplicación incluye los errores más comunes que cometen los desarrolles web a la hora de construir aplicaciones.
-El objetivo de los estudiantess será encontrar formas para explotar estas vulnerabilidades usando Inyecciones SQL, demostrar el daño que puede causar este tipo de atauqe y especializarse en las técnicas que pueden ayudar a mitigar, prevenir y evitar este tipo de ataques.
+Para este laboratorio, hemos creado una aplicación web vulnerable a un ataque de Inyección SQL. Esta aplicación incluye los errores más comunes que cometen los desarrolles web a la hora de construir aplicaciones.
+El objetivo de los estudiantes es encontrar formas para explotar estas vulnerabilidades usando Inyecciones SQL, demostrar el daño que puede causar este tipo de atauqe y especializarse en las técnicas ayudan a mitigar, prevenir y evitar este tipo de ataques.
 Este laboratorio cubre los siguientes tópicos:
 
 \begin{itemize}[noitemsep]
@@ -107,7 +107,7 @@ Puede ser que ya tenga agregada esta entrada de laboratorios anteriores. Si esta
 
 La aplicación web que hemos creado, es un simple gestor de empleados.
 Los empleados pueden ver y actualizar su información personal a través de esta aplicación.
-Dentro de la aplicación existen principalmente dos roles:
+Dentro de la aplicación existen dos roles:
 {\tt Administrator} que es un rol privilgiado que puede manejar la información de todos los empleados.
 {\tt Employee} es un rol común y corriente que puede ver o actualizar su propia información personal. La información de los empleados se muestra en la Tabla
 \ref{table:database}.
@@ -148,11 +148,11 @@ Ted     & 50000	      & seedted    &110000  &11/3  &24343244	& & & &\\
 \subsection{Tarea 1: Conociendo las Declaraciones SQL}
 \label{ssec:MySQLConsole}
 
-El objetivo de este ataque es familiarizarse con los comandos SQL jugando con la base de datos provista. Los datos usados por nuestra aplicación web está guardada en una base de datos MYSQL que está hosteada en nuestro contenedor MySQL.
-Hemos creado una base de datos llamada \texttt{sqllab\_users}, que contiene una tabla cuyo nombre es {\tt credential}. Esta tabla guarda la información personal (eid, password, salario, ssn,etc) de cada uno de los empleados. En esta Tarea, la idea es que ud. juegue un poco con la base de datos y vaya familiarizándose con las consultas SQL.
+El objetivo de este ataque es familiarizarse con los comandos SQL, practicando un poco con la base de datos provista. Los datos usados por nuestra aplicación web está guardada en una base de datos MYSQL que está hosteada en nuestro contenedor MySQL.
+Hemos creado una base de datos llamada \texttt{sqllab\_users}, que contiene una tabla cuyo nombre es {\tt credential}. Esta tabla guarda la información personal de cada uno de los empleados (eid, password, salary, ssn,etc). En esta Tarea, la idea es que ud. practique con la base de datos y vaya familiarizándose con las consultas SQL.
 
 Por favor obtenga una shell en el contenedor MySQL (vea el manual del contenedor para más instrucciones; este manual está en sitio oficial del laboratorio).
-Use el comando \texttt{mysql} que es el cliente para conectarse a la base de datos y para poder interactuar con la misma desde la shell.
+Use el comando \texttt{mysql} que es el cliente para conectarse a la base de datos y le servirá para interactuar con la misma desde la shell.
 El usuario es {\tt root} y el password es {\tt dees}. 
 
 	
@@ -161,8 +161,8 @@ El usuario es {\tt root} y el password es {\tt dees}.
 # mysql -u root -pdees 
 \end{lstlisting}
 
-Después de loguearse, puede crear una base de datoss nueva o cargar una ya existente. Comoo ya hemos creado una base de datos llamada \texttt{sqllab\_users}, solamente necesita cargarla, para hacerlo deberá de usar el comando \texttt{use}.
-Para listar las tablas que componen esta base de datos puede usar el comando  \texttt{show tables} que mostrará todas las tablas de la base de datos seleccionada.
+Después de loguearse, puede crear una base de datos nueva o cargar una ya existente. Como ya hemos creado una base de datos llamada \texttt{sqllab\_users}, solamente necesita cargarla, para hacerlo deberá de usar el comando \texttt{use}.
+Para listar las tablas que componen esta base de datos puede usar el comando  \texttt{show tables} que mostrará todas las tablas que están presentes en esta base de datos.
 
 \begin{lstlisting}
 mysql> use sqllab_users;
@@ -175,18 +175,18 @@ mysql> show tables;
 +------------------------+
 \end{lstlisting}
 
-Después de correr estos comandos, va a necesitar usar un comando SQL para mostrar toda la información personal de la empleada Alice. Por favor provea screenshots de sus resultados.
+Después de correr estos comandos, va a necesitar usar un comando SQL para mostrar la información personal de la empleada Alice. Por favor incluya los screenshots de sus resultados.
 
 % -------------------------------------------
 % SUBSECTION
 % ------------------------------------------- 
 \subsection{Tarea 2: Inyección SQL en la Declaración SELECT} 
 
-La Inyección SQL básicamente es una técnica a través de la cual un atacante puede ejecutar su propia declaración SQL maliciosa generalmente referida como payload malicioso. Por medio de este payload, los atacantes pueden robar información de la base de datos de la víctima; aún peor, pueden realizar cambios en la base de datos. Nuestra aplicación web tiene vulnerabilidades de Inyecciones SQL, que emulan los errores más comunes que comenten los desarrolladores web.
+La Inyección SQL es una técnica a través de la cual un atacante puede ejecutaruna  declaración SQL maliciosa conocida comúnmente como un payload malicioso. Por medio de este payload, los atacantes pueden robar información de la base de datos de la víctima; aún peor, pueden realizar cambios en la base de datos. Nuestra aplicación web tiene vulnerabilidades de Inyecciones SQL, que emulan los errores más comunes que comenten los desarrolladores web.
 
 Para esta tarea, usaremos la página de login de \url{www.seed-server.com}.
 La página muestra se muestra en la Figura \ref{sql:fig:login}.
-Está pide al usuario ingresar su ussuario y su password.
+Está pide al usuario ingresar su usuario y su password.
 La autenticación en la aplicación esta dada por estos dos datos, solamente los empleados que tengan un usuario y password válido podrán ingresar al sistema.
 Su tarea como attacante es loguearse dentro de la aplicación sin conocer las credenciales del empleado. 
 
@@ -225,7 +225,7 @@ if(id != NULL) {
 }
 \end{lstlisting}
 
-La declaración SQL mostrada en el código, selecciona la información personalUid, name, salary,ssn,etc) de un empleado  de la tabla {\tt credential}. Esta declaración SQL usa dos variables \texttt{input\_uname} y \texttt{hashed\_pwd}, donde \texttt{input\_uname} contiene el valor de la cadena tipeada por el usuario en la página de login, mientras que \texttt{hashed\_pwd} contiene el hash \texttt{sha1} del password tipeado por el usuario. El programa se encarga de chequear si existe algún registro que coincida con el username y password ingresado; si hay una coincidencia entonces el usuario será autenticado y se le dará su información correspondiente, de lo contrario la autenticación fallará.
+La declaración SQL mostrada en el código, selecciona la información personal de un empleado  de la tabla {\tt credential}. Esta declaración SQL usa dos variables \texttt{input\_uname} y \texttt{hashed\_pwd}, donde \texttt{input\_uname} contiene el valor de la cadena del nombre de usuario de tipeada por el usuario en la página de login, mientras que \texttt{hashed\_pwd} contiene el hash \texttt{sha1} del password. El programa se encarga de chequear si existe algún registro que coincida con el username y password ingresado; si hay una coincidencia entonces el usuario será autenticado y se le dará su información correspondiente, de lo contrario la autenticación fallará.
 
 
 \paragraph{Tarea 2.1: Ataque de Inyección SQl desde la página web.}
@@ -240,13 +240,13 @@ Cabe mencionar que si quiere incluir múltiples parametros en sus requests HTTP,
 $ curl 'www.seed-server.com/unsafe_home.php?username=alice&Password=11'
 \end{lstlisting}
 
-Si quiere incluir caracteres especiales en los campos de \texttt{username} o \texttt{Password}, es necesario que los codifique de forma apropiada o pueden cambiar el significado de su request. Si quiere incluir una comilla simple en esos campos, debería de usar \texttt{\%27}; si quiere incluir un espacio en blanco debería de usar \texttt{\%20}. En esta tarea necesita usar este tipo de codificación para enviar requests HTTP usando \texttt{curl}.
+Si quiere incluir caracteres especiales en los campos de \texttt{username} o \texttt{Password}, es necesario que los codifique de forma apropiada, de lo contrario pueden cambiar el significado de su request. Si quiere incluir una comilla simple en esos campos, debería de usar \texttt{\%27}; si quiere incluir un espacio en blanco debería de usar \texttt{\%20}. En esta tarea necesita usar este tipo de codificación para enviar requests HTTP usando \texttt{curl}.
 
 
 \paragraph{Tarea 2.3: Agregando una nueva declaración SQL.} 
 En los ataques anteriores, solamente podemos extraer información de la base de datos; sería mucho mejor si pudieramos modificar la base de datos usando la misma vulnerabilidad en la página de login. Una idea es usar una Inyección SQL que corra dos declaraciones SQL en una sola, siendo al segunda una declaración update o delete. En SQL el punto y coma (;) es usado para separar dos declaraciones SQL. Por favor trate de correr dos declaraciones SQL usando la página de login.
 
-Existe una contramedida para prevenir que se puedan correr dos declaraciones SQL en este ataque. Por favor use el libro de SEED o algún recurso de Internet para descubrir cual es esta contramedida y vuelque su descubrimiento en el informe del laboratorio.
+Existe una contramedida para prevenir que se puedan correr dos declaraciones SQL en este ataque. Por favor use el libro de SEED o algún recurso de Internet para descubrir cual es esta contramedida y agregue su descubrimiento en el informe del laboratorio.
 
 
 % -------------------------------------------
@@ -255,7 +255,7 @@ Existe una contramedida para prevenir que se puedan correr dos declaraciones SQL
 \subsection{Tarea 3: Inyección SQL en la Declaración UPDATE} 
 
 Si la Inyección SQL incluye una declaración UPDATE, el daño que puede ocasionar podría ser severo, los atacantes pueden usar esto para modificar la base de datos.
-En nuestra aplicación, hay una página de edición de perfil (Figura   \ref{sql:fig:edit}) esto le permite a los empleados actualizar su información de perfil, incluyendo su nickname, email, address, phone, number and password. Para visitar esta página los empleados primero necesitan estar logueados.
+En nuestra aplicación, existe una página de edición de perfil (Figura    \ref{sql:fig:edit}) esto le permite a los empleados actualizar su información de perfil, incluyendo su nickname, email, address, phone, number and password. Para visitar esta página los empleados primero necesitan estar logueados.
 
 Cuando los empleados actualizan su información a través de esta página de edición de perfil, la siguiente consulta SQL UPDATE será ejecutada. El código PHP que implementa esta actualización del perfil del empleado está en el archivo {\tt unsafe\_edit\_backend.php} dentro del directorio {\tt /var/www/SQLInjection}.
 
@@ -302,7 +302,7 @@ Una cosa que cabe mencionar es que la base de datos almacena el hash del passwor
 
 \subsection{Tarea 4: Contramedida --- Declaraciones Preparadas} 
 
-El problema fundamental de las vulnerabilidades de Inyección SQL es que se falla en separar los datoos del código. Cuando se construye una declaración SQL, el programa (en este caso nuestro programa PHP) sabe cuales son los datos y cual es el código. 
+El problema fundamental de las vulnerabilidades de Inyección SQL es que se falla en separar los datos del código. Cuando se construye una declaración SQL, el programa (en este caso nuestro programa PHP) sabe cuales son los datos y cual es el código. 
 Desafortunadamente, cuando la declaración SQL es enviada a la base de datos, esta diferenciación desaparece; los límites que el interprete de SQL entiende difieren de los interpretados originalmente por el desarrollador en el código de la aplicación.
 Para resolver este problema, es importante asegurarse que tanto el código del servidor que representa nuestra aplicación y la base de datos interpreten lo mismo. La forma más segura de asegurarse de esto es a través de las \textit{declaraciones preparadas o prepared statements}. 
 
@@ -317,10 +317,10 @@ Para entender como las declaraciones preparadas nos ayudan a prevenir Inyeccione
 En la Figura \ref{sql:fig:preparedstatement} se muestra un diagrama de alto nivel que explica como son ejecutadas las consultas.
 En la fase de compilación, las consultas pasan por un proceso de parseo y normalización, donde se chequea su semántica y sintáctica
 La siguiente fase es la compilación donde palabras como (SELECT, FROM, UPDATE, etc) son convertidas en un formato entendible para las máquinas. Básicamente en esta etapa la consulta es interpretada.
-En la fase de la optimización de la consulta, son consideradas diversas estrategias o planes para ejecutar la consulta de la forma más óptima posible. Estos planes son guardados en una cache en el motor de base de datos, por lo que sí llega la misma consulta esta sera buscada dentro de esa cache y si es encontrada se evitarán las fases de parseo, compilación y optimización. Finalmente la consulta compilada pasa por la fase de ejecución donde se termina de ejecutar por completo.
+En la fase de la optimización de la consulta, son consideradas diversas estrategias o planes para ejecutar la consulta de la forma más óptima posible. Estos planes son guardados en una cache en el motor de base de datos, por lo que sí llega la misma consulta esta será buscada dentro de esa cache y si es encontrada se evitarán las fases de parseo, compilación y optimización. Finalmente la consulta compilada pasa por la fase de ejecución donde se termina de ejecutar por completo.
 
 Las declaraciones preparadas entran en juego después de la compilación pero antes de la ejecución.
-Una declaración preparada pasará por la fase de compilación y será convertida en una consulta pre-compilada con una serie de marcadares que estarán vacíos para los datos. Para correr la consulta pre-compilada los datos deben de ser provistos pero estos datos no pasarán por la fase de compilación; en su lugar irán conectados directamente en la consulta pre-compilada y serán enviados al motor de ejecución.
+Una declaración preparada pasará por la fase de compilación y será convertida en una consulta pre-compilada con una serie de marcadores que estarán vacíos para los datos. Para correr la consulta pre-compilada los datos deben de ser provistos pero estos datos no pasarán por la fase de compilación; en su lugar irán conectados directamente en la consulta pre-compilada y serán enviados al motor de ejecución.
 Es más, si hay código SQL dentro de los datos, este código será evaluado como si fuese un dato más, sin ningún tipo de significado especial.
 Así es como las declaraciones preparadas nos previenen de posibles ataques de Inyección SQL.
 
@@ -334,7 +334,7 @@ $sql = "SELECT name, local, gender
 $result = $conn->query($sql)
 \end{lstlisting}
 
-El cóodigo mostrado anteriormente es vulnerable a un ataque de Inyección SQL.
+El código mostrado anteriormente es vulnerable a un ataque de Inyección SQL.
 Puede ser reescrito de la siguiente forma
 
 
@@ -350,7 +350,7 @@ $stmt->fetch();
 \end{lstlisting}
 
 Usando el mecanismo de la declaración preparada, dividimos el proceso de enviar declaraciones SQL a la base de datos en dos pasos.
-El primer paso es enviar la parte del código (es decir la declaración SQL sin los datos), esto se hace por medio del prepare y se puede observar en el fragmento del código anterior, los datos de la consulta son reemplazados por un signo de pregunta (?). Después de este paso, enviamos los datos a la base de datos usando {\tt bind\_param()} que se encarga de enlazar los datos por medio de los signos de pregunta a sus correspondientes equivalentes de la declaración preparada.
+El primer paso es enviar la parte del código (es decir la declaración SQL sin los datos), esto se hace por medio del prepare y se puede observar en el fragmento del código anterior, los datos de la consulta son reemplazados por un signo de pregunta (?). Después de este paso, enviamos los datos a la base de datos usando {\tt bind\_param()} que se encarga de enlazarlos por medio de los signos de pregunta a sus valores equivalentes de la declaración preparada.
 La base de datos interpretará y tratará todo lo que se envie de esta forma como datos y no como código. 
 En el método {\tt bind\_param()}, el primer argumento {\tt "is"} indica los tipos de los parámetros: \texttt{"i"} es para un tipo de dato entero en este caso {\tt \$id} y \texttt{"s"} es para un tipo de dato de cadena en este caso {\tt \$pwd}.
 
@@ -383,7 +383,7 @@ Si quiere hacer esta instalación permanente debería de agregar el comando de i
 
 \paragraph{Probando Cadena de Inyección SQL.}
 En aplicaciones del mundo real, puede ser difícil chequear cuando un ataque de Inyección SQL contiene un error de sintáxis, generalmente los servidores no devuelven este tipo mensajes de error.
-Para llevar a cabo la investigación, puede copiar la declaración SQL del código PHP en la consola MySQL. Asuma que tiene la siguiente declaración SQL y la cadena para hacer la inyección es {\tt ' or 1=1;\#}. 
+Para llevar a cabo esta investigación, puede copiar la declaración SQL del código PHP en la consola MySQL. Asuma que tiene la siguiente declaración SQL y la cadena para hacer la inyección es {\tt ' or 1=1;\#}. 
 
 \begin{lstlisting}
 SELECT * from credential 
