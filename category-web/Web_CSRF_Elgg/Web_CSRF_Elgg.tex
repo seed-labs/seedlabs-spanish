@@ -87,22 +87,16 @@ Usaremos contenedores para configurar el entorno de laboratorio.
 % -------------------------------------------
 \subsection{La Aplicación Web Elgg}
 
-We use an open-source web application called Elgg in this lab.
-Elgg is a web-based social-networking application.
-It is already set up in the provided container images.
-We use two containers, one running the web server (\texttt{10.9.0.5}) ,
-and the other running the MySQL database (\texttt{10.9.0.6}).
-The IP addresses for these two containers are hardcoded in various
-places in the configuration, so please do not change them from
-the \texttt{docker-compose.yml} file.
+En este laboratorio usaremos una aplicación web de red social llamada Elgg.
+Esta aplicación está instalada y configurada en las imágenes de nuestros contenedores. 
+Usaremos dos contenedores, el primero será el encargado de correr el servidor web  (\texttt{10.9.0.5}) y el segundo será el encargado de correr el servidor de base de datos MySQL (\texttt{10.9.0.6}). 
+Las direcciones IPs para ambos contenedores están hardcodeadas en múltiples lugares de los archivos de configuración del proyecto, por lo tanto se recomienda no cambiarlos en el archivo \texttt{docker-compose.yml}
 
 \vspace{0.1in}
 \paragraph{El Contenedor de Elgg.}
-We host the Elgg web application using the Apache web server.
-The website setup is included in
-\texttt{apache\_elgg.conf} inside the Elgg image folder.
-The configuration specifies the URL for the website and
-the folder where the web application code is stored.
+La aplicación web Elgg está hosteada usando un servidor web Apache.
+La configuración del servidor está dentro del archivo \texttt{apache\_elgg.conf} dentro del directorio de la imagen Elgg.
+Este archivo especifica la URL del sitio web y el directorio donde reside el código fuente de la aplicación web.
 
 \begin{lstlisting}
 <VirtualHost *:80>
@@ -117,10 +111,8 @@ the folder where the web application code is stored.
 \end{lstlisting}
 
 \paragraph{El Contenedor de Ataque.}
-We use another container (\texttt{10.9.0.105}) for the 
-attacker machine, which hosts a malicious website. 
-The Apache configuration for this website is listed
-in the following:
+Usaremos otro contenedor para la máquina que será la atacante (\texttt{10.9.0.105}) y hosteará un sitio malicioso.
+La configuración apache para este sitio web se muestra a continuación:
 
 \begin{lstlisting}
 <VirtualHost *:80>
@@ -129,29 +121,12 @@ in the following:
 </VirtualHost>
 \end{lstlisting}
  
-Since we need to create web pages inside this container,
-for convenience, as well as for keeping the pages we have created, 
-we mounted a folder (\texttt{Labsetup/attacker} on the 
-hosting VM) to the container's \texttt{/var/www/attacker}
-folder, which is the \texttt{DocumentRoot} folder in our Apache
-configuration. Therefore, the web pages we 
-put inside the \texttt{attacker} folder on the VM
-will be hosted by the attacker's website. 
-We have already placed some code skeletons inside 
-this folder. 
-
+Debido a que necesitamos crear páginas web dentro de este contenedor, hemos montado un directorio en la Máquina Virtual Host (\texttt{Labsetup/attacker}) dentro del directorio del contenedor ubicado en \texttt{/var/www/attacker} que es el directorio usado por nuestro archivo configuración de Apache. A su vez las páginas web ubicadas dentro del directorio \texttt{attacker} en la Máquina Virtual, serán hosteadas en el sitio web del atacante. Hemos puesto un código genérico dentro de este directorio.
 
 \paragraph{Configuración DNS.}
-We access the Elgg website, the attacker 
-website, and the defense site using their respective URLs. 
-We need to add the following entries to the
-\texttt{/etc/hosts} file, so these hostnames are mapped to
-their corresponding IP addresses.
-You need to use the root privilege to
-change this file (using \texttt{sudo}). It should be noted 
-that these names might have already been added to the file due to
-some other labs. If they are mapped to different IP addresses,
-the old entries must be removed. 
+Accederemos a nuestro sitio Elgg, nuestro sitio malicioso y el sitio de defensa usando sus URLs.
+Lo primero que hay que hacer es mapear los nombres de dominio del servidor web con sus IPs. Para ello deberá agregar las siguientes entradas en el archivo \texttt{/etc/hosts}.
+Para poder modificar este archivo ud. debe contar con privilegios de root (usando \texttt{sudo}):
 
 \begin{lstlisting}
 10.9.0.5        www.seed-server.com
@@ -182,26 +157,19 @@ the old entries must be removed.
 % -------------------------------------------
 % SUBSECTION
 % ------------------------------------------- 
-\subsection{Task 1: Observing HTTP Request.}
+\subsection{Tarea 1: Inspeccionando Request HTTP.}
 
-In Cross-Site Request Forget attacks, we need to forge HTTP requests. 
-Therefore, we need to know what a legitimate HTTP request looks like and 
-what parameters it uses, etc. 
-We can use a Firefox add-on called \texttt{"HTTP Header Live"} for this
-purpose.  
-The goal of this task is to get familiar with this tool. 
-Instructions on how to use this tool is given in the Guideline
-section~(\S~\ref{web:sec:httpheaderlive}).
-Please use this tool to capture an HTTP GET request and an HTTP POST
-request in Elgg. In your report, please identify the parameters
-used in this these requests, if any. 
-
+Para realizar ataques CSRF, necesitamos capturar Requests HTTP.
+En este laboratorio necesitaremos crear Requests HTTP. 
+Para observar como luce un Request HTTP válido en Elgg, debemos ser capaces de capturar y analizar dichos requests.
+Para este propósito usaremos un add-on para Firefox llamado \texttt{"HTTP Header Live"}. Antes de empezar el laboratorio, el estudiante debería estar familiarizado con esta herramienta.
+Las instrucciones de como utilizarla están descriptas en esta sección (\S~\ref{web:sec:httpheaderlive}). En su informe de laboratorio, por favor identifique los parámetros usados en esos requests, si es que existen.
 
 
 % -------------------------------------------
 % SUBSECTION
 % ------------------------------------------- 
-\subsection{Task 2: CSRF Attack using GET Request}
+\subsection{Tarea 2: Usando Request HTTP GET para el ataque CSRF}
 
 In this task, we need two people in the Elgg social network: Alice
 and Samy. Samy wants to become a friend to Alice, but Alice refuses to add 
@@ -236,7 +204,7 @@ parameters in the forged requests.
 % -------------------------------------------
 % SUBSECTION
 % ------------------------------------------- 
-\subsection{Task 3: CSRF Attack using POST Request}
+\subsection{Tarea 3: Usando Request HTTP POST para el ataque CSRF}
 
 After adding himself to Alice's friend list, Samy wants to do something more. He 
 wants Alice to say ``Samy is my Hero'' in her profile, so everybody knows 
@@ -385,7 +353,7 @@ answer the following questions in your report:
 % *******************************************
 % SECTION
 % *******************************************
-\section{Lab Tasks: Defense} 
+\section{Tareas de Laboratorio: Defensa} 
 
 CSRF is not difficult to defend against. Initially, most applications
 put a secret token in their pages, and by checking whether the token
@@ -402,7 +370,7 @@ conduct experiments on both methods.
 % -------------------------------------------
 % SUBSECTION
 % ------------------------------------------- 
-\subsection{Task 4: Enabling Elgg's Countermeasure} 
+\subsection{Tarea 4: Activando las Contramedidas en Elgg} 
 
 To defend against CSRF attacks, web applications can embed a secret token
 in their pages. All the requests coming from these pages must carry this 
@@ -532,7 +500,7 @@ the attack failed, kill the tab to stop the endless loop.
 % -------------------------------------------
 % SUBSECTION
 % -------------------------------------------
-\subsection{Task 5: Experimenting with the SameSite Cookie Method} 
+\subsection{Tarea 5: Experimentando con la Contramedida SameSite Cookie} 
 
 Most browsers have now implemented a mechanism called SameSite cookie, 
 which is a property associated with cookies. When sending out 
@@ -603,7 +571,7 @@ their instructors regarding the bonus points.
 % -------------------------------------------
 % SUBSECTION
 % ------------------------------------------- 
-\section{Guidelines}
+\section{Guías}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \input{\webcommon/Web_Dev_Tools}
