@@ -171,34 +171,15 @@ Las instrucciones de como utilizarla están descriptas en esta sección (\S~\ref
 % ------------------------------------------- 
 \subsection{Tarea 2: Usando Request HTTP GET para el ataque CSRF}
 
-In this task, we need two people in the Elgg social network: Alice
-and Samy. Samy wants to become a friend to Alice, but Alice refuses to add 
-him to her Elgg friend list. Samy decides to use the CSRF attack to
-achieve his goal. He sends Alice an URL (via an email or a posting in 
-Elgg); Alice, curious about it, clicks on the URL, which leads her to Samy's web site:    
-\texttt{www.attacker32.com}. Pretend that you are Samy, describe how you
-can construct the content of the web page, so as soon as Alice visits the
-web page, Samy is added to the friend list of Alice (assuming Alice has an
-active session with Elgg).
+Para esta tarea, necesitamos usar dos usuarios en nuestra aplicación de red social Elgg: Alice y Samy. Samy quiere ser amigo de Alice, pero Alice rechaza su petición de amistad. Samy decide usar un ataque cd CSRF para ser amigo de Alice. Esto lo logra enviando una URL a Alice (por email o por un posteo en Elgg); Alice visita la URL que apunta al sitio de Samy: \texttt{www.attacker32.com}.
+Haga de cuenta que ud. ess Samy, describa como puede hacer una página de tal forma que cuando Alice la visite sea agregada a la lista de amigos de Samy (asumiendo que Alice tiene una sesión activa en Elgg).
 
 
-To add a friend to the victim, we need to identify what the legitimate 
-Add-Friend HTTP request (a GET request) looks like. We can use 
-the \texttt{"HTTP Header Live"} Tool to do the investigation. 
-In this task, you are not allowed to
-write JavaScript code to launch the CSRF attack. Your job is to make the
-attack successful as soon as Alice visits the web page, without even making
-any click on the page (hint: you can use the {\tt img} tag, which
-automatically triggers an HTTP GET request).
- 
+Para lograr esto, neceistamos identificar como luce el Request HTTP original de Add-Friend para agregar un amigo. Podemos usar \texttt{"HTTP Header Live"} para llevar a cabo la investigación.
+En esta tarea, no está permitido escribir código JavaScript para hacer el ataque CSRF. Su objetivo es lanzar un ataque exitoso tan pronto Alice visite la página web, sin que Alice haga un sólo click en la página (pista: puede usar el tag {\tt img}, que automáticamente lanza un Request HTTP GET).
 
-Elgg has implemented a countermeasure to defend against 
-CSRF attacks. In Add-Friend HTTP requests, you may notice that each 
-request includes two weird-looking parameters, \texttt{\_\_elgg\_ts} and 
-\texttt{\_\_elgg\_token}. These parameters are used by the countermeasure, so if they do not
-contain correct values, the request will not be accepted by Elgg.   
-We have disabled the countermeasure for this lab, so there is no need to include these two 
-parameters in the forged requests. 
+Elgg implementa contramedidas para defenderse contra ataques CSTF. En el Request HTTP Add-Friend, puede advertir que cada request incluye dos parámetros extraños llamados \texttt{\_\_elgg\_ts} y  \texttt{\_\_elgg\_token}. Estos parámetros son usados como contramedida, si ambos no contienen valores válidos, el request no será validado por Elgg.
+Para este laboratorio, hemos desactivado esta protección y no hay necesidad de incluirlos en los requests que se van a falsificar.
 
 
 % -------------------------------------------
@@ -206,45 +187,17 @@ parameters in the forged requests.
 % ------------------------------------------- 
 \subsection{Tarea 3: Usando Request HTTP POST para el ataque CSRF}
 
-After adding himself to Alice's friend list, Samy wants to do something more. He 
-wants Alice to say ``Samy is my Hero'' in her profile, so everybody knows 
-about that. Alice does not like Samy, let alone putting that statement 
-in her profile. Samy plans to use a CSRF attack to achieve that goal. 
-That is the purpose of this task. 
+Después de agregar a Alice como amiga, Samy quiere hacer algo más. Samy quiere que Alice que ponga ``Samy is my Hero'' en su perfil de esta forma todo el mundo podrá verlo. Para lograr esto Samy planea usar un ataque CSRF.
 
+Una forma de hacerlo es postear un mensaje en la cuenta Elgg de Alice, con la esperanza que Alice visite este sitio que será el sitio malicioso de Samy es decir \url{www.attacker32.com} donde se va a lanzar el ataque CSRF.
 
-One way to do the attack is to post a message to Alice's Elgg account, hoping that 
-Alice will click the URL inside the message. This URL will lead Alice to your (i.e., Samy's)
-malicious web site \url{www.attacker32.com}, where you can launch the
-CSRF attack. 
+El objetivo de su ataque es modificar el perfil de la víctima. En particular el atacante necesita falsificar un request para así modificar la información del perfil de la víctima en Elgg. Elgg permite que lo usuarios modifiquen sus perfiles. Si loos usuarios quieren hacerlo, ellos visitan su página de perfil en Elgg, completan un formulario y lo envían a través de un Request POST por medio del server-side script {\tt /profile/edit.php} que se encarga de hacer el cambio y procesar la información.
 
-The objective of your attack is to modify the victim's profile. 
-In particular, the attacker needs to forge a request 
-to modify the profile information of the victim user of Elgg. 
-Allowing users to modify their profiles is a feature of 
-Elgg. If  users want to modify their profiles,
-they go to the profile page of Elgg, fill out 
-a form, and then submit the form---sending a POST request---to 
-the server-side script {\tt /profile/edit.php}, which 
-processes the request and does the profile modification.
-
-
-The server-side script {\tt edit.php} accepts both GET and POST requests,
-so you can use the same trick as that in Task 1 to achieve the attack.
-However, in this task, you are required to use the POST request. 
-Namely, attackers (you) need to forge an HTTP POST request from the victim's
-browser, when the victim is visiting their malicious site. 
-Attackers need to know the structure of such a request.
-You can observe the
-structure of the request, i.e.,  the parameters of the request, by making
-some modifications to the profile and monitoring the request using
-the \texttt{"HTTP Header Live"} tool. 
-You may see something similar to
-the following. Unlike HTTP {\tt GET} requests, which append 
-parameters to the URL strings, the parameters of HTTP {\tt POST} requests are 
-included in the HTTP message body (see the contents between the two 
-\ding{80} symbols): 
-
+El server-side script {\tt edit.php} acepta tanto requests HTTP GET como POST, puede usar el mismo truco de la Tarea 1 para hacer este ataque.
+Sin embargo, en esta tarea ud. debe usar un request POST.
+Así mismo, ud. como atacante debe falsificar un request HTTP POST desde el navegador de la víctima cuando esta visite el sitio malicioso.
+Los atacantes necesitan conocer la estructura de dicho request. Puede conocer esta estructura, es decir sus parámetros, haciendo cambios en su perfil y monitoreando el request resultando usando \texttt{"HTTP Header Live"}.
+Lo que se observe puede ser algo similar a lo que se muestra a continuación, a diferencia de los requests HTTP {\tt GET} que ubican sus parámetros en la URL, em los requests HTTP {\tt POST} los parámetros son incluídos en el cuerpo del mensaje (vea el contenido mostrado a continuación ubicado entre los símbolos \ding{80})
 
 \begin{lstlisting}
 http://www.seed-server.com/action/profile/edit
@@ -267,14 +220,8 @@ __elgg_token=fc98784a9fbd02b68682bbb0e75b428b&__elgg_ts=1403464813  (*@\ding{80}
 ......                                                              (*@\ding{80}@*)
 \end{lstlisting}
 
-
-After understanding the structure of the request, you need to 
-be able to generate the request from your attacking web page
-using JavaScript code. 
-To help you write such a JavaScript program,  we provide a 
-sample code in the following code fence. You can use this sample code to construct your malicious web site
-for the CSRF attacks. This is only a sample code, and you need to modify it to 
-make it work for your attack.
+Después de entender la estructura del request, necesita generar un request desde su página web de ataque usando código JavaScript.
+Para simplificar esta tarea, hemos provisto un código genérico a cual partir del cual se puede generar el ataque CSRF que se quiere lanzar desde el sitio web malicioso. Este es un código de ejemplo y necesita modificarlo para que funcione en su ataque.
 
 
 \begin{lstlisting}
@@ -318,36 +265,18 @@ window.onload = function() { forge_post();}
 </html>
 \end{lstlisting}
 
+En la línea  Line~\ding{192}, el valor \texttt{2} establece el nivel de acceso público de un campo en particular.
+Esto es necesario de otra forma, el nivel de acceso será puesto como privado por defecto lo que hara que otros usuarios no puedan verlo. 
+Cabe aclarar que al hacer copy and paste del código en el archivo PDF, muy a menudo, las comillas dobles y en especial las comillas simples, pueden convertirse en símbolos diferentes que parecen similares. Esta situación causará errores en el código, así que tenga en cuenta este escenario. Cuando esto suceda, elimínelos y escriba manualmente esos símbolos.
 
-In Line~\ding{192}, the value \texttt{2} sets the access level of a field to public. 
-This is needed, otherwise, the access level will be set by default to private, so others cannot
-see this field. It should be noted that when copy-and-pasting the above code
-from a PDF file, the  single quote character in the program may become 
-something else (but still looks like a single quote). That will cause 
-syntax errors. Replacing all the single quote symbols with the one typed from 
-your keyboard will fix those errors. 
-
-
-\paragraph{Questions.}
-In addition to describing your attack in full details, you also need to
-answer the following questions in your report:
+\paragraph{Preguntas.}
+Además de describir su ataque de forma detallada, deberá de responder las siguientes preguntas en su informe de laboratorio:
 
 \begin{itemize}
-   \item \textbf{Question 1}: The forged HTTP request needs Alice's user
-   id (guid) to work properly. If Boby targets Alice specifically, before
-   the attack, he can find ways to get Alice's user id. Boby does not know 
-   Alice's Elgg password, so he cannot log into Alice's account to get
-   the information. Please describe how Boby can solve this problem.
+   \item \textbf{Pregunta 1}: El request falsificado necesita el user id de Alice (guid) para funcionar de manera correcta. Si Boby elije a Alice como víctima antes de hacer el ataque, puede encontrar diversas formas para obtener este id. Boby no conoce el password de Alice en Elgg, por lo tanto no puede loguearse como ella para obtener esta informacióon. Por favor explique como Boby puede resolver este problema.
 
-   
-   \item \textbf{Question 2:} If Boby would like to launch the attack to
-   anybody who visits his malicious web page. In this case, he does not
-   know who is visiting the web page beforehand. Can he still launch the CSRF attack
-   to modify the victim's Elgg profile? Please explain.
+   \item \textbf{Pregunta 2:} Si Boby quisiera ejecutar el ataque sobre cualquier persona que visite su página maliciosa, estariamos en un escenario donde Boby no sabe quién está visitando su página de antemano. Dada esta situación ¿Puede lanzar el ataque CSRF y modificar el perfil de la víctima visitante? Por favor describa esta situación.
 \end{itemize}
-
-
-
 
 
 % *******************************************
@@ -355,16 +284,9 @@ answer the following questions in your report:
 % *******************************************
 \section{Tareas de Laboratorio: Defensa} 
 
-CSRF is not difficult to defend against. Initially, most applications
-put a secret token in their pages, and by checking whether the token
-is present in the request or not, they can tell whether a request
-is a same-site request or a cross-site request. This is called
-\textit{secret token} approach. 
-More recently,
-most browsers have implemented a mechanism called 
-\textit{SameSite cookie}, which is intended to simplify the 
-implementation of CSRF countermeasures. We will 
-conduct experiments on both methods. 
+No es difícil defenderse contra ataques CSSRF. Inicialmente, la mayoría de las aplicaciones usan un token secreto (secret token) en su páginas y por medio del chequeo de la presencia de este token en un request, pueden verificar si se trata de un request same-site o un request cross-site. Esto es llamado protección de  \textit{secret token}.
+Recientemente la mayoría de los navegadores han implementado un mecanismo llamado\textit{SameSite cookie}, cuya intención es simplificar la implementación de medidas de defensa en contra de ataques CSRF.
+Haremos unos experimentos usando ambos métodos. 
 
 
 % -------------------------------------------
