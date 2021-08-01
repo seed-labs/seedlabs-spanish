@@ -294,48 +294,31 @@ Haremos unos experimentos usando ambos métodos.
 % ------------------------------------------- 
 \subsection{Tarea 4: Activando las Contramedidas en Elgg} 
 
-To defend against CSRF attacks, web applications can embed a secret token
-in their pages. All the requests coming from these pages must carry this 
-token, or they will be considered as a cross-site request, and will
-not have the same privilege as the same-site requests. 
-Attacker will not be able to get this secret token, so their requests
-are easily identified as cross-site requests. 
+Para protegerse contra ataques de CSRF, las aplicaciones web pueden embeber un token (token secret) dentro de sus páginas. Todos los requests que vengan de esas páginas deben de enviar ese token or serán considerados requests cross-site y no tendrán el mismo privilegio que los requests same-site. El atacante no podrá obtener este token, por lo tanto sus requests podrán ser fácilmente identificados como requests cross-site.
+
+Elgg usa este tipo de contramedida en contra de ataques CSRF.
+Hemos desactivado esta contramedida para hacer posible nuestros ataques.
+Elgg embebe dos parámetros en el request {\tt\_\_elgg\_ts} y {\tt\_\_elgg\_token}, estos parámetros son insertados en el cuerpo del mensaje del request HTTP POSST y en la URL para el request HTTP GET. El servidor se encargará de validarlos antes de procesar el request.
 
 
-Elgg uses this secret-token approach as its 
-built-in countermeasures to defend against CSRF attacks. 
-We have disabled the countermeasures to make the attack work. 
-Elgg embeds two parameters
-{\tt\_\_elgg\_ts} and {\tt\_\_elgg\_token} in the request.
-The two parameters are added to the HTTP message body for the POST requests and to the URL
-string for the HTTP GET requests. The server will validate them
-before processing a request. 
-
-
-\paragraph{Embedding secret token and timestamp to web pages.}
-Elgg adds security token and timestamp to all the HTTP requests. 
-The following HTML code is present in all the forms where user action is required. 
-These are two hidden fields; when the form is submitted, these
-two hidden parameters are added to the request:
+\paragraph{Embebebiendo el token secret y el timestamp en las páginas.}
+Elgg agrega un token y un timestamp de seguridad en todos sus requests HTTP.
+El siguiente código HTML está presente en todos los formularios con los cuales interactua el usuario.
+El token y el timestamp son campos ocultos; cuando el formulario es enviado, estos campos ocultos dentro del HTML son agregados al request.
 
 \begin{lstlisting}
 <input type = "hidden" name = "__elgg_ts" value = "" />
 <input type = "hidden" name = "__elgg_token" value = "" />
 \end{lstlisting}
 
-Elgg also assign the values of the security token and timestamp to JavaScript variables, 
-so they can be easily accessed by the JavaScript code on the same page.
+Elgg asigna los valores del token y el timestamp a variables de JavaScript, lo cual permite que se acceda fácilmente por medio de código JavaScript en la página en donde están presentes.
 
 \begin{lstlisting}
 elgg.security.token.__elgg_ts;
 elgg.security.token.__elgg_token;
 \end{lstlisting}
 
-
-The secret token and timestamp are added to Elgg's web pages by the 
-\path{vendor/elgg/elgg/views/default/input/securitytoken.php} 
-module. The code snippet below shows how they are dynamically 
-added to web pages.
+El código que se encarga de agregar estos parámetros en las páginas de Elgg está ubicado en el archivo \path{vendor/elgg/elgg/views/default/input/securitytoken.php}. El código que se muestra abajo muestra su mecánica.
 
 \begin{lstlisting}
 $ts = time();
@@ -346,13 +329,9 @@ echo elgg_view('input/hidden', ['name' => '__elgg_ts', 'value' => $ts]);
 \end{lstlisting}
 
 
-\paragraph{Secret token generation.}
-Elgg's security token is a hash value (md5 message digest) of the site 
-secret value (retrieved from database),
-timestamp, user session ID and random generated session string. 
-The code below shows the secret token generation in Elgg 
-(in \path{vendor/elgg/elgg/engine/classes/Elgg/Security/Csrf.php}).
-
+\paragraph{Generación del token secreto.}
+El token de seguridad que utiliza Elgg es un valor hash (md5) de un valor secreto del sitio (obtenido de la base de datos), de un timestamp, del ID de sesión del usuario y una cadena de sesión generada al azar.
+El código que se muestra abajo es el encargado de generar este token en Elgg y está dentro del archivo \path{vendor/elgg/elgg/engine/classes/Elgg/Security/Csrf.php}.
 
 \begin{lstlisting}
 /**
@@ -374,14 +353,9 @@ public function generateActionToken($timestamp, $session_token = '') {
 \end{lstlisting}
 
 
-\paragraph{Secret token validation.}
-The elgg web application validates the generated token and timestamp to
-defend against the CSRF attack.  Every user action calls the 
-\texttt{validate} function inside \texttt{Csrf.php}, and this function validates the tokens.
-If tokens are not present or invalid, the action will be denied and the
-user will be redirected. In our setup, we added 
-a \texttt{return} at the beginning of this function, essentially
-disabling the validation.
+\paragraph{Validación del token secreto.}
+Elgg valida el token generado y su timestamp para proteger al sitio en contra de ataques CSRF. Cada acción del usuario llama a la función \texttt{validate} dentro de \texttt{Csrf.php} y esta función valida los tokens.
+Si los tokens no están presentes o son inválidos, la acción será rechazada y el ussuario será redirigido. En nuestro setup inicial, hemos agregado un \texttt{return} al principio de está función, para desactivar esta validación.
 
 \begin{lstlisting}
 public function validate(Request $request) {
@@ -395,27 +369,14 @@ public function validate(Request $request) {
 
 
 
-\paragraph{Task: Turn on the countermeasure.}
-To turn on the countermeasure, get into the Elgg container, 
-go to the \path{/var/www/elgg/vendor/elgg/elgg/engine/classes/Elgg/Security} 
-folder, remove the \texttt{return} statement from \texttt{Csrf.php}.
-A simple editor called \texttt{nano} is available from inside the 
-container.  After making the change, 
-repeat the attack again, and see whether your attack will
-be successful or not. 
-Please point out the secret tokens in the captured HTTP requests.
-Please explain why
-the attacker cannot send these secret tokens in the CSRF attack; what
-prevents them from finding out the secret tokens from the web page?   
+\paragraph{Tarea: Active la contramedida.}
+Para activar la contramedida, debe entrar al contenedor de Elgg, ir al directorio 
+\path{/var/www/elgg/vendor/elgg/elgg/engine/classes/Elgg/Security} y eliminar el\texttt{return} del archivo  \texttt{Csrf.php}.
+Existe un editor de texto de consola llamado \texttt{nano} disponible dentro del contenedor. Después de hacer este cambio, repita el ataque y vea si es exitoso o no.
+Por favor anote los tokens secretos de los HTTP requests capturados.
+Por favor explique porque el atacante no puede enviar estos tokens en el ataque CSRF; ¿Qué es lo que evita que un atacante encuentre los tokens secretos de la página web?
 
-\textbf{It should be noted (important)} that when we launch the edit-profile attack
-while the countermeasure is enabled, the failed attempt will
-cause the attacker's page to be reloaded, which will
-trigger the forged POST request again. This will lead to another 
-failed attempt, so the page will be reloaded again and 
-another forged POST request will be sent out. This endless loop
-will slow down your computer. Therefore, after verifying that 
-the attack failed, kill the tab to stop the endless loop. 
+\textbf{Nota (importante)} Debe tener en cuenta que al activar la contramedida y al lanzar un ataque que edite el perfil de un usuario, esta protección hará que su ataque falle y que la página sea recargada, esto provocará que el request HTTP falsificado sea disparado nuevamente. Esto provocará otro intento fallido de ataque y la página se recargará nuevamente y así. Esto lo hará entrar en un loop infinito que enlentencerá su computadora. Para evitar esto, una vez que compruebe que su ataque falló, cierre el tab y así podrá evitar este loop infinito.
 
 
 
@@ -424,70 +385,31 @@ the attack failed, kill the tab to stop the endless loop.
 % -------------------------------------------
 \subsection{Tarea 5: Experimentando con la Contramedida SameSite Cookie} 
 
-Most browsers have now implemented a mechanism called SameSite cookie, 
-which is a property associated with cookies. When sending out 
-requests, browsers will check this property, and decide whether 
-to attach the cookie in a cross-site request. A web application can
-set a cookie as SameSite if it does not want the cookie to be 
-attached to cross-site requests. For example, they can mark
-the session ID cookie as SameSite, so no cross-site request
-can use the session ID, and will therefore not be able to 
-launch CSRF attacks. 
+La mayoría de los navegadores implementan un mecanismo llamado SameSite cookie, que es una propiedad asociada a las coookies. Al envíar un request el navegador chequeará esta propiedad y decidirá si adjuntará esta cookie en un request cross-site. Una aplicación web puede establecer una cookie como SameSite si no quiere que la cookie sea agregada en un request cross-site. Por ejemplo, puede marcar la cookie de sesión ID como SameSite, por lo tanto los requests cross-site no podrán usarla y no podrán lanzar ataques CSRF.
 
-
-To help students get an idea on how the SameSite cookies can
-help defend against CSTF attacks, we have created a website
-called \url{www.example32.com} on one of the containers. Please 
-visit the following URL (the hostname is already mapped 
-to \texttt{10.9.0.5} in the \texttt{/etc/hosts} file; if you are 
-not using the SEED VM, you should add this mapping to your machine): 
+Par darle una idea a los estudiantes en como es el funcionamiento de las cookies SameSite y como pueden ayudarnos a defendernos en contra de ataques CSRF, hemos creado un sitio web en uno de los contenedores llamado \url{www.example32.com}. Por favor visite la siguiente URL (el hostname está mapeado dentro del archivo\texttt{/etc/hosts} a la ip \texttt{10.9.0.5}); si ud. no está usando la Máquina Virtual de SEED, debería de agregar esta entrada en su máquina):
 
 \begin{lstlisting}
 URL: http://www.example32.com/
 \end{lstlisting}
 
-Once you have visited this website once, three cookies will be 
-set on your browser, \texttt{cookie-normal}, \texttt{cookie-lax},
-and \texttt{cookie-strict}. As indicated by the name,
-the first cookie is just a normal one, the second and third cookies
-are samesite cookies of two different types (\texttt{Lax} and \texttt{Strict}
-types). We have designed two sets of experiments to see 
-which cookies will be attached when you send an HTTP request
-back to the server. Typically, all the cookies belonging to the server
-will be attached, but this is not the case if a cookie is a samesite type. 
+Una vez que haya entrado al sitio web, serán seteadas tres cookies en su navegador, \texttt{cookie-normal}, \texttt{cookie-lax},
+y \texttt{cookie-strict}. Como el nombre loo indica, la primera cookie es una cookie común y coorriente, la segunda y tercer cookie son cookies SameSite pero de diferente tipo (\texttt{Lax} y \texttt{Strict}). Hemos diseñado dos conjuntos de experimentos para observar cuales cookies serán enviadas al momento de realizar un request HTTP hacia el servidor. Típicamente, todas las cookies que pertenecen al servidor serán enviadas, pero este no será el caso si la cookie es de tipo SameSite.
 
-
-Please follow the links for the two experiments. Link A points to a page 
-on \url{example32.com}, while Link B points to a page 
-on \url{attacker32.com}. Both pages are identical (except for the background
-color), and they both send three different types of requests to
-\url{www.example32.com/showcookies.php}, which
-simply displays the cookies sent by the browser. By looking 
-at the display results, you can tell which cookies were sent 
-by the browser. Please do the following: 
+Por favor dirígase a los links de ambos experimentos. El Link A apunta a \url{example32.com} mientras que el Link B apunta a \url{attacker32.com}. Ambas páginas son iguales (exepto por el color del fondo), ambas envian tres tipos diferentes de requests a \url{www.example32.com/showcookies.php}, que mostrará las cookies enviadas por el navegador. Observando los resultados mostrados ud. podrá determinar cuales fueron las coookies enviadas por el navegador. A continuación haga lo siguiente:
 
 
 \begin{itemize}
-\item Please describe what you see and explain why some cookies are 
-not sent in certain scenarios. 
- 
-\item Based on your understanding, please describe how the SameSite
-cookies can help a server detect whether a request 
-is a cross-site or same-site request. 
+\item Por favor describa que observa y explique porque algunas cookies no son enviadas en determinados escenarios.
 
-\item Please describe how you would use
-the SameSite cookie mechanism to help Elgg defend against CSRF attacks. 
-You only need to describe general ideas, and there is no need to 
-implement them. 
+\item Basado en su entendimiento, por favor describa como las cookies SameSite pueden ayudar a detectar si un request es cross-site o same-site.
+
+
+\item Por favor decriba como usaría el mecanismo de SameSite cookie para defender a Elgg contra ataques CSRF. Sólo necesita hacer una descripción general de sus ideas y no hay necesidad de implementarlas.
 \end{itemize}
 
 
-\paragraph{Bonus points.} Although it is not required, students
-are encouraged to modify the Elgg application, so they
-can use the samesite cookie mechanism to defend against
-CSRF attacks. We recommend instructors to give bonus points 
-to the students who can do this. Students should check with 
-their instructors regarding the bonus points.
+\paragraph{Puntos Extra.} Aunque no es necesario, se alienta a los estudiantes a modificar la aplicación Elgg, para que usen el mecanismo de SameSite Cookie para prevenir ataques CSRF. Recomendamos a los instructores otorgar puntos extra a los usuarios que puedan hacer esto. Los estudiantes deben de consultar con los instructores todo lo que tenga que ver con los puntos extra del bonus.
 
 
 % -------------------------------------------
