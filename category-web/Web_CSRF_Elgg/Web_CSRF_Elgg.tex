@@ -33,7 +33,7 @@
 \section{Descripción General}
 
 
-El objetivo de este laboratorio, es ayudar a que los estudiantes entiendan el ataque de Cross-Site Request Forgery (CSRF). Un ataque de CSRF involucra un usuario víctima, un sitio de confianza y un sitio malicioso. La víctima tene una sesión válida en un sitio de confiana mientras que por otro lado visita un sitio malicioso que inyecta un request HTTP malicioso para ese sitio de confianza dentro de la sesión de la víctima.
+El objetivo de este laboratorio, es ayudar a que los estudiantes entiendan el ataque de Cross-Site Request Forgery (CSRF). Un ataque de CSRF involucra a un usuario víctima, un sitio de confianza y un sitio malicioso. La víctima tiene una sesión válida en un sitio de confianza mientras que por otro lado visita un sitio malicioso que se encarga de inyectar un request HTTP malicioso para ese sitio de confianza dentro de la sesión del usuario víctima.
 
 En este laboratorio, los estudiantes usarán una aplicación web de red social para realizar ataques CSRF. La aplicación web se llama \texttt{Elgg} y ha sido instalada en nuestra Máquina Virtual. 
 \texttt{Elgg} contiene contramedidas para prevenir ataques CSRF, pero las hemos desactivado para poder realizar los ataques.
@@ -68,7 +68,7 @@ Para una cobertura más detallada en ataques CSRF puede consultar:
 \section{Configuración del Entorno de Laboratorio}
 
 En este laboratorio, usaremos tres sitios web.
-El primero será nuestro aplicativo web vulnerable Elgg y cuya URL es \url{www.seed-server.com}. El segundo será el sitio malicioso que va a ser usado para el ataque y cuya URL es \url{www.attacker32.com}. El tercero será el sitio usado para las tareas de defensa y su hostname es \url{www.example32.com}.
+El primero será nuestro aplicativo web vulnerable Elgg y su URL es \url{www.seed-server.com}. El segundo será el sitio malicioso que va a ser usado para el ataque y su URL es \url{www.attacker32.com}. El tercero será el sitio usado para las tareas de defensa y su URL es \url{www.example32.com}.
 Usaremos contenedores para configurar el entorno de laboratorio.
 
 % -------------------------------------------
@@ -121,7 +121,7 @@ La configuración apache para este sitio web se muestra a continuación:
 </VirtualHost>
 \end{lstlisting}
  
-Debido a que necesitamos crear páginas web dentro de este contenedor, hemos montado un directorio en la Máquina Virtual Host (\texttt{Labsetup/attacker}) dentro del directorio del contenedor ubicado en \texttt{/var/www/attacker} que es el directorio usado por nuestro archivo configuración de Apache. A su vez las páginas web ubicadas dentro del directorio \texttt{attacker} en la Máquina Virtual, serán hosteadas en el sitio web del atacante. Hemos puesto un código genérico dentro de este directorio.
+Debido a que necesitamos crear páginas web dentro de este contenedor, hemos montado un directorio en la Máquina Virtual Host (\texttt{Labsetup/attacker}) dentro del directorio del contenedor ubicado en \texttt{/var/www/attacker} que es el directorio usado por nuestro archivo configuración de Apache. A su vez las páginas web ubicadas dentro del directorio \texttt{attacker} en la Máquina Virtual, serán hosteadas en el sitio web del atacante. Hemos usado código genérico para los archivos que se encuentran dentro de este directorio.
 
 \paragraph{Configuración DNS.}
 Accederemos a nuestro sitio Elgg, nuestro sitio malicioso y el sitio de defensa usando sus URLs.
@@ -171,14 +171,14 @@ Las instrucciones de como utilizarla están descriptas en esta sección (\S~\ref
 % ------------------------------------------- 
 \subsection{Tarea 2: Usando Request HTTP GET para el ataque CSRF}
 
-Para esta tarea, necesitamos usar dos usuarios en nuestra aplicación de red social Elgg: Alice y Samy. Samy quiere ser amigo de Alice, pero Alice rechaza su petición de amistad. Samy decide usar un ataque cd CSRF para ser amigo de Alice. Esto lo logra enviando una URL a Alice (por email o por un posteo en Elgg); Alice visita la URL que apunta al sitio de Samy: \texttt{www.attacker32.com}.
-Haga de cuenta que ud. ess Samy, describa como puede hacer una página de tal forma que cuando Alice la visite sea agregada a la lista de amigos de Samy (asumiendo que Alice tiene una sesión activa en Elgg).
+Para esta tarea, necesitamos usar dos usuarios en nuestra aplicación de red social Elgg: Alice y Samy. Samy quiere ser amigo de Alice, pero Alice rechaza su petición de amistad. Samy decide usar un ataque CSRF para ser amigo de Alice. Esto lo logra enviando una URL a Alice (por email o por un posteo en Elgg); Alice visita la URL que apunta al sitio de Samy: \texttt{www.attacker32.com}.
+Haga de cuenta que ud. es Samy, describa como puede hacer una página de tal forma que cuando Alice la visite sea agregada a la lista de amigos de Samy (asumiendo que Alice tiene una sesión activa en Elgg).
 
 
-Para lograr esto, neceistamos identificar como luce el Request HTTP original de Add-Friend para agregar un amigo. Podemos usar \texttt{"HTTP Header Live"} para llevar a cabo la investigación.
+Para lograr esto, necesitamos identificar como luce el Request HTTP original de Add-Friend para agregar un amigo. Podemos usar \texttt{"HTTP Header Live"} para llevar a cabo la investigación.
 En esta tarea, no está permitido escribir código JavaScript para hacer el ataque CSRF. Su objetivo es lanzar un ataque exitoso tan pronto Alice visite la página web, sin que Alice haga un sólo click en la página (pista: puede usar el tag {\tt img}, que automáticamente lanza un Request HTTP GET).
 
-Elgg implementa contramedidas para defenderse contra ataques CSTF. En el Request HTTP Add-Friend, puede advertir que cada request incluye dos parámetros extraños llamados \texttt{\_\_elgg\_ts} y  \texttt{\_\_elgg\_token}. Estos parámetros son usados como contramedida, si ambos no contienen valores válidos, el request no será validado por Elgg.
+Elgg implementa contramedidas para protegerse contra ataques CSRF. En el Request HTTP Add-Friend, puede advertir que cada request incluye dos parámetros extraños llamados \texttt{\_\_elgg\_ts} y  \texttt{\_\_elgg\_token}. Estos parámetros son usados como contramedida, si ambos no contienen valores válidos, el request no será validado por Elgg.
 Para este laboratorio, hemos desactivado esta protección y no hay necesidad de incluirlos en los requests que se van a falsificar.
 
 
@@ -187,17 +187,17 @@ Para este laboratorio, hemos desactivado esta protección y no hay necesidad de 
 % ------------------------------------------- 
 \subsection{Tarea 3: Usando Request HTTP POST para el ataque CSRF}
 
-Después de agregar a Alice como amiga, Samy quiere hacer algo más. Samy quiere que Alice que ponga ``Samy is my Hero'' en su perfil de esta forma todo el mundo podrá verlo. Para lograr esto Samy planea usar un ataque CSRF.
+Después de agregar a Alice como amiga, Samy quiere hacer algo más. Samy quiere que Alice ponga ``Samy is my Hero'' en su perfil de esta forma todo el mundo podrá verlo. Para lograr esto Samy planea usar un ataque CSRF.
 
 Una forma de hacerlo es postear un mensaje en la cuenta Elgg de Alice, con la esperanza que Alice visite este sitio que será el sitio malicioso de Samy es decir \url{www.attacker32.com} donde se va a lanzar el ataque CSRF.
 
-El objetivo de su ataque es modificar el perfil de la víctima. En particular el atacante necesita falsificar un request para así modificar la información del perfil de la víctima en Elgg. Elgg permite que lo usuarios modifiquen sus perfiles. Si loos usuarios quieren hacerlo, ellos visitan su página de perfil en Elgg, completan un formulario y lo envían a través de un Request POST por medio del server-side script {\tt /profile/edit.php} que se encarga de hacer el cambio y procesar la información.
+El objetivo de su ataque es modificar el perfil de la víctima. En particular el atacante necesita falsificar un request para así modificar la información del perfil de la víctima en Elgg. Elgg permite que lo usuarios modifiquen sus perfiles. Si los usuarios deciden hacerlo, ellos visitan su página de perfil en Elgg, completan un formulario y lo envían a través de un Request POST por medio del server-side script {\tt /profile/edit.php} que se encarga de hacer el cambio y procesar la información.
 
 El server-side script {\tt edit.php} acepta tanto requests HTTP GET como POST, puede usar el mismo truco de la Tarea 1 para hacer este ataque.
 Sin embargo, en esta tarea ud. debe usar un request POST.
 Así mismo, ud. como atacante debe falsificar un request HTTP POST desde el navegador de la víctima cuando esta visite el sitio malicioso.
-Los atacantes necesitan conocer la estructura de dicho request. Puede conocer esta estructura, es decir sus parámetros, haciendo cambios en su perfil y monitoreando el request resultando usando \texttt{"HTTP Header Live"}.
-Lo que se observe puede ser algo similar a lo que se muestra a continuación, a diferencia de los requests HTTP {\tt GET} que ubican sus parámetros en la URL, em los requests HTTP {\tt POST} los parámetros son incluídos en el cuerpo del mensaje (vea el contenido mostrado a continuación ubicado entre los símbolos \ding{80})
+Los atacantes necesitan conocer la estructura de dicho request. Puede conocer esta estructura, es decir sus parámetros, haciendo cambios en su perfil y monitoreando el request resultante usando \texttt{"HTTP Header Live"}.
+Lo que se observe puede ser algo similar a lo que se muestra a continuación, a diferencia de los requests HTTP {\tt GET} que ubican sus parámetros en la URL, en los requests HTTP {\tt POST} los parámetros son incluídos en el cuerpo del mensaje (vea el contenido mostrado a continuación ubicado entre los símbolos \ding{80})
 
 \begin{lstlisting}
 http://www.seed-server.com/action/profile/edit
@@ -221,7 +221,7 @@ __elgg_token=fc98784a9fbd02b68682bbb0e75b428b&__elgg_ts=1403464813  (*@\ding{80}
 \end{lstlisting}
 
 Después de entender la estructura del request, necesita generar un request desde su página web de ataque usando código JavaScript.
-Para simplificar esta tarea, hemos provisto un código genérico a cual partir del cual se puede generar el ataque CSRF que se quiere lanzar desde el sitio web malicioso. Este es un código de ejemplo y necesita modificarlo para que funcione en su ataque.
+Para simplificar esta tarea, hemos provisto un código genérico a partir del cual se puede generar el ataque CSRF que se quiere lanzar desde el sitio web malicioso. Este es un código de ejemplo y necesita modificarlo para que funcione en su ataque.
 
 
 \begin{lstlisting}
@@ -266,14 +266,14 @@ window.onload = function() { forge_post();}
 \end{lstlisting}
 
 En la línea  Line~\ding{192}, el valor \texttt{2} establece el nivel de acceso público de un campo en particular.
-Esto es necesario de otra forma, el nivel de acceso será puesto como privado por defecto lo que hara que otros usuarios no puedan verlo. 
+Esto es necesario de otra forma, el nivel de acceso será puesto por defecto como privado lo que hará que otros usuarios no puedan verlo. 
 Cabe aclarar que al hacer copy and paste del código en el archivo PDF, muy a menudo, las comillas dobles y en especial las comillas simples, pueden convertirse en símbolos diferentes que parecen similares. Esta situación causará errores en el código, así que tenga en cuenta este escenario. Cuando esto suceda, elimínelos y escriba manualmente esos símbolos.
 
 \paragraph{Preguntas.}
 Además de describir su ataque de forma detallada, deberá de responder las siguientes preguntas en su informe de laboratorio:
 
 \begin{itemize}
-   \item \textbf{Pregunta 1}: El request falsificado necesita el user id de Alice (guid) para funcionar de manera correcta. Si Boby elije a Alice como víctima antes de hacer el ataque, puede encontrar diversas formas para obtener este id. Boby no conoce el password de Alice en Elgg, por lo tanto no puede loguearse como ella para obtener esta informacióon. Por favor explique como Boby puede resolver este problema.
+   \item \textbf{Pregunta 1}: El request falsificado necesita el user id de Alice (guid) para funcionar de manera correcta. Si Boby elije a Alice como víctima antes de hacer el ataque, puede encontrar diversas formas para obtener este id. Boby no conoce el password de Alice en Elgg, por lo tanto no puede loguearse como Alice para obtener esta información. Por favor explique como Boby puede resolver este problema.
 
    \item \textbf{Pregunta 2:} Si Boby quisiera ejecutar el ataque sobre cualquier persona que visite su página maliciosa, estariamos en un escenario donde Boby no sabe quién está visitando su página de antemano. Dada esta situación ¿Puede lanzar el ataque CSRF y modificar el perfil de la víctima visitante? Por favor describa esta situación.
 \end{itemize}
@@ -285,7 +285,7 @@ Además de describir su ataque de forma detallada, deberá de responder las sigu
 \section{Tareas de Laboratorio: Defensa} 
 
 No es difícil defenderse contra ataques CSSRF. Inicialmente, la mayoría de las aplicaciones usan un token secreto (secret token) en su páginas y por medio del chequeo de la presencia de este token en un request, pueden verificar si se trata de un request same-site o un request cross-site. Esto es llamado protección de  \textit{secret token}.
-Recientemente la mayoría de los navegadores han implementado un mecanismo llamado\textit{SameSite cookie}, cuya intención es simplificar la implementación de medidas de defensa en contra de ataques CSRF.
+Recientemente la mayoría de los navegadores han implementado un mecanismo llamado  \textit{SameSite cookie}, cuya intención es simplificar la implementación de medidas de defensa en contra de ataques CSRF.
 Haremos unos experimentos usando ambos métodos. 
 
 
@@ -294,11 +294,11 @@ Haremos unos experimentos usando ambos métodos.
 % ------------------------------------------- 
 \subsection{Tarea 4: Activando las Contramedidas en Elgg} 
 
-Para protegerse contra ataques de CSRF, las aplicaciones web pueden embeber un token (token secret) dentro de sus páginas. Todos los requests que vengan de esas páginas deben de enviar ese token or serán considerados requests cross-site y no tendrán el mismo privilegio que los requests same-site. El atacante no podrá obtener este token, por lo tanto sus requests podrán ser fácilmente identificados como requests cross-site.
+Para protegerse contra ataques de CSRF, las aplicaciones web pueden embeber un token (secret token) dentro de sus páginas. Todos los requests que vengan de esas páginas deben de enviar ese token o serán considerados requests cross-site y no tendrán el mismo privilegio que los requests same-site. El atacante no podrá obtener este token, por lo tanto sus requests podrán ser fácilmente identificados como requests cross-site.
 
 Elgg usa este tipo de contramedida en contra de ataques CSRF.
 Hemos desactivado esta contramedida para hacer posible nuestros ataques.
-Elgg embebe dos parámetros en el request {\tt\_\_elgg\_ts} y {\tt\_\_elgg\_token}, estos parámetros son insertados en el cuerpo del mensaje del request HTTP POSST y en la URL para el request HTTP GET. El servidor se encargará de validarlos antes de procesar el request.
+Elgg embebe dos parámetros en el request {\tt\_\_elgg\_ts} y {\tt\_\_elgg\_token}, estos parámetros son insertados en el cuerpo del mensaje del request HTTP POST y en la URL para el request HTTP GET. El servidor se encargará de validarlos antes de procesar el request.
 
 
 \paragraph{Embebebiendo el token secret y el timestamp en las páginas.}
@@ -318,7 +318,7 @@ elgg.security.token.__elgg_ts;
 elgg.security.token.__elgg_token;
 \end{lstlisting}
 
-El código que se encarga de agregar estos parámetros en las páginas de Elgg está ubicado en el archivo \path{vendor/elgg/elgg/views/default/input/securitytoken.php}. El código que se muestra abajo muestra su mecánica.
+El código que se encarga de agregar estos parámetros en las páginas de Elgg está ubicado en el archivo \path{vendor/elgg/elgg/views/default/input/securitytoken.php}. El código a continuación describe su mecánica.
 
 \begin{lstlisting}
 $ts = time();
@@ -330,7 +330,7 @@ echo elgg_view('input/hidden', ['name' => '__elgg_ts', 'value' => $ts]);
 
 
 \paragraph{Generación del token secreto.}
-El token de seguridad que utiliza Elgg es un valor hash (md5) de un valor secreto del sitio (obtenido de la base de datos), de un timestamp, del ID de sesión del usuario y una cadena de sesión generada al azar.
+El token de seguridad que utiliza Elgg es un valor hash (md5) que es la resultante de un valor secreto del sitio (obtenido de la base de datos), de un timestamp, del ID de sesión del usuario y una cadena de sesión generada al azar.
 El código que se muestra abajo es el encargado de generar este token en Elgg y está dentro del archivo \path{vendor/elgg/elgg/engine/classes/Elgg/Security/Csrf.php}.
 
 \begin{lstlisting}
@@ -371,12 +371,12 @@ public function validate(Request $request) {
 
 \paragraph{Tarea: Active la contramedida.}
 Para activar la contramedida, debe entrar al contenedor de Elgg, ir al directorio 
-\path{/var/www/elgg/vendor/elgg/elgg/engine/classes/Elgg/Security} y eliminar el\texttt{return} del archivo  \texttt{Csrf.php}.
-Existe un editor de texto de consola llamado \texttt{nano} disponible dentro del contenedor. Después de hacer este cambio, repita el ataque y vea si es exitoso o no.
+\path{/var/www/elgg/vendor/elgg/elgg/engine/classes/Elgg/Security} y eliminar el  \texttt{return} del archivo  \texttt{Csrf.php}.
+Existe un editor de texto de consola llamado \texttt{nano} que está disponible dentro del contenedor. Después de hacer este cambio, repita el ataque y vea si es exitoso o no.
 Por favor anote los tokens secretos de los HTTP requests capturados.
 Por favor explique porque el atacante no puede enviar estos tokens en el ataque CSRF; ¿Qué es lo que evita que un atacante encuentre los tokens secretos de la página web?
 
-\textbf{Nota (importante)} Debe tener en cuenta que al activar la contramedida y al lanzar un ataque que edite el perfil de un usuario, esta protección hará que su ataque falle y que la página sea recargada, esto provocará que el request HTTP falsificado sea disparado nuevamente. Esto provocará otro intento fallido de ataque y la página se recargará nuevamente y así. Esto lo hará entrar en un loop infinito que enlentencerá su computadora. Para evitar esto, una vez que compruebe que su ataque falló, cierre el tab y así podrá evitar este loop infinito.
+\textbf{Nota (importante)} Debe tener en cuenta que al activar la contramedida y al lanzar un ataque que edite el perfil de un usuario, esta protección hará que su ataque falle y que la página sea recargada, esto provocará que el request HTTP falsificado sea disparado nuevamente. Esto provocará otro intento fallido de ataque y la página se recargará nuevamente y así. Esto lo hará entrar en un loop infinito que enlentencerá su computadora. Para evitar esto, una vez que compruebe que su ataque falló, cierre el tab del navegador en donde está probando su ataque y de esta forma podrá evitar este loop infinito.
 
 
 
@@ -385,22 +385,22 @@ Por favor explique porque el atacante no puede enviar estos tokens en el ataque 
 % -------------------------------------------
 \subsection{Tarea 5: Experimentando con la Contramedida SameSite Cookie} 
 
-La mayoría de los navegadores implementan un mecanismo llamado SameSite cookie, que es una propiedad asociada a las coookies. Al envíar un request el navegador chequeará esta propiedad y decidirá si adjuntará esta cookie en un request cross-site. Una aplicación web puede establecer una cookie como SameSite si no quiere que la cookie sea agregada en un request cross-site. Por ejemplo, puede marcar la cookie de sesión ID como SameSite, por lo tanto los requests cross-site no podrán usarla y no podrán lanzar ataques CSRF.
+La mayoría de los navegadores implementan un mecanismo llamado SameSite cookie, que es una propiedad asociada a las cookies. Al envíar un request el navegador chequeará esta propiedad y decidirá si adjuntará esta cookie en un request cross-site. Una aplicación web puede establecer una cookie como SameSite si no quiere que la cookie sea agregada en un request cross-site. Por ejemplo, puede marcar la cookie de sesión ID como SameSite, por lo tanto los requests cross-site no podrán usarla y no podrán lanzar ataques CSRF.
 
-Par darle una idea a los estudiantes en como es el funcionamiento de las cookies SameSite y como pueden ayudarnos a defendernos en contra de ataques CSRF, hemos creado un sitio web en uno de los contenedores llamado \url{www.example32.com}. Por favor visite la siguiente URL (el hostname está mapeado dentro del archivo\texttt{/etc/hosts} a la ip \texttt{10.9.0.5}); si ud. no está usando la Máquina Virtual de SEED, debería de agregar esta entrada en su máquina):
+Par darle una idea a los estudiantes del funcionamiento de las cookies SameSite y como pueden ayudarnos a defendernos en contra de ataques CSRF, hemos creado un sitio web en uno de los contenedores llamado \url{www.example32.com}. Por favor visite la siguiente URL (el hostname está mapeado dentro del archivo\texttt{/etc/hosts} a la ip \texttt{10.9.0.5}); si ud. no está usando la Máquina Virtual de SEED, debería de agregar esta entrada en su máquina):
 
 \begin{lstlisting}
 URL: http://www.example32.com/
 \end{lstlisting}
 
 Una vez que haya entrado al sitio web, serán seteadas tres cookies en su navegador, \texttt{cookie-normal}, \texttt{cookie-lax},
-y \texttt{cookie-strict}. Como el nombre loo indica, la primera cookie es una cookie común y coorriente, la segunda y tercer cookie son cookies SameSite pero de diferente tipo (\texttt{Lax} y \texttt{Strict}). Hemos diseñado dos conjuntos de experimentos para observar cuales cookies serán enviadas al momento de realizar un request HTTP hacia el servidor. Típicamente, todas las cookies que pertenecen al servidor serán enviadas, pero este no será el caso si la cookie es de tipo SameSite.
+y \texttt{cookie-strict}. Como el nombre lo indica, la primera cookie es una cookie común y corriente, la segunda y tercer cookie son cookies SameSite pero de diferente tipo (\texttt{Lax} y \texttt{Strict}). Hemos diseñado dos conjuntos de experimentos para observar cuales cookies serán enviadas al momento de realizar un request HTTP hacia el servidor. Típicamente, todas las cookies que pertenecen al servidor serán enviadas, pero este no será el caso si la cookie es de tipo SameSite.
 
-Por favor dirígase a los links de ambos experimentos. El Link A apunta a \url{example32.com} mientras que el Link B apunta a \url{attacker32.com}. Ambas páginas son iguales (exepto por el color del fondo), ambas envian tres tipos diferentes de requests a \url{www.example32.com/showcookies.php}, que mostrará las cookies enviadas por el navegador. Observando los resultados mostrados ud. podrá determinar cuales fueron las coookies enviadas por el navegador. A continuación haga lo siguiente:
+Por favor dirígase a los links de ambos experimentos. El Link A apunta a \url{example32.com} mientras que el Link B apunta a \url{attacker32.com}. Ambas páginas son iguales (exepto por el color del fondo), ambas envian tres tipos diferentes de requests a \url{www.example32.com/showcookies.php}, que mostrará las cookies enviadas por el navegador. Observando los resultados ud. podrá determinar cuales fueron las cookies enviadas por el navegador. A continuación haga lo siguiente:
 
 
 \begin{itemize}
-\item Por favor describa que observa y explique porque algunas cookies no son enviadas en determinados escenarios.
+\item Por favor describa lo que observa y explique porque algunas cookies no son enviadas en determinados escenarios.
 
 \item Basado en su entendimiento, por favor describa como las cookies SameSite pueden ayudar a detectar si un request es cross-site o same-site.
 
