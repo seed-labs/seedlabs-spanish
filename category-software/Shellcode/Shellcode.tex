@@ -140,22 +140,11 @@ $ echo $$
 
 
 \paragraph{Obteniendo el código máquina.}
-During the attack, we only need the machine code 
-of the shellcode, not a standalone executable file, which
-contains data other than the actual machine code. 
-Technically, only the machine code is called shellcode. 
-Therefore, we need to extract the machine
-code from the executable file or the object file.
-There are various ways to do that. One way is to 
-use the \texttt{objdump} command to disassemble the 
-executable or object file. 
+Durante el ataque, necesitaremos solamente el código máquina del shellcode y no su archivo ejecutable ya que contiene información extra aparte de su código de máquina. 
+Técnicamente el shellcode es el código maáquina.
+Además, necesitamos extraer este código del archivo ejecutable o del archivo objeto. Existen varias formas de hacerlo. Una de ellas es usar el comando \texttt{objdump} para realizar un desensamblado en el archivo ejecutable o en el archivo objeto.
 
-There are two different common syntax modes for assembly code, 
-one is the AT\&T syntax mode, and the other is 
-Intel syntax mode. By default, \texttt{objdump} uses
-the AT\&T mode. In the following, 
-we use the \texttt{-Mintel} option to 
-produce the assembly code in the Intel mode. 
+Existen dos sintaxis comúnmente usadas en el código ensamblador, una es la sintaxis AT\&T y la otra es la sintaxis Intel. Por defecto \texttt{objdump} usa la sintaxis AT\&T. A continuación usamos el parámetros \texttt{-Mintel} para generar código en la sintaxis Intel.
 
 \begin{lstlisting}
 $ objdump -Mintel --disassemble mysh.o
@@ -171,11 +160,7 @@ Disassembly of section .text:
   21:	(*@\textbf{cd 80}@*)    int    0x80
 \end{lstlisting}
  
-In the above printout, the highlighted numbers are machine code.
-You can also use the \texttt{xxd} command to print out 
-the content of the binary file, and you should be 
-able to find out the shellcode's machine
-code from the printout.
+En la impresión anterior, los números que se enmarcan son código máquina. Puede usar el comando \texttt{xxd} para imprimir el contenido del archivo binario y así obtener el código máquina del shellcode.
 
 \begin{lstlisting}
 $ xxd -p -c 20 mysh.o
@@ -188,20 +173,10 @@ $ xxd -p -c 20 mysh.o
 \end{lstlisting}
  
 
-\paragraph{Usando el shellcode para atacar al código.}
-In actual attacks, we need to include the shellcode
-in our attacking code, such as a Python or C program.
-We usually store the machine code in an array, but
-converting the machine code printed above 
-to the array assignment in Python and C programs
-is quite tedious if done manually, especially if 
-we need to perform this process many times in the lab. 
-We wrote the following Python code to
-help this process. Just copy whatever you
-get from the \texttt{xxd} command (only the shellcode part)
-and paste it to the following code, between the lines
-marked by \texttt{"""}. The code can be downloaded from the 
-lab's website.
+\paragraph{Usando el shellcode en el código de ataque.}
+En nuestros ataques, necesitamos incluir el shellcode dentro de nuestro código de ataque sea en Python o en C.
+Se suele guardar el código máquina en un arreglo, pero convertir este código para asignárselo a un arreglo en Python o en C, es una tarea un tanto tediosa si se hace manualmente, especialmente si este procedimiento se tiene que repetir varias veces durante el laboratorio.
+Hemos escrito un programa en Python para ayudarlo en este proceso. Solamente copie el shellcode obtenido usando el comando \texttt{xxd} y péguelo en el código que se muestra a continuación, entre las líneas marcadas por \texttt{"""}. El código puede ser descargado del sitio oficial del laboratorio.
 
 
 \begin{lstlisting}[caption=\texttt{convert.py}] 
@@ -227,11 +202,8 @@ for i in range(length):
 s += '"\n' + ").encode('latin-1')"
 print(s)
 \end{lstlisting}
- 
-The \texttt{convert.py} program will print out the 
-following Python code that you can include 
-in your attack code. It stores the shellcode in
-a Python array. 
+
+El programa \texttt{convert.py} imprimirá el siguiente código en Python, el cual puede incluir en su código de ataque. Este guarda el shellcode dentro de un arreglo Python.
  
 \begin{lstlisting}
 $ ./convert.py
@@ -314,7 +286,7 @@ shr  ebx, 8
 \end{itemize}
 
 
-\paragraph{Task.}
+\paragraph{Tarea.}
 In Line \ding{202} of the shellcode \texttt{mysh.s}, 
 we push \texttt{"//sh"} into the stack. Actually, we 
 just want to push \texttt{"/sh"} into the stack, but 
@@ -343,7 +315,7 @@ need to show that there is no zero in your code.
 % -------------------------------------------
 % SUBSECTION
 % ------------------------------------------- 
-\subsection{Task 1.c. Providing Arguments for System Calls}
+\subsection{Tarea 1.c. Usando Argumentos en la Llamada al Sistema}
  
 Inside \texttt{mysh.s}, in Lines \ding{203} and \ding{204},
 we construct the \texttt{argv[]} array for the 
@@ -381,7 +353,7 @@ argv[0] = "/bin/sh"
 % -------------------------------------------
 % SUBSECTION
 % ------------------------------------------- 
-\subsection{Task 1.d. Providing Environment Variables for \texttt{execve()}}
+\subsection{Tarea 1.d. Usando variables de entorno en \texttt{execve()}}
 
 The third parameter for the \texttt{execve()} system call
 is a pointer to the environment variable array, and it allows 
@@ -448,7 +420,7 @@ env[0] = address to the "aaa=1234"  string
 % *******************************************
 % SECTION
 % ******************************************* 
-\section{Task 2: Using Code Segment}
+\section{Tarea 2: Usando el Segmento de Código}
 
 As we can see from the shellcode in Task 1, 
 the way how it solves the data address problem is that 
@@ -539,7 +511,7 @@ $ ld --omagic -m elf_i386 mysh2.o -o mysh2
 \end{lstlisting}
 
 
-\paragraph{Tasks.} You need to do the followings:
+\paragraph{Tareas.} You need to do the followings:
 (1) Please provide a detailed explanation for each line of the 
 code in \texttt{mysh2.s}, starting from the line labeled \texttt{one}.
 Please explain why this code would successfully execute 
@@ -559,7 +531,7 @@ b=22
 % *******************************************
 % SECTION
 % ******************************************* 
-\section{Task 3: Writing 64-bit Shellcode}
+\section{Tarea 3: Escribiendo un Shellcode de 64-bits}
 
 Once we know how to write the 32-bit shellcode, writing 64-bit
 shellcode will not be difficult, because they are quite similar;
