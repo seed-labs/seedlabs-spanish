@@ -351,53 +351,16 @@ section .text
         db '/bin/sh*AAAABBBB' ;  (*@\ding{203}@*)
 \end{lstlisting}
 
-The code above first jumps to the instruction at 
-location \texttt{two}, which does another 
-jump (to location \texttt{one}), but this time,
-it uses the \texttt{call} instruction.  This instruction 
-is for function call, i.e., before it jumps to
-the target location, it keeps a record of the address
-of the next instruction as the return address, so when
-the function returns, it can return to the 
-instruction right after the \texttt{call} instruction.  
+En el código anterior, se inicia con un jump en la locación \texttt{two}, dentro de esta locación se lanza otro jump (a la locación \texttt{one}), pero esta vez se usa la instrucción \texttt{call}. Esta instrucción es para invocar la llamada a una función, es decir antes de realizar el jump hacia su destino, guarda la dirección de retorno de la próxima instrucción, lo que hace que al momento que la instrucción \texttt{call} termine, se ejecute la próxima instrucción que sigue a continuación de la instrucción \texttt{call}.
 
-In this example, the ``instruction'' right after the 
-\texttt{call} instruction (Line \ding{203}) is not actually an instruction; 
-it stores a string. However, this does not matter, the
-\texttt{call} instruction will push its address (i.e.,
-the string's address) into the stack, in the return
-address field of the function frame. When we 
-get into the function, i.e., after jumping to 
-location \texttt{one}, the top of the stack 
-is where the return address is stored. Therefore,
-the \texttt{pop ebx} instruction in Line \ding{202} actually
-get the address of the string on Line \ding{203}, 
-and save it to the \texttt{ebx} register. That is how the 
-address of the string is obtained. 
+En el ejemplo la ``instrucción'' que sugye después de \texttt{call} (Línea  \ding{203}) no es una instrucción propiamente dicha; es la declaración de una cadena. Sin embargo, esto no importa, la instrucción \texttt{call} guardará su dirección de memoria (es decir la de la cadena) como la dirección de retorno en el stack dentro del frame de la función. Cuando entramos dentro de esta función, después de realizar el jump a locación \texttt{one}, esta dirección de retorno se guarda en la cima del stack. La instrucción \texttt{pop ebx} en la Línea \ding{202} obtiene la dirección de memoria de la cadena declarada en la Línea \ding{203} y la guarda en el registro \texttt{ebx}. Así es como la dirección de memoria de la cadena es obtenida.
 
+La cadena en la Línea \ding{203} no está completa; es solamente un placeholder.
+El programa necesita construir la información requerida por la estructura de datos dentro de este placeholder. Dado que la dirección de memoria de esta cadena está disponible en el registro ebx, el armado de esta estructura de datos puede ser  construido fácilmente.
 
-The string at Line \ding{203} is not a completed string; it 
-is just a place holder. 
-The program needs to construct the needed data structure
-inside this place holder. Since the address of the string
-is already obtained, the address of all the data 
-structures constructed inside this place holder can
-be easily derived. 
-
-
-If we want to get an executable, we need to use 
-the \texttt{--omagic} option when running the 
-linker program (\texttt{ld}), so 
-the code segment is writable. 
-By default, the code segment is not writable.
-When this program runs, it needs to modify the data stored
-in the code region; if the code segment is not 
-writable, the program will crash. 
-This is not a problem for actual attacks, because
-in attacks, the code is typically injected into a writable data 
-segment (e.g. stack or heap). Usually we do not run shellcode 
-as a standalone program. 
-
+Si queremos producir un ejecutable, necesitamos usar el parámetro  \texttt{--omagic} al momento de correr el linker (\texttt{ld}), de esta forma el segmento de código puede ser escrito. Por defecto no lo es.
+Cuando el programa se ejecuta, necesita modificar los datoss guardados en la región del código (segmento del código); si esta región no permite escritura, el programa romperá al momento de su ejecución.
+Esto no es un problema en los ataques actuales, ya que el código que se inyecta se hace en el segmento de datos que tiene permisos de escritura (ejemplos: el stack o el heap) y aparte no se suele correr un shellcode como un programa aparte.
 
 \begin{lstlisting}
 $ nasm -f elf32 mysh2.s -o mysh2.o
@@ -405,16 +368,10 @@ $ ld --omagic -m elf_i386 mysh2.o -o mysh2
 \end{lstlisting}
 
 
-\paragraph{Tareas.} You need to do the followings:
-(1) Please provide a detailed explanation for each line of the 
-code in \texttt{mysh2.s}, starting from the line labeled \texttt{one}.
-Please explain why this code would successfully execute 
-the \texttt{/bin/sh} program, how the \texttt{argv[]} array is
-constructed, etc. 
-(2) Please use the technique from \texttt{mysh2.s} to 
-implement a new shellcode, so it 
-executes \texttt{/usr/bin/env}, and it prints out 
-the following environment variables: 
+\paragraph{Tareas.} Realice las siguientes tareas:
+(1) Por favor provea una explicación detallada para cada línea de código del archivo \texttt{mysh2.s}, empezando desde la línea \texttt{one}.
+Explique porque el código ejecuta correctamente el programa \texttt{/bin/sh} y como se construye el arreglo \texttt{argv[]}, etc.
+(2) Por favor use la técnica implementada en \texttt{mysh2.s} para implementar un nuevo shellcode que ejecute \texttt{/usr/bin/env} que imprima las siguientes variables de entorno:
 
 \begin{lstlisting}
 a=11
