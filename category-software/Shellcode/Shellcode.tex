@@ -222,61 +222,24 @@ shellcode= (
 % ------------------------------------------- 
 \subsection{Tarea 1.b. Eliminando los Ceros del Código}
 
-Shellcode is widely used in buffer-overflow attacks. In many 
-cases, the vulnerabilities are caused by string copy, such
-as the \texttt{strcpy()} function. For these string copy functions,
-zero is considered as the end of the string. Therefore, if we have 
-a zero in the middle of a shellcode, string copy will not be able to
-copy anything after the zero from this shellcode to the target 
-buffer, so the attack will not be able to succeed. 
 
-Although not all the vulnerabilities have issues with zeros, 
-it becomes a requirement for shellcode not to have any zero in
-the machine code; otherwise, the application of a shellcode 
-will be limited. 
+Los shellcodes son muy utilizados en ataques de buffer overflow. En muchos casos estas vulnerabilidades son producidas por funciones como \texttt{strcpy()} que no chequean el tamaño de los datos (por lo general cadenas) que son copiados en un buffer. Para estas funciones el cero es considerado el fin de cadena. Además si tenemos un cero en el medio de nuestro shellcode, este será copiado hasta llegar al cero, por lo que quedará una parte de shellcode sin copiar en el buffer y nuestro ataque no será exitoso.
 
-There are many techniques that can get rid of zeros 
-from the shellcode. The code \texttt{mysh.s} needs to 
-use zeros in four different places. Please identify all
-of those places, and explain how the code uses zeros
-but without introducing zero in the code. Some hints 
-are given in the following:
+Aunque no todas las vulnerabilidades tienen problemas con los ceros, es obligación que nuestro shellcode no incluya ceros en su contenido osea en el código máquina resultante; de otra forma la aplicación y el uso del shellcode se verá limitada.
+
+Para lidiar con este asunto, existen varias técnicas. Nuestro shellcode cuyo código se encuentra en el archivo \texttt{mysh.s} necesita usar ceros en cuatro lugares diferentes. Por favor identifique esos lugares y explique como el código usa los ceros sin introducirlos en el mismo. A continuación se dan algunas pistas:
 
 
 \begin{itemize}
-\item If we want to assign zero to \texttt{eax}, we 
-can use \texttt{"mov eax, 0"}, but doing so,
-we will get a zero in the machine code. A typical way
-to solve this problem is to use \texttt{"xor eax, eax"}. 
-Please explain why this would work.
+\item Si queremos asignar un cero a \texttt{eax}, podemos usar \texttt{"mov eax, 0"} pero haciendo esto obtendremos un cero en código máquina. La forma estándar de resolver este problema es usar \texttt{"xor eax, eax"}. 
+Por favor explique porque esto debería de funcionar.
 
-\item If we want to store \texttt{0x00000099} to
-\texttt{eax}. We cannot just use \texttt{mov eax, 0x99}, because 
-the second operand is actually \texttt{0x00000099}, which contains three zeros. 
-To solve this problem, we can first set \texttt{eax} to zero, and then
-assign a one-byte number \texttt{0x99} to the \texttt{al} register, which 
-is the least significant 8 bits of the \texttt{eax} register. 
+\item Si queremos guardar \texttt{0x00000099} en \texttt{eax}. No podemos usar \texttt{mov eax, 0x99} porque el segundo operando es \texttt{0x00000099} y contiene tres ceros. Para resolver este problema, podemos asignar un cero a \texttt{eax} y después asignar un número de un sólo byte (\texttt{0x99}) en el registro \texttt{al}, el cual representa los 8 bits menos significativos del registro \texttt{eax}.
 
+\item Otra manera es usar el desplazamiento (shift). En el siguiente código,el valor \texttt{0x237A7978} es asignado en el registro \texttt{ebx}. Los valores   ASCII para \texttt{x}, \texttt{y}, \texttt{z}, y \texttt{\#} son \texttt{0x78}, \texttt{0x79}, \texttt{0x7a}, \texttt{0x23}. Esto es así ya que la mayoría de procesadores Intel son Little Endian, lo que significa que el byte menos significativo es guardado en las direcciones de memoria más bajas (es decir el caracter  \texttt{x}, será guardado primero), el número que representa \texttt{xyz\#} es \texttt{0x237A7978}. Puede comprobar esto usando \texttt{objdump} para hacer el desensamblado de su código.
 
-\item Another way is to use shift. In the following code,
-first \texttt{0x237A7978} is assigned to \texttt{ebx}.
-The ASCII values for \texttt{x}, \texttt{y}, \texttt{z}, and \texttt{\#} are 
-\texttt{0x78}, \texttt{0x79}, \texttt{0x7a}, \texttt{0x23}, 
-respectively. Because most Intel CPUs use the small-Endian byte order,
-the least significant byte is the one stored at the lower address (i.e., the
-character \texttt{x}), so the number presented by \texttt{xyz\#} is 
-actually \texttt{0x237A7978}. You can see this when you dissemble the 
-code using \texttt{objdump}. 
-
-After assigning the number to \texttt{ebx},  
-we shift this register to the left 
-for 8 bits, so the most significant byte \texttt{0x23} will 
-be pushed out and discarded. 
-We then shift the register to the right for 8 bits,
-so the most significant byte will be filled with \texttt{0x00}. 
-After that, \texttt{ebx} will contain \texttt{0x007A7978}, 
-which is equivalent to \texttt{"xyz\textbackslash 0"}, i.e., the last
-byte of this string becomes zero. 
+Después de asignar el valor a \texttt{ebx}, hacemos un desplazamiento de 8 bits del registro hacia la izquierda, esto hará que el byte más significativo \texttt{0x23} sea descartado. Entonces luego haremos un desplazamiento de 8 bits hacia la derecha y el byte más significativo será reemplazado con \texttt{0x00}. 
+Finalmente, el valor final de \texttt{ebx} será \texttt{0x007A7978}, el cual es el equivalente a \texttt{"xyz\textbackslash 0"}, el último byte se convierte en un cero.
 
 \begin{lstlisting}
 mov  ebx, "xyz#"
@@ -287,59 +250,29 @@ shr  ebx, 8
 
 
 \paragraph{Tarea.}
-In Line \ding{202} of the shellcode \texttt{mysh.s}, 
-we push \texttt{"//sh"} into the stack. Actually, we 
-just want to push \texttt{"/sh"} into the stack, but 
-the \texttt{push} instruction has to push a 32-bit number.
-Therefore, we add a redundant \texttt{/} at the beginning; 
-for the OS, this is equivalent to just one single \texttt{/}.  
+En la línea \ding{202} del shellcode en el archivo \texttt{mysh.s}, hemos hecho un push al stack del valor \texttt{"//sh"}. En realidad queremos guardar \texttt{"/sh"} en el stack, pero la instrucción \texttt{push} necesita un número de 32-bits.
+Agregar una \texttt{/} redundante al principio de la cadena no altera el comportamiento de nuestro shellcode esto es porque para el Sistema Operativo es lo mismo que usar una sola \texttt{/}.
 
+En esta tarea, usaremos el shellcode para ejecutar \texttt{/bin/bash}, el cual tiene un tamaño de 9 bytes (10 bytes si contamos el cero). Típicamente para guardarlo en el stack necesitamos que su longitud sea múltiplo de 4 por lo que ussaremos la cadena \texttt{/bin////bash}.
 
-For this task, we will use the shellcode to execute
-\texttt{/bin/bash}, which has 9 bytes in the command string (10 bytes if 
-counting the zero at the end). Typically, to push
-this string to the stack, we need to make the length
-multiple of 4, so we would convert the string
-to \texttt{/bin////bash}. 
-
-However, for this task,   
-you are not allowed to add any
-redundant \texttt{/} to the string, i.e., the length of the 
-command must be 9 bytes (\texttt{/bin/bash}).
-Please demonstrate how you can do that.
-In addition to showing that you can get a bash shell, you also
-need to show that there is no zero in your code. 
-
-
+Sin embargo para esta tarea, no puede usar \texttt{/} redundantes en el valor de la cadena, es decir la longitud de la cadena debe de ser de 9 bytes (\texttt{/bin/bash}).
+Por favor demuestre como puede hacer esto.
+Además de mostrar que puede obtener una shell bash, debe de mostrar que su código no contiene ceros.
 
 % -------------------------------------------
 % SUBSECTION
 % ------------------------------------------- 
 \subsection{Tarea 1.c. Usando Argumentos en la Llamada al Sistema}
  
-Inside \texttt{mysh.s}, in Lines \ding{203} and \ding{204},
-we construct the \texttt{argv[]} array for the 
-\texttt{execve()} system call. Since 
-our command is \texttt{/bin/sh}, without any command-line
-arguments, our \texttt{argv} array only contains 
-two elements: the first one is a pointer to 
-the command string, and the second one is zero. 
+En las líneas \ding{203} y \ding{204}, dentro del archivo \texttt{mysh.s}, hemos usado el arreglo  \texttt{argv[]} para el uso de la llamada al sistema \texttt{execve()}. Dado que nuestro comando es \texttt{/bin/sh}, nuestro arreglo \texttt{argv} contiene dos elementos: el primero es un puntero a la cadena de nuestro comando (\texttt{/bin/sh}) y el segundo es un cero.
 
-In this task, we need to run the 
-following command, i.e., we want to use 
-\texttt{execve} to execute the following command, which
-uses \texttt{/bin/sh} to execute the \texttt{"ls -la"}
-command. 
+En esta tarea, necesitamos ejecutar el siguiente comando, es decir se quiere utilizar \texttt{execve} para ejecutar \texttt{"ls -la"} el cual usa \texttt{/bin/sh}
 
 \begin{lstlisting}
 /bin/sh -c "ls -la"
 \end{lstlisting}
 
-In this new command, the \texttt{argv} array should have 
-the following four elements, all of which need to be 
-constructed on the stack. Please modify \texttt{mysh.s} and 
-demonstrate your execution result. As usual, you cannot have 
-zero in your shellcode (you are allowed to use redundant /). 
+En esta sentencia, el arreglo \texttt{argv} debería de contener cuatro elementos, los cuales necesitan ser guardados en el stack. Por favor modifique \texttt{mysh.s} y demuestre los resultados de su ejecución. Recuerde que no puede tener ceros en su shellcode (Se permite usar / redundantes)
 
 \begin{lstlisting}
 argv[3] = 0
@@ -355,24 +288,12 @@ argv[0] = "/bin/sh"
 % ------------------------------------------- 
 \subsection{Tarea 1.d. Usando variables de entorno en \texttt{execve()}}
 
-The third parameter for the \texttt{execve()} system call
-is a pointer to the environment variable array, and it allows 
-us to pass environment variables to the program. In our 
-sample program (Line \ding{205}), we
-pass a null pointer to \texttt{execve()}, so
-no environment variable is passed to the program. 
-In this task, we will pass some environment variables. 
+El tercer parámetro para la llamada al sistema \texttt{execve()} es un puntero a al arreglo de variables de entorno y nos permitte pasar variables de entorno al programa. En nuestro programa de ejemplo en la Línea \ding{205}, pasamos un puntero nulo a \texttt{execve()}, por lo tanto no estamos pasando ninguna variable de entorno al programa. 
+En esta tarea usaremos variables de entorno en nuestra llamada al sistema \texttt{execve()}.
 
-If we change the command \texttt{"/bin/sh"} in our shellcode
-\texttt{mysh.s} to \texttt{"/usr/bin/env"}, which is a command to print out the 
-environment variables. You can find out that when we run
-our shellcode, there will be no output, because our 
-process does not have any environment variable.
+Si cambiamos el comando \texttt{"/bin/sh"} por \texttt{"/usr/bin/env"} dentro de nuestro archivo \texttt{mysh.s}, podrá observar que al ejecutar el shellcode no habrá un output, esto es porque \texttt{"/usr/bin/env"} se encarga de imprimir las variables de entorno y dado que no todavía no tenemos ninguna, este no mostrará nada.
 
-
-In this task, we will write a shellcode called \texttt{myenv.s}. When this 
-program is executed, it executes the \texttt{"/usr/bin/env"} command, which
-can print out the following environment variables: 
+En esta tarea, escribiremos un shellcode llamado \texttt{myenv.s}. Cuando este código sea ejecutado, ejecutará el comando \texttt{"/usr/bin/env"}, el cual imprimirá las siguientes variables de entorno:
 
 \begin{lstlisting}
 $ ./myenv
@@ -381,26 +302,14 @@ bbb=5678
 cccc=1234
 \end{lstlisting}
 
-It should be noted that the value for the environment variable \texttt{cccc}
-must be exactly 4 bytes (no space is allowed to be added to the tail).
-We intentionally make the length of this environment variable string (name and value)
-not multiple of 4.
+Debe de notar que el valor de la variable de entorno \texttt{cccc} debe ser de 4 bytes (no se permiten agregar espacios).
+Intencionalmente hemos hecho que la longitud de esta cadena de la variable de entorno (nombre y valor) no sea múltiplo de 4.
 
+Para construir un shellcode sobre esto, necesitamos construir un arreglo de las variables de entorno en el stack y guardar las dirección de memoria de este arreglo en el registro \texttt{edx}  antes de invocar a \texttt{execve()}. 
+La manera que tenemos para construir el arreglo en el stack es la misma que fue usada para el arreglo  \texttt{argv[]}. 
+Básicamente, primero guardamos las cadenas de las variables de entorno en el stack. Cada cadena tiene un formato de \texttt{nombre=valor}, y es terminada por un byte cero. Necesitamos obtener las direcciones de memoria de esas cadenas. Por último construimos el arreglo de las variables de entorno en el stack y guardamos las direcciones de memoria de esas cadenas en este arreglo.
+El arreglo debe de lucir de la siguiente forma (El orden de los elementos \texttt{0}, \texttt{1}, y \texttt{2} no importa):
 
-To write such a shellcode, we need to construct an
-environment variable array on the stack, 
-and store the address of this array to the \texttt{edx} register,  
-before invoking \texttt{execve()}.  
-The way to construct this array on the stack is exactly the same
-as the way how we construct the \texttt{argv[]} array. Basically,
-we first store the actual environment variable strings on the stack.
-Each string has a format of \texttt{name=value}, and it is terminated by
-a zero byte. We need to get the addresses of these 
-strings. Then, we construct the 
-environment variable array, also on the stack, and store the 
-addresses of the strings in this array.  
-The array should look like the following (the order of 
-the elements \texttt{0}, \texttt{1}, and \texttt{2} does not matter): 
 
 \begin{lstlisting}
 env[3] = 0   // 0 marks the end of the array
@@ -411,30 +320,15 @@ env[0] = address to the "aaa=1234"  string
 
 
 
-
-
-
-
-
-
 % *******************************************
 % SECTION
 % ******************************************* 
 \section{Tarea 2: Usando el Segmento de Código}
 
-As we can see from the shellcode in Task 1, 
-the way how it solves the data address problem is that 
-it dynamically constructs all the necessary 
-data structures on the stack,
-so their addresses can be obtained from the 
-stack pointer \texttt{esp}.
+Como podemos ver en el shellcode de la Tarea 1, la forma en que se resuelve el problema de la dirección de memoria de los datos es que se construye dinámicamente todos los elementos necesarios de la estructuras de datos en el stack, de esta forma sus direcciones se puedan obtener por medio del stack pointer \texttt{esp}.
 
-There is another approach to solve the same problem,
-i.e., getting the address of all the necessary
-data structures. In this approach, data are stored in the code
-region, and its address is obtained 
-via the function call mechanism. Let's look at the following
-code. 
+Existe otra forma de resolver este mismo problema, es decir obtener las direcciones de memoria de todas las estructuras de datos. Esta forma guarda los datos en la región del código (code segment) y sus direcciones de memoria son obtenidas mediante el mecanismo de la función call. Veamos el siguiente código.
+
 
 \begin{lstlisting}[caption={\texttt{mysh2.s}}]
 section .text
@@ -533,14 +427,10 @@ b=22
 % ******************************************* 
 \section{Tarea 3: Escribiendo un Shellcode de 64-bits}
 
-Once we know how to write the 32-bit shellcode, writing 64-bit
-shellcode will not be difficult, because they are quite similar;
-the differences are mainly in the registers. 
-For the x64 architecture, invoking system call is done through
-the \texttt{syscall} instruction, and the first three arguments 
-for the system call are stored in the \texttt{rdx}, \texttt{rsi}, 
-\texttt{rdi} registers, respectively. 
-The following is an example of 64-bit shellcode:
+Una vez que entendemos como escribir un shellcode de 32-bits, escribir uno para 64-bits no será difícil, dado que son similares; la diferencia principales radican en los registros.
+Para la arquitectura x64, la invocación de las llamadas al sistema se da a través de la instrucción \texttt{syscall} y los primeros tres argumentos para la llamada al sistema son guardados en los registros \texttt{rdx}, \texttt{rsi}, 
+\texttt{rdi}.
+El siguiente es un ejemplo de un shellcode de 64-bits:
 
 \begin{lstlisting}[caption={A 64-bit shellcode \texttt{mysh\_64.s}}]
   section .text
@@ -560,23 +450,17 @@ The following is an example of 64-bit shellcode:
       syscall
 \end{lstlisting}
 
-We can use the following commands to compile the assemble code into
-64-bit binary code: 
+Podemos usar los siguientes comandos para compilar el código en ensamblador en un binario de 64-bits:
 
 \begin{lstlisting}
 $ nasm -f elf64 mysh_64.s -o mysh_64.o
 $ ld mysh_64.o -o mysh_64
 \end{lstlisting}
 
-\paragraph{Task.}
-Repeat Task 1.b for this 64-bit shellcode. Namely, 
-instead of executing \texttt{"/bin/sh"}, we need to execute
-\texttt{"/bin/bash"}, and we are not allowed to use
-any redundant \texttt{/} in the command string, 
-i.e., the length of the command must be 9 bytes (\texttt{/bin/bash}).
-Please demonstrate how you can do that.
-In addition to showing that you can get a bash shell, you also
-need to show that there is no zero in your code. 
+\paragraph{Tarea.}
+Repita la Tarea 1.b usando el shellcode de 64-bits. Es necesario aclarar que en vez de ejecutar \texttt{"/bin/sh"}, necesitaremos ejecutar \texttt{"/bin/bash"} y no se permite usar \texttt{/} redundantes, es decir la longitud de la cadena debe ser de 9 bytes (\texttt{/bin/bash}).
+Por favor demuestre como puede hacer esto.
+Además de mostrar que puede obtener una shell bash, debe de mostrar que su código no contiene ceros.
 
 % *******************************************
 % SECTION
