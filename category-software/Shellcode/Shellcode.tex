@@ -253,7 +253,7 @@ shr  ebx, 8
 En la línea \ding{202} del shellcode en el archivo \texttt{mysh.s}, hemos hecho un push al stack del valor \texttt{"//sh"}. En realidad queremos guardar \texttt{"/sh"} en el stack, pero la instrucción \texttt{push} necesita un número de 32-bits.
 Agregar una \texttt{/} redundante al principio de la cadena no altera el comportamiento de nuestro shellcode esto es porque para el Sistema Operativo es lo mismo que usar una sola \texttt{/}.
 
-En esta tarea, usaremos el shellcode para ejecutar \texttt{/bin/bash}, el cual tiene un tamaño de 9 bytes (10 bytes si contamos el cero). Típicamente para guardarlo en el stack necesitamos que su longitud sea múltiplo de 4 por lo que ussaremos la cadena \texttt{/bin////bash}.
+En esta tarea, usaremos el shellcode para ejecutar \texttt{/bin/bash}, el cual tiene un tamaño de 9 bytes (10 bytes si contamos el cero). Típicamente para guardarlo en el stack necesitamos que su longitud sea múltiplo de 4 por lo que usaremos la cadena \texttt{/bin////bash}.
 
 Sin embargo para esta tarea, no puede usar \texttt{/} redundantes en el valor de la cadena, es decir la longitud de la cadena debe de ser de 9 bytes (\texttt{/bin/bash}).
 Por favor demuestre como puede hacer esto.
@@ -288,10 +288,10 @@ argv[0] = "/bin/sh"
 % ------------------------------------------- 
 \subsection{Tarea 1.d. Usando variables de entorno en \texttt{execve()}}
 
-El tercer parámetro para la llamada al sistema \texttt{execve()} es un puntero a al arreglo de variables de entorno y nos permitte pasar variables de entorno al programa. En nuestro programa de ejemplo en la Línea \ding{205}, pasamos un puntero nulo a \texttt{execve()}, por lo tanto no estamos pasando ninguna variable de entorno al programa. 
+El tercer parámetro para la llamada al sistema \texttt{execve()} es un puntero al arreglo de variables de entorno y nos permite pasar variables de entorno al programa. En nuestro programa de ejemplo en la Línea \ding{205}, pasamos un puntero nulo a \texttt{execve()}, por lo tanto no estamos pasando ninguna variable de entorno al programa. 
 En esta tarea usaremos variables de entorno en nuestra llamada al sistema \texttt{execve()}.
 
-Si cambiamos el comando \texttt{"/bin/sh"} por \texttt{"/usr/bin/env"} dentro de nuestro archivo \texttt{mysh.s}, podrá observar que al ejecutar el shellcode no habrá un output, esto es porque \texttt{"/usr/bin/env"} se encarga de imprimir las variables de entorno y dado que no todavía no tenemos ninguna, este no mostrará nada.
+Si cambiamos el comando \texttt{"/bin/sh"} por \texttt{"/usr/bin/env"} dentro de nuestro archivo \texttt{mysh.s}, podrá observar que al ejecutar el shellcode no se mostrará nada en pantalla, esto es porque \texttt{"/usr/bin/env"} se encarga de imprimir las variables de entorno y dado que todavía no hemos establecido ninguna, este no mostrará nada.
 
 En esta tarea, escribiremos un shellcode llamado \texttt{myenv.s}. Cuando este código sea ejecutado, ejecutará el comando \texttt{"/usr/bin/env"}, el cual imprimirá las siguientes variables de entorno:
 
@@ -303,11 +303,11 @@ cccc=1234
 \end{lstlisting}
 
 Debe de notar que el valor de la variable de entorno \texttt{cccc} debe ser de 4 bytes (no se permiten agregar espacios).
-Intencionalmente hemos hecho que la longitud de esta cadena de la variable de entorno (nombre y valor) no sea múltiplo de 4.
+Intencionalmente hemos hecho que la longitud de esta cadena en la variable de entorno (nombre y valor) no sea múltiplo de 4.
 
-Para construir un shellcode sobre esto, necesitamos construir un arreglo de las variables de entorno en el stack y guardar las dirección de memoria de este arreglo en el registro \texttt{edx}  antes de invocar a \texttt{execve()}. 
+Para construir un shellcode sobre esto, necesitamos construir un arreglo de las variables de entorno en el stack y guardar la dirección de memoria de este arreglo en el registro \texttt{edx}  antes de invocar a \texttt{execve()}. 
 La manera que tenemos para construir el arreglo en el stack es la misma que fue usada para el arreglo  \texttt{argv[]}. 
-Básicamente, primero guardamos las cadenas de las variables de entorno en el stack. Cada cadena tiene un formato de \texttt{nombre=valor}, y es terminada por un byte cero. Necesitamos obtener las direcciones de memoria de esas cadenas. Por último construimos el arreglo de las variables de entorno en el stack y guardamos las direcciones de memoria de esas cadenas en este arreglo.
+Básicamente, primero guardamos las cadenas de las variables de entorno en el stack. Cada cadena tiene un formato de \texttt{nombre=valor}, y es terminada por un byte cero. A continuación necesitamos obtener las direcciones de memoria de esas cadenas. Finalmente construimos el arreglo de las variables de entorno en el stack y guardamos las direcciones de memoria de esas cadenas en este arreglo.
 El arreglo debe de lucir de la siguiente forma (El orden de los elementos \texttt{0}, \texttt{1}, y \texttt{2} no importa):
 
 
@@ -325,7 +325,7 @@ env[0] = address to the "aaa=1234"  string
 % ******************************************* 
 \section{Tarea 2: Usando el Segmento de Código}
 
-Como podemos ver en el shellcode de la Tarea 1, la forma en que se resuelve el problema de la dirección de memoria de los datos es que se construye dinámicamente todos los elementos necesarios de la estructuras de datos en el stack, de esta forma sus direcciones se puedan obtener por medio del stack pointer \texttt{esp}.
+Como podemos ver en el shellcode de la Tarea 1, la forma en que se resuelve el problema de la dirección de memoria de los datos es que se construye dinámicamente todos los elementos necesarios de las estructuras de datos en el stack, de esta forma sus direcciones se puedan obtener por medio del stack pointer \texttt{esp}.
 
 Existe otra forma de resolver este mismo problema, es decir obtener las direcciones de memoria de todas las estructuras de datos. Esta forma guarda los datos en la región del código (code segment) y sus direcciones de memoria son obtenidas mediante el mecanismo de la función call. Veamos el siguiente código.
 
@@ -351,9 +351,9 @@ section .text
         db '/bin/sh*AAAABBBB' ;  (*@\ding{203}@*)
 \end{lstlisting}
 
-En el código anterior, se inicia con un jump en la locación \texttt{two}, dentro de esta locación se lanza otro jump (a la locación \texttt{one}), pero esta vez se usa la instrucción \texttt{call}. Esta instrucción es para invocar la llamada a una función, es decir antes de realizar el jump hacia su destino, guarda la dirección de retorno de la próxima instrucción, lo que hace que al momento que la instrucción \texttt{call} termine, se ejecute la próxima instrucción que sigue a continuación de la instrucción \texttt{call}.
+En el código anterior, se inicia con un jump a la locación \texttt{two}, dentro de esta locación se lanza otro jump (a la locación \texttt{one}), pero esta vez se usa la instrucción \texttt{call}. Esta instrucción es para invocar la llamada a una función, es decir antes de realizar el jump hacia su destino, se guarda la dirección de retorno de la próxima instrucción, lo que hace que al momento que la instrucción \texttt{call} termine, se ejecute la próxima instrucción que sigue a continuación de la instrucción \texttt{call}.
 
-En el ejemplo la ``instrucción'' que sugye después de \texttt{call} (Línea  \ding{203}) no es una instrucción propiamente dicha; es la declaración de una cadena. Sin embargo, esto no importa, la instrucción \texttt{call} guardará su dirección de memoria (es decir la de la cadena) como la dirección de retorno en el stack dentro del frame de la función. Cuando entramos dentro de esta función, después de realizar el jump a locación \texttt{one}, esta dirección de retorno se guarda en la cima del stack. La instrucción \texttt{pop ebx} en la Línea \ding{202} obtiene la dirección de memoria de la cadena declarada en la Línea \ding{203} y la guarda en el registro \texttt{ebx}. Así es como la dirección de memoria de la cadena es obtenida.
+En el ejemplo anterior la ``instrucción'' que sigue después de \texttt{call} (Línea  \ding{203}) no es una instrucción propiamente dicha; es la declaración de una cadena. Sin embargo, esto no importa, la instrucción \texttt{call} guardará su dirección de memoria (es decir la de la cadena) como la dirección de retorno en el stack dentro del frame de la función. Cuando entramos dentro de esta función, después de realizar el jump a locación \texttt{one}, esta dirección de retorno se guarda en la cima del stack. La instrucción \texttt{pop ebx} en la Línea \ding{202} obtiene la dirección de memoria de la cadena declarada en la Línea \ding{203} y la guarda en el registro \texttt{ebx}. Así es como la dirección de memoria de la cadena es obtenida.
 
 La cadena en la Línea \ding{203} no está completa; es solamente un placeholder.
 El programa necesita construir la información requerida por la estructura de datos dentro de este placeholder. Dado que la dirección de memoria de esta cadena está disponible en el registro ebx, el armado de esta estructura de datos puede ser  construido fácilmente.
