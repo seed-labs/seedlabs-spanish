@@ -123,41 +123,17 @@ $ gcc -m32 -z noexecstack  -o test test.c
 Dado que el objetivo de este laboratorio es mostrar que la protección de non-executable stack no es infalible, debería de compilar su programa usando el parámetro {\tt "-z noexecstack"}.
 
 
-
-\paragraph{Configurando \texttt{/bin/sh}.} In Ubuntu 20.04, 
-the \texttt{/bin/sh} symbolic link points to
-the \texttt{/bin/dash} shell. 
-%However, the \texttt{dash} program
-%in these two VMs have an important difference.
-The \texttt{dash} shell has a countermeasure
-that prevents itself from being executed in a \setuid process.
-If \texttt{dash} is 
-executed in a \setuid process, it immediately
-changes the effective user ID to the process's real user ID, essentially
-dropping its privilege. 
-%The \texttt{dash} program in Ubuntu 12.04 does not have this behavior.
-
-Since our victim program is a \setuid program, and our
-attack uses the \texttt{system()} function to run a command of our
-choice. This function does not run our command directly; it 
-invokes \texttt{/bin/sh} to run our command. Therefore, 
-the countermeasure in \texttt{/bin/dash} immediately drops
-the \setuid privilege before executing our command, making our 
-attack more difficult. To disable this protection, 
-we link \texttt{/bin/sh} to another shell that does not
-have such a countermeasure.
-We have installed a shell program
-called \texttt{zsh} in our Ubuntu 16.04 VM. We use the following
-commands to link \texttt{/bin/sh} to \texttt{zsh}:
+\paragraph{Configurando \texttt{/bin/sh}.} En Ubuntu 20.04, la shell \texttt{/bin/sh} tiene un link simbólico que apunta a la shell \texttt{/bin/dash}.
+La shell \texttt{dash} tiene una protección que evita ser ejecutada en un proceso 
+\setuid. Si \texttt{dash} es ejecutada en un proceso \setuid, esta hace el cambio del effective user ID al real user ID del proceso que la está ejecutando, eliminando privilegios innecesarios.
+Dado que nuestro programa vulnerable es un programa \setuid y nuestro ataque se vale de la función \texttt{system()} para correr el comando de nuestra elección. Esta función no correrá directamente nuestro comando sino que invocará a \texttt{/bin/sh} para realizar esta tarea, por ende será \texttt{/bin/dash} quién eliminirá los privilegios antes de la ejecución del comando a través de la protección built-in anteriormente mencionada, esto hará que nuestro ataque sea más difícil de lograr. Para desactivar esta protección, se debe de crear un link simbólico en la shell \texttt{/bin/sh} hacia otra shell que no tenga esta contramedida.
+En nuestra Máquina Virtual Ubuntu 16.04, hemos instalado otra shell llamada \texttt{zsh} que se usará de reemplazo en lugar de \texttt{dash}:
 
 \begin{lstlisting}
 $ sudo ln -sf /bin/zsh /bin/sh
 \end{lstlisting}
 
-
-It should be noted that the countermeasure implemented in
-\texttt{dash} can be circumvented. We will 
-do that in a later task. 
+La protección implementada por \texttt{dash} puede ser evadida. Lo haremos en una tarea posterior.
 
 
 
@@ -217,32 +193,19 @@ void foo(){
 }
 \end{lstlisting}
 
-The above program has a buffer overflow vulnerability. It first reads
-an input up to \texttt{1000} bytes from a file called \texttt{badfile}. 
-It then passes the input data to the \texttt{bof()} function, which
-copies the input to its internal buffer using \texttt{strcpy()}. 
-However, the internal buffer's size is less than \texttt{1000},
-so here is potential buffer-overflow vulnerability.
+El programa anterior tiene una vulnerabilidad de buffer overflow. Este programa empieza leyendo un input de más de \texttt{1000} bytes de un archivo llamado \texttt{badfile}, este pasa los datos a la función \texttt{bof()} que los copia en su buffer interno a través de la función \texttt{strcpy()}.
+Debido a que el buffer interno de la función \texttt{bof()} tiene un tamaño mucho más chico que \texttt{1000}, existe una potencial vulnerabilidad de buffer overflow.
 
-This program is a root-owned \setuid program, so if a normal user can exploit this buffer
-overflow vulnerability, the user might be able to get a root
-shell.  It should be noted that the program gets its input from a file
-called \texttt{badfile}, which is provided by users. Therefore, we can
-construct the file in a way such that when
-the vulnerable program copies the file contents into its buffer, a root
-shell can be spawned.
+Nuestro código será un programa \setuid cuyo dueño es el usuario root, de esta forma si un usuario normal quiere explotar esta vulnerabilidad de buffer overflow, podría obtener una shell con privilegios de root. 
+Cabe notar que el programa obtiene los datos de entrada de un archivo llamado \texttt{badfile} el cual es provisto por los usuarios, de esta forma podemos construir un archivo de tal forma que cuando el programa vulnerable copie su contenido al buffer, se ejecute una root shell.
+
 
 \vspace{0.1in}
 \paragraph{Compilación.} 
-Let us first compile the code and turn it into a root-owned \setuid
-program. Do not forget to include the 
-\texttt{-fno-stack-protector} option (for turning off the StackGuard
-protection) and the \texttt{"-z noexecstack"} option (for turning on
-the non-executable stack protection). 
-It should also be noted that changing ownership must be done before
-turning on the \setuid bit, 
-because ownership changes cause the \setuid bit to be turned off.
-All these commands are included in the provided \texttt{Makefile}. 
+Lo primero que haremos será compilar el programa, setearlo con el bit de \setuid y hacer al usuario root dueño del mismo.
+No olvide incluir los parámetros \texttt{-fno-stack-protector} (para desactivar la protección de Stackguard) y  \texttt{"-z noexecstack"} (para activar la protección non-executable stack).
+Hay que aclarar que el cambio de dueño del archivo debe de hacerse antes de activar el bit de \setuid, de otra forma se desactivará este bit.
+Todos estos comandos son provistos en el archivo \texttt{Makefile}. 
 
 
 \begin{lstlisting}
@@ -253,20 +216,16 @@ $ sudo chmod 4755 retlib
 \end{lstlisting}
 
 
-\paragraph{Para los instructores.}
-To prevent students from using the solutions from the past (or from those
-posted on the Internet), instructors can change the
-value for \texttt{BUF\_SIZE} by requiring students to compile the
-code using a different \texttt{BUF\_SIZE} value.
-Without the \texttt{-DBUF\_SIZE}
-option, \texttt{BUF\_SIZE} is set to the default value \texttt{12} (defined
-in the program).
-When this value changes, the layout of the stack
-will change, and the solution will be different.
-Students should ask their instructors for
-the value of \texttt{N}. The value of \texttt{N} can be set 
-in the provided \texttt{Makefile} and \texttt{N} can be 
-from 10 to 800.
+\paragraph{Para Instructores.}
+Para evitar que los estudiantes utilicen las soluciones del pasado (o de aquellas
+publicado en Internet), los instructores pueden cambiar el
+valor para \texttt{BUF\_SIZE} haciendo que los estudiantes compilen el código usando un valor \texttt{BUF\_SIZE} diferente.
+Si no se usa un valor determinado para \texttt{-DBUF\_SIZE} en la compilacióon 
+su valor por defecto será \texttt{12} (definido en el programa).
+Cuando este valor se modifica, el layout del stack  cambiará y la solución será diferente.
+Los estudiantes deben de pedir a sus instructores
+el valor de \texttt{N}. Se puede establecer el valor de \texttt{N}
+en el archivo \texttt{Makefile} y se puede usar un valor para \texttt{N} entre 10 y 800.
 
 
 
@@ -282,20 +241,12 @@ from 10 to 800.
 % -------------------------------------------
 \subsection{Tarea 1: Encontrar la Direcciónes de las Funciones de \texttt{libc} } 
 
-In \linux, when a program runs, the \texttt{libc} library will be loaded
-into memory. When the memory address randomization is turned off,
-for the same program, the library is always loaded in the same memory
-address (for different programs, the memory addresses
-of the \texttt{libc} library may be different).
-Therefore, we can easily find out the address of \texttt{system()}
-using a debugging tool such as \texttt{gdb}. Namely, we can debug
-the target program \texttt{retlib}. Even though the program is a root-owned \setuid program,
-we can still debug it, except that the privilege will be dropped~(i.e., the effective user ID
-will be the same as the real user ID).
-Inside \texttt{gdb}, we need to type the \texttt{run} command to execute the target program once,
-otherwise, the library code will not be loaded.
-We use the \texttt{p} command~(or \texttt{print}) to print out the address of
-the \texttt{system()} and \texttt{exit()} functions~(we will need \texttt{exit()} later on).
+Cuando se ejecuta un programa en \linux, la librería \texttt{libc} es cargada en memoria. Cuando el address randomization está desactivado, para el programa en cuestión el espacio de direcciones en donde se carga la librería es siempre el mismo (para diferentes programas, el espacio de direcciones donde se carga \texttt{libc} puede variar).
+Por lo tanto, podemos encontrar fácilmente la dirección de \texttt{system()} usando una herramienta de debugging como \texttt{gdb}. Es decir, podemos debuguear
+el programa \texttt{retlib}. Aunque el programa sea \setuid y su dueño sea el usuario root, con la única exepción que los privilegio se eliminarán (es decir, el effective user ID será el mismo que el real user ID).
+Dentro de \texttt{gdb}, necesitamos correr el programa una sóla vez de otra forma el código de la librería no será cargado, esto lo haremos usando el comando \texttt{run}.
+Como se ve a continuación se uso el comando \texttt{p} (o \texttt{print}) para mostrar en pantalla la dirección en memoria de las funciones \texttt{system()} y de \texttt{exit()} (la cual la necesitaremos más adelante).
+
 
 \begin{lstlisting}
 $ touch badfile
@@ -314,15 +265,11 @@ $2 = {<text variable, no debug info>} (*@\textbf{0xf7e04f80}@*) <exit>
 gdb-peda$ quit
 \end{lstlisting}
 
-It should be noted that even for the same program, if we change it from a \setuid
-program to a non-\setuid program, the \texttt{libc} library may not be loaded
-into the same location. Therefore, when we debug the program, we need
-to debug the target \setuid program; otherwise, the address we
-get may be incorrect.
+Debe de notar que aunque se trate del mismo programa, si decidimos desactivar el bit \setuid, puede ocurrir que la librería \texttt{libc} no sea cargada en el mismo espacio de direcciones.
 
-\paragraph{Running \texttt{gdb} in batch mode.} If you prefer to run \texttt{gdb} 
-in a batch mode, you can put the \texttt{gdb} commands in a file, and then 
-ask \texttt{gdb} to execute the commands from this file:
+
+\paragraph{Corriendo \texttt{gdb} en modo batch.} Si prefiere correr \texttt{gdb} en modo batch, puede poner los siguientes comandos \texttt{gdb} dentro de un archivo y ejecutar \texttt{gdb} en conjunción con estos comandos:
+
 
 \begin{lstlisting}
 $ cat gdb_command.txt
@@ -344,27 +291,15 @@ $2 = {<text variable, no debug info>} 0xf7e04f80 <exit>
 % -------------------------------------------
 % SUBSECTION
 % ------------------------------------------- 
-\subsection{Task 2: Putting the shell string in the memory}
+\subsection{Tarea 2: Insertando la cadena de la shell en la memoria}
 
-Our attack strategy is to jump to the \texttt{system()} function and 
-get it to execute an arbitrary command. Since we would like to 
-get a shell prompt, we want the \texttt{system()} function
-to execute the \texttt{"/bin/sh"} program. Therefore, the 
-command string \texttt{"/bin/sh"} must be put in the memory first and 
-we have to know its address (this address needs to be passed to 
-the \texttt{system()} function). There are many ways to
-achieve these goals; we choose a method that uses environment variables.
-Students are encouraged to use other approaches. 
+Nuestra estrategia de ataque es hacer un salto (jump) a la función \texttt{system()} y ejecutar un comando arbitrario. Dado que queremos obtener una shell, nuestro objetivo es que la función \texttt{system()} ejecute el programa \texttt{"/bin/sh"}. Además se debe poner en memoria la cadena que representa el comando \texttt{"/bin/sh"} por lo que tendremos que conocer su dirección (esta dirección debe de ser pasado a la función \texttt{system()}). Existen varias formas de lograr esto, para esta tarea hemos elegido un método que usa variables de entorno.
+Los estudiantes pueden probar con otros métodos si lo desean.  
 
-When we execute a program from a shell prompt, the shell actually 
-spawns a child process to execute the program, and all 
-the exported shell variables become the environment variables 
-of the child process. This creates an easy way for us to 
-put some arbitrary string in the child process's memory. 
-Let us define a new shell variable \texttt{MYSHELL}, and let it
-contain the string \texttt{"/bin/sh"}. From the following commands,
-we can verify that the string gets into the child process, and it is 
-printed out by the \texttt{env} command running inside the child process.
+Cuando ejecutamos un programa desde una shell, la shell crea un proceso hijo para ejecutar ese programa y todas las variables que son exportadas en la shell, son heredadas por ese proceso hijo que crea al ejecutar ese nuevo programa, es decir el proceso hijo hereda las variables de entornos exportadas por la shell padre.
+Esto nos permite insertar cadenas en el espacio de direcciones del proceso hijo de manera sencilla.
+Procederemos a definir una nueva variable shell llamada \texttt{MYSHELL}, dentro de ella pondremos la cadena \texttt{"/bin/sh"}. 
+A continuación usando los siguientes comandos podremos verificar que la cadena esta presente en el proceso hijo y es mostrada en pantalla por el comando \texttt{env} que corre dentro del contexto del mismo.
 
 \begin{lstlisting}
 $ export MYSHELL=/bin/sh
@@ -372,9 +307,7 @@ $ env | grep MYSHELL
 MYSHELL=/bin/sh
 \end{lstlisting}
 
-We will use the address of this variable as an argument to {\tt system()} call.
-The location of this variable in the memory can be found out easily using the 
-following program: 
+Usaremos la dirección de memoria de esta variable como argumento para la llamada a {\tt system()}. La dirección de esta variable puede ser encontrada usando el siguiente programa: 
 
 \begin{lstlisting}
 void main(){
@@ -384,28 +317,21 @@ void main(){
 }
 \end{lstlisting}
 
-Compile the code above into a binary called \texttt{prtenv}.  
-If the address randomization is turned off, you will find out that the same 
-address is printed out. When you run the vulnerable program \texttt{retlib}
-inside the same terminal, the address of the environment
-variable will be the same. You can verify that by putting 
-the code above inside \texttt{retlib.c}. However, 
-the length of the program name does make a difference. That's why
-we choose 6 characters for the program name \texttt{prtenv} to match
-the length of \texttt{retlib}.  
+Compile el código anterior dentro de un binario llamado \texttt{prtenv}. 
+Si el address randomization está desactivado, la dirección de memoria de la variable mostrada por \texttt{prtenv} deberá de coincidir por la que se muestra en el programa vulnerable \texttt{retlib}. Puede verificar ubicando el código mostrado anteriormente dentro de \texttt{retlib.c}. 
+Sin embargo tenga en cuenta que la longitud del nombre de programa hace la diferencia, es por eso que elejimos 6 caracteres para \texttt{prtenv} como para 
+\texttt{retlib}, ambos nombres deben de tener la misma longitud.
 
 
 
 % -------------------------------------------
 % SUBSECTION
 % -------------------------------------------
-\subsection{Task 3: Launching the Attack}
+\subsection{Tarea 3: Lanzando el Ataque}
 
-We are ready to create the content of \texttt{badfile}. Since 
-the content involves some binary data (e.g., the address of the 
-\texttt{libc} functions), we can use Python to do the construction.  
-We provide a skeleton of the code in the following, with the essential 
-parts left for you to fill out.
+Estamos listos para generar el contenido de nuestro archivo \texttt{badfile}.
+Dado que nuestro contenido incluye datos en binario (por ejemplo: las direcciones de las funciones de \texttt{libc}), podemos usar Python para construir el contenido.
+A continuación hemos provisto un código genérico con las partes esenciales que deben de ser completadas por ud.
 
 
 \begin{lstlisting}
@@ -432,52 +358,26 @@ with open("badfile", "wb") as f:
   f.write(content)
 \end{lstlisting}
  
-You need to figure out the three addresses and the values for 
-\texttt{X}, \texttt{Y}, and \texttt{Z}. 
-If your values are incorrect,
-your attack might not work. In your report, you need to
-describe how you decide the values for {\tt X}, {\tt Y} and {\tt
-Z}. Either show us your reasoning or, if you use a trial-and-error approach,
-show your trials.
+Necesita encontrar tres direcciones de memoria y los valores para \texttt{X}, \texttt{Y}, y \texttt{Z}. 
+Si los valores no son los correctos, el ataque fallará. En el informe de laboratorio deberá de explicar como es que obtuvo los valores para {\tt X}, {\tt Y} y {\tt Z}. Explique su razonamiento o si decide utilizar un enfoque de prueba y error, muestre sus pruebas.
 
 
-\paragraph{A note regarding \texttt{gdb}.}  If you use \texttt{gdb} to figure out the 
-values for \texttt{X}, \texttt{Y}, and \texttt{Z}, it should be noted
-that the \texttt{gdb} behavior in Ubuntu 20.04 is slightly different 
-from that in Ubuntu 16.04. In particular, after we set
-a break point at function \texttt{bof},  
-when \texttt{gdb} stops inside the \texttt{bof()} function, it
-stops before the \texttt{ebp} register is set
-to point to the current stack frame, so if we print out the value of
-\texttt{ebp} here, we will get the caller's \texttt{ebp} value, not
-\texttt{bof}'s \texttt{ebp}. We need to type \texttt{next} 
-to execute a few instructions and stop
-after the \texttt{ebp} register is modified to point to the stack
-frame of the \texttt{bof()} function.
-The SEED book (2nd edition) is based on Ubuntu 16.04, 
-so it does not have this \texttt{next} step. 
+\paragraph{Nota sobre \texttt{gdb}.} Si usa \texttt{gdb} para encontrar los valores para \texttt{X}, \texttt{Y}, y \texttt{Z}. Debe saber que el comportamiento de \texttt{gdb} en Ubuntu 20.04 es un tanto diferente al comportamiento que tiene en Ubuntu 16.04. Para ser más preciso, después de establecer el break point en la función \texttt{bof}, en el momento en que \texttt{gdb} se detiene dentro de \texttt{bof()}, este lo hace antes que el registro \texttt{ebp} apunte al stack frame actual, por lo que si se muestra el valor de \texttt{ebp} en este punto, obtendremos el valor \texttt{ebp} del caller y no el valor de \texttt{ebp} de \texttt{bof}. Para solucionar esto debemos de tipear \texttt{next} para que se ejecuten unas cuantas instrucciones más y se detenga una vez que el registro \texttt{ebp} apunte al stack frame de la función \texttt{bof()}.
+La segunda edición del libro de SEED está basada en Ubuntu 16.04, por lo que no tiene este último paso de \texttt{next}.
 
 
-\paragraph{Attack variation 1:}
-Is the \texttt{exit()} function really necessary? Please try 
-your attack without including the address of this function in
-\texttt{badfile}. Run your attack again, report and explain your
-observations.  
+\paragraph{Primera Variación del Ataque:}
+Es necesaria la función \texttt{exit()}? Por favor repita el ataque sin incluir la dirección de esta función dentro del archivo \texttt{badfile}. Escriba las observaciones en el informe de laboratorio.
 
 
-
-\paragraph{Attack variation 2:} 
-After your attack is successful, change the file name of \texttt{retlib}
-to a different name, making sure that the length of the new 
-file name is different. For example, you can change it to \texttt{newretlib}. 
-Repeat the attack (without changing the content of {\tt badfile}). 
-Will your attack succeed or not?  If it does not succeed, explain why.
-
+\paragraph{Segunda Variación del Ataque:} 
+Después de que su ataque sea exitoso, cambie el nombre el archivo \texttt{retlib} y asegúrese que la longitud del nombre sea diferente a la actual. Por ejemplo puede cambiarlo a \texttt{newretlib}. Repita el ataque (sin cambiar el contenido del archivo {\tt badfile}). 
+Tuvo un ataque exitoso o falló? Si falló explique el porque.
 
 % -------------------------------------------
 % SUBSECTION
 % ------------------------------------------- 
-\subsection{Task 4: Defeat Shell's countermeasure}
+\subsection{Tarea 4: Evadir la Contramedida de la Shell}
 
 The purpose of this task is to launch the return-to-libc attack after 
 the shell's countermeasure is enabled. 
@@ -548,7 +448,7 @@ In your report, please describe how you construct your input.
 % -------------------------------------------
 % SUBSECTION
 % -------------------------------------------
-\subsection{Task 5 (Optional): Return-Oriented Programming}
+\subsection{Tarea 5 (Opcional): Programación Orientada al retorno (Return-Oriented Programming)}
 
 There are many ways to solve the problem in Task 4. 
 Another way is to invoke \texttt{setuid(0)} before 
@@ -616,13 +516,13 @@ to explain in the SEED book.
 % *******************************************
 % SECTION
 % ******************************************* 
-\section{Guidelines: Understanding the Function Call Mechanism}
+\section{Guiás: Entiendo el mecanismo de la llamada a una función}
 
 
 % -------------------------------------------
 % SUBSECTION
 % ------------------------------------------- 
-\subsection{Understanding the stack layout}
+\subsection{Entendiendo el Stack Layout}
 
 To know how to conduct Return-to-libc attacks, we need to 
 understand how stacks work.  We use a small C program to understand 
