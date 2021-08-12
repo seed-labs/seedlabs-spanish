@@ -180,7 +180,7 @@ Para que la dirección del buffer y su frame pointer no sean siempre los mismos 
 % *******************************************
 \section{Tarea 1: Rompiendo el Programa}
 
-Cuando levantamos los contenedores configurados en el archivo \texttt{docker-compose.yml}, dos contenedores estarán disponibles, cada uno de ellos corre una instancia diferente del servidor vulnerable.
+Cuando levantamos los contenedores que están en el archivo \texttt{docker-compose.yml}, tendremos dos contenedores disponibles, cada uno de ellos corre una instancia diferente del servidor vulnerable.
 Para esta tarea, usaremos el servidor cuya IP es \texttt{10.9.0.5}, y corre la versión de 32-bits del programa vulnerable.
 Primero procederemos a enviar un mensaje inocuo (a modo de prueba) hacia el servidor.
 Una vez hecho esto podremos observar en el contenedor target los siguientes mensajes (esto puede variar levemente)
@@ -234,7 +234,6 @@ El objeto será mostrar los datos en el stack.
 Cuantos especificadores de formato \texttt{\%x} necesita para que el programa servidor imprima los primeros cuatro bytes de su input? Puede poner cualquier número de 4 bytes, por lo que al ser impreso en pantalla, puede saberlo.
 Este número será importante para las tareas subsiguientes, asegúrese de hacerlo bien.
 
-
 \item \textbf{Tarea 2.B: Datos del Heap} 
 Existe un mensaje secreto (una cadena) guardada en el area del heap y puede encontrar ssu dirección de memoria del mensaje impreso en el contenedor.
 Su tarea es imprimir este mensaje secreto.
@@ -260,38 +259,23 @@ content[0:4]  =  (number).to_bytes(4,byteorder='little')
 % *******************************************
 \section{Tarea 3: Modificando la Memoria del Programa Servidor}
 
-The objective of this task is to modify the value of the 
-\texttt{target} variable that is defined in the 
-server program (we will continue to use \texttt{10.9.0.5}). 
-The original value of \texttt{target} is \texttt{0x11223344}. 
-Assume that this variable holds an important value, which can affect the 
-control flow of the program. If remote attackers can change its value, 
-they can change the behavior of this program. We have three sub-tasks. 
+El objetivo de esta tarea es moodificar el valor de la variable \texttt{target} que está declarada en nuestro programa servidor (continuaremos usando \texttt{10.9.0.5}).
+El valor original de \texttt{target} es \texttt{0x11223344}. 
+Asuiendo que esta variable contiene un valor de importancia y que puede afecta el flujo de control del programa. Si un atacante remoto puede cambiar el valor de esta variable también puede cambiar el comportamiento del programa. Tenemos tres sub-tareas.
 
 \begin{itemize} 
-\item \textbf{Task 3.A: Change the value to a different value.}
-In this sub-task, we need to change the content of the \texttt{target} variable
-to something else. Your task is considered as a success if you can change it to a
-different value, regardless of what value it may be. The address of 
-the \texttt{target} variable can be found from the server printout. 
+\item \textbf{Tarea 3.A: Cambiar el valor a cualquier otro valor.}
+En esta sub-tarea, necesitamoss cambiar el contenido de la variable \texttt{target} a otro valor cualquiera. Su tarea será considerada como exitosa si puede cambiarlo a un valor cualquiera, sin importar cual sea ese valor. La dirección de la variable \texttt{target} puede ser vista en los mensajes impresos en el contenedor del servidor.
 
 
-\item \textbf{Task 3.B: Change the value to \texttt{0x5000}.}  
-In this sub-task, we need to change the content of the \texttt{target} variable
-to a specific value \texttt{0x5000}. Your task is considered as 
-a success only if the variable's value becomes \texttt{0x5000}. 
+\item \textbf{Tarea 3.B: Cambiar el valor a \texttt{0x5000}.}  
+En esta sub-tarea, necesitamos cambiar el contenido de la variable  \texttt{target} con un valor específico \texttt{0x5000}. Su tarea será considerada como exitosa solamente si el valor de la variable resulta siendo \texttt{0x5000}.
 
 
-\item \textbf{Task 3.C: Change the value to \texttt{0xAABBCCDD}.}  
-This sub-task is similar to the previous one, except that the target value is 
-now a large number. In a format string attack, this 
-value is the total number of characters that
-are printed out by the \texttt{printf()} function; printing out 
-this large number of characters may take hours. You need to use a faster approach. The 
-basic idea is to use \texttt{\%hn} or \texttt{\%hhn}, instead of \texttt{\%n}, so we can modify 
-a two-byte (or one-byte) memory space, instead of four bytes. Printing out
-$2^{16}$ characters does not take much time. More details 
-can be found in the SEED book.
+\item \textbf{Tarea 3.C: Cambiar el valor a \texttt{0xAABBCCDD}.}  
+Esta sub-tarea es similar a las anteriores, con la exepción que el valor para la variable target es un número más grande. En un ataque de format string, este valor es el número total de caracteres que son mostrados por la función \texttt{printf()}; imprimir este número de caracteres puede llevar horas. Necesita usar una estrategia más óptima en velocidad.
+La idea básica es usar  \texttt{\%hn} o \texttt{\%hhn}, en lugar de \texttt{\%n}, lo que nos permite modificar un espacio de direcciones de dos bytes (o un sólo byte) en vez de cuatro bytes. Imprimir $2^{16}$ caracteres no lleva mucho tiempo.
+Para más detalles sobre esto puede consultar el libro de SEED.
 \end{itemize} 
 
 
@@ -324,8 +308,8 @@ by the server.
 \begin{center}
 \includegraphics[width=0.8\textwidth]{\formatFigs/StackLayout.pdf}
 \end{center}
-\caption{The stack layout when \texttt{printf()} is invoked 
-from inside of the \texttt{myprintf()} function.}
+\caption{El stack layout cuando se invoca \texttt{printf()}
+dentro de la función \texttt{myprintf()}}
 \label{format:fig:stacklayout}
 \end{figure}
 
@@ -375,7 +359,7 @@ how your format string is constructed. Please mark on Figure~\ref{format:fig:sta
 your malicious code is stored (please provide the concrete address). 
 
 
-\paragraph{Getting a Reverse Shell.}
+\paragraph{Obteniendo una Shell Reversa.}
 We are not interested in running some pre-determined commands. We
 want to get a root shell on the target server, so we can
 type any command we want. Since we are on a remote machine,
@@ -429,7 +413,7 @@ You ultimate goal is to get a root shell on
 the target server. You need to use the 64-bit version of the shellcode.
 
 
-\paragraph{Challenges caused by 64-bit Address.}
+\paragraph{Desafíos en las direcciones de 64-bits.}
 A challenge caused by the x64 architecture is the zeros in the address.
 Although the x64 architecture
 supports 64-bit address space, only the address from
@@ -457,7 +441,7 @@ we leave this to students. In the lab report, students
 should explain how they have solved this problem. 
 
 
-\paragraph{A userful technique: moving the argument pointer freely.}
+\paragraph{Una técnica útil: mover libremente el puntero de los argumentos.}
 In a format string, we can use \texttt{\%x} to move the
 argument pointer \texttt{va\_list} to the next optional arguments.
 We can also directly move the pointer to the \texttt{k}-th optional argument.
@@ -496,11 +480,8 @@ The value in var: 20
 % *******************************************
 \section{Tarea 6: Arreglando el Problema}
 
-Remember the warning message generated by the \texttt{gcc} compiler? Please explain what
-it means. Please fix the vulnerability in the server program, and recompile it. 
-Does the compiler warning go away? Do your attacks 
-still work? You only need to try one of your attacks to see whether it still
-works or not. 
+Recuerda el mensaje de warning generado por el compilador \texttt{gcc}? Por favor explique que significa. Por favor arregle la vulnerabilidad en el programa servidor y compilelo nuevamente.
+El compilador sigue mostrando el mensaje de warning? Sus ataques aún funcionan? Solamente necesita ejecutar uno de sus ataques para comprobar si su programa es aún vulnerable.
 
 
 % *******************************************
@@ -517,7 +498,7 @@ works or not.
 % *******************************************
 % SECTION
 % ******************************************* 
-\section{Submission}
+\section{Informe de Laboratorio}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \input{\commonfolder/submission}
