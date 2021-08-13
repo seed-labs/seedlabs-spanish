@@ -285,18 +285,12 @@ Para más detalles sobre esto puede consultar el libro de SEED.
 % *******************************************
 \section{Tarea 4: Inyectar Código Malicioso dentro del Programa Servidor}
 
-Now we are ready to go after the crown jewel of this attack, code injection. 
-We would like to inject a piece of malicious code, in its binary format, 
-into the server's memory, and then use the format string vulnerability 
-to modify the return address field of a function, so when the function returns, 
-it jumps to our injected code. 
+Estamos listos para ir por las joyas de la corona del ataque, inyección de código.
+Vamos a inyectar un fragmento de código malicioso en formato binario, dentro de la memoria del programa servidor y usar la vulnerabilidad de format string para modificar la dirección de retorno de una función, por lo que que haremos retornar a nuestro código malicioso.
 
-The technique used for this task is similar to that in the previous task:
-they both modify a 4-byte number in the memory. The previous task
-modifies the \texttt{target} variable, while this task modifies the return
-address field of a function. Students need to figure out the address
-for the return-address field based on the information printed out 
-by the server. 
+La técnica usada para esta tarea es similar a la usada en las tareas anteriores:
+Ambas modifican en memoria un número de 4 bytes. En la tarea anterior se modificó la variable \texttt{target}, mientras que en esta modificaremos la dirección de retorno de una función. Los estudiantes necesitarán descubrir la dirección de memoria de la dirección de retorno de la función basado en la información impresa en pantalla dentro del contenedor del servidor.
+
 
 
 % -------------------------------------------
@@ -313,23 +307,15 @@ dentro de la función \texttt{myprintf()}}
 \label{format:fig:stacklayout}
 \end{figure}
 
-To succeed in this task, it is essential to understand the stack layout when
-the \texttt{printf()} function is invoked inside \texttt{myprintf()}. 
-Figure~\ref{format:fig:stacklayout} depicts the stack layout. 
-It should be noted that we intentionally placed a dummy stack frame between
-the \texttt{main} and \texttt{myprintf} functions, but it is not shown in the
-figure. Before working on this task, students need to
-answer the following questions (please include your answers
-in the lab report): 
+Para poder lograr esta tarea, es essencial entender el stack layout cuando se invoca a la función \texttt{printf()} dentro de la función \texttt{myprintf()}.
+La Figura \ref{format:fig:stacklayout} describe el stack layout.
+Intencionalmente se insertó un dummy stack frame entre las funciones \texttt{main} y \texttt{myprintf} pero no se muestra en la figura. Antes de empezar a trabajar en esta tarea, los estudiantes necesitan responder las siguientes preguntas (por favor incluya las respuestas en el informe de laboratorio):
 
 
 \begin{itemize}[noitemsep]
-\item \textbf{Question 1:}  What are the memory addresses at the locations marked by
-\ding{203} and \ding{204}?
+\item \textbf{Pregunta 1:} ¿Qué son las direcciones de memorias marcadas en   \ding{203} y \ding{204}?
 
-\item \textbf{Question 2:} How many \texttt{\%x} format specifiers do we 
-need to move the format string argument pointer to \ding{204}? Remember, 
-the argument pointer starts from the location above \ding{202}. 
+\item \textbf{Pregunta 2:} ¿Cuantos especificadores de formato necesitamos para mover el puntero de argumentos de la cadena de formatos a \ding{204}? Recuerde, el puntero de argumentos empieza en la ubicación antes de \ding{202}. 
 \end{itemize} 
 
 
@@ -352,24 +338,14 @@ Puede usarlos para construir su ataque en la explotación de la vulnerabilidad d
 % -------------------------------------------
 \subsection{Su Tarea} 
 
-Please construct your input, feed it to the server program, and demonstrate that you can
-successfully get the server to run your shellcode. 
-In your lab report, you need to explain
-how your format string is constructed. Please mark on Figure~\ref{format:fig:stacklayout} where 
-your malicious code is stored (please provide the concrete address). 
+Por favor genere su input por medio de un shellcode, envie su input al programa servidor y demuestre que el servidor puede correr su shellcode.
+En su informe de laboratorio, necesita explicar como construyó su cadena de foormato. Por favor marque en la Figura \ref{format:fig:stacklayout} donde se guarda su código malicioso (incluya una dirección de memoria concreta).
 
 
 \paragraph{Obteniendo una Shell Reversa.}
-We are not interested in running some pre-determined commands. We
-want to get a root shell on the target server, so we can
-type any command we want. Since we are on a remote machine,
-if we simply get the server to run \texttt{/bin/bash}, we won't be able to
-control the shell program. Reverse shell is a typical
-technique to solve this problem. Section~\ref{sec:guildelines} provides
-detailed instructions on how to run a reverse shell.
-Please modify the command string in your shellcode, so you can
-get a reverse shell on the target server.
-Please include screenshots and explanation in your lab report.
+NDado que estamos haciendo un ataque a un servidor remoto desde nuestra máquina local, no nos servirá de mucho correr \texttt{/bin/bash} en el servidor vulnerable, ya que será ejecutado de forma local y no podremos tener el control sobre esta shell desde nuestro lado. Una de las técnicas más comúnes para lograr control sobre un servidor a través shell de forma remota es la Shell Reversa. En la Sección \ref{sec:guildelines} se explica como correr una shell reversa.
+Ud. deberá de modificar la cadena de comandos en el shellcode, para poder obtener una shell reversa en el servidor vulnerable.
+Por favor incluya las explicaciones pertinentes junto con los screenshots de este procedimiento en el informe del laboratorio.
 
 
 
@@ -378,12 +354,9 @@ Please include screenshots and explanation in your lab report.
 % *******************************************
 \section{Tarea 5: Atacando el Programa de 64-bits}
 
-In the previous tasks, our target servers are 32-bit
-programs. In this task, we switch to a 64-bit server
-program.  Our new target is \texttt{10.9.0.6}, which
-runs the 64-bit version of the \texttt{format} program.
-Let's first send a hello message to this server.
-We will see the following messages printed out by the target container.
+En las tareas anteriores, nuestro servidor vulnerable corre un programa de 32-bits. En esta tarea, pasaremos nuestro programa \texttt{format} de 64-bits ubicado en el contenedor servidor cuya IP es \texttt{10.9.0.6}.
+Enviaremos un mensaje de hello hacia este servidor.
+Podremos observa los siguientes mensajes que son impresos dentro del contenedor que corre el servidor.
 
 
 \begin{lstlisting}
@@ -404,58 +377,27 @@ server-10.9.0.6 | (^_^)(^_^)  Returned from printf()  (^_^)(^_^)
 server-10.9.0.6 | The target variable's value (after):  0x1122334455667788
 \end{lstlisting}
  
-
-You can see the values of the frame pointer and buffer's address
-become 8 bytes long (instead of 4 bytes in 32-bit programs).
-Your job is to construct your payload to exploit the format-string 
-vulnerability of the server.
-You ultimate goal is to get a root shell on
-the target server. You need to use the 64-bit version of the shellcode.
+Puede observar que los valores del frame pointer y la dirección del buffer son de 8 bytes de longitud (en vez de 4 bytes como lo son en un programa de 32-bits).
+Su tarea es generar un payload para explotar la vulnerabilidad de format string en el servidor.
+Su objetivo final es obtener una shell de root en el servidor vulnerable. Necesita usar la versión de 64-bits del shellcode.
 
 
 \paragraph{Desafíos en las direcciones de 64-bits.}
-A challenge caused by the x64 architecture is the zeros in the address.
-Although the x64 architecture
-supports 64-bit address space, only the address from
-\texttt{0x00} through \texttt{0x00007FFFFFFFFFFF} is allowed. That means for
-every address (8 bytes), the highest two bytes are always zeros.
-This causes a problem.
+Un desafío que existe en la arquitectura x64 son los ceros en las direcciones de memoria. Aunque la arquitectura x64 soporta un espacio de direcciones de 64-bits, sólo se permite el acceso a las direcciones de  \texttt{0x00} hasta \texttt{0x00007FFFFFFFFFFF}. Esto significa que para cada dirección de 8 bytes, los dos bytes más significativos serán ceros.
+Esto ocasiona problemas.
 
-In the attack, we need to place addresses inside the format string. For
-32-bit programs, we can put the addresses anywhere, because there
-are no zeros inside the address. We can no longer do this
-for the 64-bit programs. If you put an address in the middle of
-your format string, when \texttt{printf()} parses the
-format string, it will stop the parsing when it sees a zero. Basically,
-anything after the first zero in a format string will not
-be considered as part of the format string.
+En el ataque, necesitamos ubicar la dirección de memoria dentro de la cadena de formato. Para un programa de 32-bits, podemos poner esa dirección en cualquier lado porque no esta dirección no contiene ceros. Para los programas de 64-bits esto ya no es posible. Si ud. pone una dirección en el medio de una cadena de formato al momento que \texttt{printf()} parsea la cadena, se detendrá al detectar un cero. Básicamente todo lo que venga después de ese cero no será considerado parte de la cadena de formato.
 
-The problem caused by zeros is different from that
-in the buffer overflow attack, in which,
-zeros will terminate the memory copy if \texttt{strpcy()} is used. 
-Here, we do not have memory copy in the program, 
-so we can have zeros in our input, but where to put them
-is critical. 
-There are many ways to solve this problem, and 
-we leave this to students. In the lab report, students
-should explain how they have solved this problem. 
+Este problema ocasionado por los ceros difiere del problema de los ceros en un ataque de buffer ooverflow, en el cual los ceros detendrán la copia en memoria realizada por la función \texttt{strpcy()}.
+Aquí no estamos copiando en la memoria del programa, por lo que podemos tener ceros en nuestro input, lo crítico es donde son puestos.
+Existen muchas formas de resolver este problema y se deja esta resolución como tarea para los estudiantes. En el informe del laboratorio, los estudiantes deben explicar como han resuelto este problema.
 
 
 \paragraph{Una técnica útil: mover libremente el puntero de los argumentos.}
-In a format string, we can use \texttt{\%x} to move the
-argument pointer \texttt{va\_list} to the next optional arguments.
-We can also directly move the pointer to the \texttt{k}-th optional argument.
-This is done using the format string's parameter field (in the form of
-\texttt{k\$}).
-The following code example uses \texttt{"\%3\$.20x"} to print out the value of the
-3rd optional argument (number 3), and then uses \texttt{"\%6\$n"} to write
-a value to the 6th optional argument (the variable \texttt{var}, its
-value will become \texttt{20}). Finally,
-using \texttt{\%2\$.10x}, it moves the pointer back to the 2nd
-optional argument (number 2), and print it out. You can see,
-using this method, we can move the pointer freely back and forth.
-This technique can be quite useful to simplify the construction
-of the format string in this task.
+En una cadena de formato, podemos usar \texttt{\%x} para mover el puntero de argumentos \texttt{va\_list} al siguiente argumento opcional.
+También podemos mover directamente el puntero a la posición \texttt{k}-th de los argumentos opcionales esto se logra usando el parametro del formato de cadena (de la siguiente forma \texttt{k\$}).
+El código que se muestra a continuación usa \texttt{"\%3\$.20x"} para mostrar el valor del tercer argumento opcional y después usa \texttt{"\%6\$n"} para escribir un valor en el sexto argumento opcional (el valor de la variable \texttt{var} tendrá el valor de \texttt{20}). Finalmente usando \texttt{\%2\$.10x}, movera el puntero al segundo argumento opcional y lo mostrará en pantalla. Puede observar que usando esta técnica, podemos mover libremente el puntero de un lado a otro.
+Esta técnica puede ser útil para simplificar la construcción de la cadena de formato para esta tarea.
 
 \begin{lstlisting}
 #include <stdio.h>
