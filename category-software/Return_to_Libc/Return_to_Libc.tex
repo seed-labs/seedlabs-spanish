@@ -76,7 +76,7 @@ Para más detalles vea la Sección \ref{sec:vulnerable_program}.
 \subsection{Nota sobre las arquitecturas x86 y x64}
 
 El ataque de return-to-libc es mucho más difícil de realizar usando la arquitectura x64 (64-bits) que usando la arquitectura x86 (32-bits).
-Aunque la Máquina Virtual Ubuntu 20.04 de SEED es de 64-bits, se decidió usar programas de 32-bits (la arquitectura x64 es compatible con x86, por lo que programas de 32-bits pueden correr sin problemas en máquinas de 64-bits). En un futuro haremos una versión para 64-bits de este laboratorio.
+Aunque la Máquina Virtual Ubuntu 20.04 de SEED es de 64-bits, se decidió usar programas de 32-bits (la arquitectura x64 es compatible con x86, por lo que programas de 32-bits pueden correr sin problemas en máquinas de 64-bits). En un futuro haremos una versión de este laboratorio para 64-bits.
 Para asegurarnos de estar trabajando con un programa de 32-bits, al momento de compilar nuestro programa con \texttt{gcc} usaremos el parámetro \texttt{-m32} que generará un archivo binario de 32-bits.
 
 
@@ -318,7 +318,7 @@ void main(){
 \end{lstlisting}
 
 Compile el código anterior dentro de un binario llamado \texttt{prtenv}. 
-Si el address randomization está desactivado, la dirección de memoria de la variable mostrada por \texttt{prtenv} deberá de coincidir por la que se muestra en el programa vulnerable \texttt{retlib}. Puede verificar ubicando el código mostrado anteriormente dentro de \texttt{retlib.c}. 
+Si el address randomization está desactivado, la dirección de memoria de la variable mostrada por \texttt{prtenv} deberá de coincidir con la que se muestra en el programa vulnerable \texttt{retlib}. Puede verificar ubicando el código mostrado anteriormente dentro de \texttt{retlib.c}. 
 Sin embargo tenga en cuenta que la longitud del nombre de programa hace la diferencia, es por eso que elejimos 6 caracteres para \texttt{prtenv} como para 
 \texttt{retlib}, ambos nombres deben de tener la misma longitud.
 
@@ -565,9 +565,7 @@ Ahora el control ha sido pasado a la función {\tt foo()}. Vamos a ver que suced
     mov  %ebp, %esp
     pop  %ebp
 \end{verbatim}
-La priemra instrucción libera el espacio alocado en el stack para la función; la segunda instrucción recupera el frame pointer que fue guardado anteriormente.
-The first statement releases the stack space allocated for the function; 
-the second statement recovers the previous frame pointer. 
+La primera instrucción libera el espacio alocado en el stack para la función; la segunda instrucción recupera el frame pointer que fue guardado anteriormente.
 El estado del stack en este punto es representado en la Figura  \ref{fig:enter_leave_foo}(e).
 
 \item \textbf{Línea 17: \texttt{ret}}: Esta instrucción simplemente hace un pop de la dirección de retorno del stack y realiza un salto a esta dirección. El estado del stack en este punto es representado en la Figura  \ref{fig:enter_leave_foo}(f).
