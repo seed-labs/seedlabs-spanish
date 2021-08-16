@@ -122,7 +122,7 @@ El programa anterior lee datos del standard input y pasa estos datos a la funci�
 La forma en como se pasan estos datos a la función \texttt{printf()} es poco segura y puede desembocar en una vulnerabilidad de format string.
 Explotaremos esta vulnerabilidad
 
-Este programa se ejecutará en un servidor con privilegios de root y su standard input será redirigida a través de una conexión TCP enttre el servidor y un usuario remoto, de esta forma el programa obtendra su input de entrada desde un usuario remoto. Si el usuario puede explotar esta vulnerabilidad, puede producir daños graves.
+Este programa se ejecutará en un servidor con privilegios de root y su standard input será redirigido a través de una conexión TCP enttre el servidor y un usuario remoto, de esta forma el programa obtendra su input de entrada desde un usuario remoto. Si el usuario puede explotar esta vulnerabilidad, puede producir daños graves.
 
 
 \paragraph{Compilación.} 
@@ -138,7 +138,7 @@ $ make
 $ make install
 \end{lstlisting}
 
-Durante la compilación, ud. verá un mensaje de warning. Este mensaje de warning es producido por una protección implementada en \texttt{gcc} para prevenir vulnerabilidades de format string. Podemos ignorarla por ahora.
+Durante la compilación, ud. verá un mensaje de warning. Este mensaje de warning es producido por una protección implementada en \texttt{gcc} para prevenir vulnerabilidades de format string. Por ahora podemos ignorarla.
 
 \begin{lstlisting}
 format.c: In function 'myprintf':
@@ -149,11 +149,11 @@ format.c:33:5: warning: format not a string literal and no format arguments
 \end{lstlisting}
 
 Vale aclarar que el programa necesita ser compilado usando el parámetro  \texttt{"-z execstack"}, que hace ejecutable al stack. Dado que el objetivo final de nuestro ataque es inyectar código dentro del stack del programa vulnerable y ejecutarlo posteriormente.
-La protección de Non-executable stack permite prevenir que se ejecute en código en el stack pero puede ser evadida usando la técnica de return-to-libc, la cual es cubierta en otro laboratorio de SEED. Por un tema de simplicidad, desactivaremos esta protección en este laboratorio.
+La protección de Non-executable stack permite prevenir que se ejecute en código en el stack pero puede ser evadida usando la técnica de return-to-libc, la cual es cubierta en otro laboratorio de SEED. Por un tema de simplicidad, para este laboratorio. desactivaremos esta protección.
 
 
 \paragraph{Para los instructores.} 
-Para hacer el laboratorio un poco diferente al ofrecido en el apsado, los instructores pueden cambiar el valor de \texttt{BUF\_SIZE} pidiendo a los estudiantes que compillen el códigoo del servidor usando un valor diferente en \texttt{BUF\_SIZE}.
+Para hacer el laboratorio un poco diferente al ofrecido en el pasado, los instructores pueden cambiar el valor de \texttt{BUF\_SIZE} pidiendo a los estudiantes que compillen el códigoo del servidor usando un valor diferente en \texttt{BUF\_SIZE}.
 El valor \texttt{BUF\_SIZE} es seteado por la variable \texttt{L} y esta parametrización se realiza en el archivoo \texttt{Makefile}. Los instructores deberán de elegir un valor para esta variable basado en la sugerencia descripta en el código del archivo \texttt{format.c}.
 
 
@@ -162,7 +162,7 @@ Dentro del directorio \texttt{server-code}, encontrará un archivo llamado \text
 Este es el punto de entrada principal del servidor, este programa estará a la escucha en el puerto \texttt{9090}. 
 Cuando este programa recibe una conexión TCP, ejecutará el programa \texttt{stack} y establecerá esta conexión como el standard input del programa \texttt{format}. De esta manera cuando \texttt{stack} lea los datos de su \texttt{stdin}, estará leyendo los datos que llegan de la conexión TCP (es decir los datos enviados por el usuario remoto). No es necesario que los estudiantes entiendan por completo el código de \texttt{server.c}.
 
-Para que la dirección del buffer y su frame pointer no sean siempre los mismos para cada uno de los estudiantes que realizan el laboratorio, hemos agregado un poco de aleatoriedad al programa vulnerable. Estos valores cambiarán cada vez que se el contenedor se reinicie, mientras el contenedor este corriendo los valores permanecerán iguales. Esta aleatoriedad es solamente para hacer el trabajo de los estudiantes un tanto diferente y no debe confundirse con address-randomization.
+Para que la dirección del buffer y su frame pointer no sean siempre los mismos para cada uno de los estudiantes que realizan el laboratorio, hemos agregado un poco de aleatoriedad al programa vulnerable. Estos valores cambiarán cada vez que se el contenedor se reinicie, mientras el contenedor este corriendo los valores permanecerán iguales. Esta aleatoriedad es solamente para hacer el trabajo de los estudiantes un tanto diferente y no debe confundirse con el address randomization (ASLR).
 
 
 % -------------------------------------------
@@ -225,17 +225,17 @@ Dado que la mayoría de las cadenas de formatos construidas en este laboratorio 
 \section{Tarea 2: Mostrando la Memoria del Programa Servidor}
 
 El objetivo de esta tarea es hacer que el servidor imprima datos de su memoria (continuaremos usando el contenedor \texttt{10.9.0.5}).
-Los datos serán impresos del lado del servidor, por lo que el atacante no podrá verlos. Si bien este ataque no es tan significante, la técnica usada para ejecutar este ataque será esencial para ataques subsiguientes.
+Los datos serán impresos del lado del servidor, por lo que el atacante no podrá verlos. Si bien este ataque no es tan significante, la técnica usada para ejecutar este ataque será esencial para los ataques subsiguientes.
 
 
 \begin{itemize} 
 \item \textbf{Tarea 2.A: Datos del Stack.}
-El objeto será mostrar los datos en el stack.
+El objetivo será mostrar los datos en el stack.
 Cuantos especificadores de formato \texttt{\%x} necesita para que el programa servidor imprima los primeros cuatro bytes de su input? Puede poner cualquier número de 4 bytes, por lo que al ser impreso en pantalla, puede saberlo.
 Este número será importante para las tareas subsiguientes, asegúrese de hacerlo bien.
 
 \item \textbf{Tarea 2.B: Datos del Heap} 
-Existe un mensaje secreto (una cadena) guardada en el area del heap y puede encontrar ssu dirección de memoria del mensaje impreso en el contenedor.
+Existe un mensaje secreto (una cadena) guardada en el area del heap y puede encontrar su dirección de memoria del mensaje impreso en el contenedor.
 Su tarea es imprimir este mensaje secreto.
 Para lograr este objetivo, necesita ubicar la dirección de memoria (de forma binaria) del mensaje secreto en la cadena de formato.
 
@@ -259,13 +259,13 @@ content[0:4]  =  (number).to_bytes(4,byteorder='little')
 % *******************************************
 \section{Tarea 3: Modificando la Memoria del Programa Servidor}
 
-El objetivo de esta tarea es moodificar el valor de la variable \texttt{target} que está declarada en nuestro programa servidor (continuaremos usando \texttt{10.9.0.5}).
+El objetivo de esta tarea es modificar el valor de la variable \texttt{target} que está declarada en nuestro programa servidor (continuaremos usando \texttt{10.9.0.5}).
 El valor original de \texttt{target} es \texttt{0x11223344}. 
-Asuiendo que esta variable contiene un valor de importancia y que puede afecta el flujo de control del programa. Si un atacante remoto puede cambiar el valor de esta variable también puede cambiar el comportamiento del programa. Tenemos tres sub-tareas.
+Asumiendo que esta variable contiene un valor de importancia y que puede afectar el flujo de control del programa. Si un atacante remoto puede cambiar el valor de esta variable también puede cambiar el comportamiento del programa. Tenemos tres sub-tareas.
 
 \begin{itemize} 
 \item \textbf{Tarea 3.A: Cambiar el valor a cualquier otro valor.}
-En esta sub-tarea, necesitamoss cambiar el contenido de la variable \texttt{target} a otro valor cualquiera. Su tarea será considerada como exitosa si puede cambiarlo a un valor cualquiera, sin importar cual sea ese valor. La dirección de la variable \texttt{target} puede ser vista en los mensajes impresos en el contenedor del servidor.
+En esta sub-tarea, necesitamos cambiar el contenido de la variable \texttt{target} a otro valor cualquiera. Su tarea será considerada como exitosa si puede cambiarlo a un valor cualquiera, sin importar cual sea ese valor. La dirección de la variable \texttt{target} puede ser vista en los mensajes impresos en el contenedor del servidor.
 
 
 \item \textbf{Tarea 3.B: Cambiar el valor a \texttt{0x5000}.}  
@@ -285,8 +285,8 @@ Para más detalles sobre esto puede consultar el libro de SEED.
 % *******************************************
 \section{Tarea 4: Inyectar Código Malicioso dentro del Programa Servidor}
 
-Estamos listos para ir por las joyas de la corona del ataque, inyección de código.
-Vamos a inyectar un fragmento de código malicioso en formato binario, dentro de la memoria del programa servidor y usar la vulnerabilidad de format string para modificar la dirección de retorno de una función, por lo que que haremos retornar a nuestro código malicioso.
+Estamos listos para ir por las joyas de la corona del ataque, la inyección de código.
+Vamos a inyectar un fragmento de código malicioso en formato binario, dentro de la memoria del programa servidor y usar la vulnerabilidad de format string para modificar la dirección de retorno de una función, y la haremos retornar a nuestro código malicioso.
 
 La técnica usada para esta tarea es similar a la usada en las tareas anteriores:
 Ambas modifican en memoria un número de 4 bytes. En la tarea anterior se modificó la variable \texttt{target}, mientras que en esta modificaremos la dirección de retorno de una función. Los estudiantes necesitarán descubrir la dirección de memoria de la dirección de retorno de la función basado en la información impresa en pantalla dentro del contenedor del servidor.
@@ -307,7 +307,7 @@ dentro de la función \texttt{myprintf()}}
 \label{format:fig:stacklayout}
 \end{figure}
 
-Para poder lograr esta tarea, es essencial entender el stack layout cuando se invoca a la función \texttt{printf()} dentro de la función \texttt{myprintf()}.
+Para poder lograr esta tarea, es esencial entender el stack layout cuando se invoca a la función \texttt{printf()} dentro de la función \texttt{myprintf()}.
 La Figura \ref{format:fig:stacklayout} describe el stack layout.
 Intencionalmente se insertó un dummy stack frame entre las funciones \texttt{main} y \texttt{myprintf} pero no se muestra en la figura. Antes de empezar a trabajar en esta tarea, los estudiantes necesitan responder las siguientes preguntas (por favor incluya las respuestas en el informe de laboratorio):
 
