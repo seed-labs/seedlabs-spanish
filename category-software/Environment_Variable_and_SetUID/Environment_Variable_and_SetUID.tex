@@ -1,0 +1,601 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%  Copyright by Wenliang Du.                                       %%
+%%  This work is licensed under the Creative Commons                %%
+%%  Attribution-NonCommercial-ShareAlike 4.0 International License. %%
+%%  To view a copy of this license, visit                           %%
+%%  http://creativecommons.org/licenses/by-nc-sa/4.0/.              %%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\newcommand{\commonfolder}{../../common-files}
+
+\input{\commonfolder/header}
+\input{\commonfolder/copyright}
+
+
+\lhead{\bfseries SEED Labs -- Laboratorio de Variables de Entorno y Programas \setuid }
+
+
+\begin{document}
+
+
+\begin{center}
+{\LARGE Laboratorio de Variables de Entorno y Programas \setuid }
+\end{center}
+
+\seedlabcopyright{2006 - 2016}
+
+
+% *******************************************
+% SECTION
+% *******************************************
+\section{Descripción General}
+
+El objetivo de este laboratorio es que los estudiantes entiendan como las variables de entorno afectan el comportamiento de un programa y el del sistema. Las variables de entornos son un conjunto de valores dinámicos con un nombre que pueden afectar la forma en que se comportan los procesos que se encuentran corriendo. Son usadas por la mayoría de los sistemas operativos, desde su introducción en Unix en 1979. Aunque las variables de entorno tienen estos impactos en los programas, muchas veces no son del todo comprendidas por los programadores. Por lo tanto si estas variables son usadas y el programador no sabe que estan siendo usadas, el programa puede tener potenciales vulnerabilidades.
+
+En este laboratorio, los estudiantes entenderán como funcionan las variables de entorno, como son propagadas desde un proceso padre a un proceso hijo y como esto afecta al comportamiento de los programas y al sistema. Nos centraremos particularmente en programas \setuid, los programas \setuid usualmente son programas privilegiados.
+
+Este laboratorio cubre los siguientes tópicos:
+
+\begin{itemize}[noitemsep]
+\item Variables de Entorno
+\item Programas \setuid
+\item Invocar de forma segura programas externos
+\item Fugas/Leaking
+\item Carga/Linkeo Dinámico
+\end{itemize}
+
+
+\paragraph{Lecturas y Videos.}
+Para una cobertura más detallada sobre el mecanismo \setuid, variables de entorno y sus problemas de seguriad puede consultar:
+
+\begin{itemize}
+\item Capítulos 1 y 2 del libro de SEED, \seedbook
+\item Sección 2 del curso de SEED en Udemy, \seedcsvideo
+\end{itemize}
+
+\paragraph{Entorno de Laboratorio.} \seedenvironmentC
+
+
+
+
+
+% *******************************************
+% SECTION
+% *******************************************
+\section{Tareas del Laborattorio}
+
+Los archivos necesarios para este laboratorio están incluídos en \texttt{Labsetup.zip}, este archivo puede ser descargado del sitio oficial del laboratorio.
+
+
+% -------------------------------------------
+% SUBSECTION
+% -------------------------------------------
+\subsection{Tarea 1: Manipulando Variables de Entorno}
+
+En esta tarea, estudiaremos los comandoos que pueden ser usados para setear y borrar variables de entorno. Usaremos Bash en la cuenta de seed. La shell por defecto que tiene este usuario esta configurada en el archivo {\tt /etc/passwd}. Puede usar otra shell usando el comando {\tt chsh} (por favor no lo haga para este laboratorio). Por favor realize las siguientes tareas:
+
+\begin{itemize}
+\item  Use el comando {\tt printenv} o {\tt env} para imprimir en pantalla las variables de entorno. Si está interesado en alguna en particular, comoo {\tt PWD}, puede usar  {\tt "printenv PWD"} o  {\tt "env | grep PWD"}.
+
+\item Use {\tt export} y {\tt unset} para setear o borrar variables de entorno. Estos comandos, son comandos internos de la shell Bash por lo que no estarán disponibles si usa otro tipo de shell.
+\end{itemize}
+
+
+% -------------------------------------------
+% SUBSECTION
+% -------------------------------------------
+\subsection{Tarea 2: Pasando Variables de Entorno de un Proceso Padre a un Proceso Hijo}
+
+En esta tarea, estudiaremos como un proceso hijo recive las variables de entorno desde su proceso padre. En Unix existe una llamada al sistema llamada {\tt fork()} que se encarga de crear nuevos procesos. El nuevo proceso, conocido como proceso hijo es una copia exacta del proceso que invoca a la llamada al sistema  {\tt fork()} este proceso invocador es conocido como el proceso padre; aunque el proceso hijo sea una copia exacta del proceso padre, hay muchas cosas que no son heredadas por el hijo (para más información sobre esto consulte el manual de  {\tt fork()} tipeando el siguiente comando: {\tt man fork}). En esta tarea, queremos saber como si variables de entorno del padre son heredadas por el hijo o no.
+
+
+\paragraph{Paso 1.} Por favor compile el programa, corralo y describa sus observaciones. El programa esta dentro del directorio  \texttt{Labsetup}; puede ser compilado usando el comando \texttt{"gcc myprintenv.c"}, el cual generará un binario llamado \texttt{a.out}. Ejecutelo y salve su salida en un archivo usando 
+\texttt{"a.out > archivo"}.
+
+\begin{lstlisting}[language=C, caption={\texttt{myprintenv.c}}]
+#include <unistd.h>
+#include <stdio.h>
+#include <stdlib.h>
+
+extern char **environ;
+void printenv()
+{
+  int i = 0;
+  while (environ[i] != NULL) {
+     printf("%s\n", environ[i]);
+     i++;
+  }
+}
+
+void main()
+{
+  pid_t childPid;
+  switch(childPid = fork()) {
+    case 0:  /* child process */
+      printenv();          (*@\ding{192}@*)
+      exit(0);
+    default:  /* parent process */
+      //printenv();        (*@\ding{193}@*)
+      exit(0);
+  }
+}
+\end{lstlisting}
+
+\paragraph{Paso 2.} Comente {\tt printenv()} en el case del proceso hijo (Línea \ding{192}), descomente {\tt printenv()} en el case del proceso padre (Línea \ding{193}). Compile y corra el programa nuevamente y describa sus observaciones. Salve la salida del programa en otro archivo.
+
+
+\paragraph{Paso 3.} Compare la diferencia de los dos archivos usando el comando 
+ {\tt diff}. Explique sus conclusiones.
+
+
+
+% -------------------------------------------
+% SUBSECTION
+% -------------------------------------------
+\subsection{Tarea 3: Variables de Entorno y {\tt execve()}}
+
+In this task, we study how environment variables are affected
+when a new program is
+executed via {\tt execve()}. The
+function {\tt execve()} calls a system call to load
+a new command and execute it; this function never returns.
+No new process is created; instead, the calling
+process's text,  data, bss, and stack  are overwritten by that of
+the program loaded. Essentially, {\tt execve()} runs the new program inside
+the calling process. We are interested in what happens to the
+environment variables; are they automatically inherited by the
+new program?
+
+
+\paragraph{Step 1.} Please compile and run the following
+program, and describe your observation. This program simply executes
+a program called \texttt{/usr/bin/env}, which prints out the environment
+variables of the current process.
+
+\begin{lstlisting}[language=C, caption=\texttt{myenv.c}]
+#include <unistd.h>
+
+extern char **environ;
+int main()
+{
+  char *argv[2];
+
+  argv[0] = "/usr/bin/env";
+  argv[1] = NULL;
+  execve("/usr/bin/env", argv, NULL);    (*@\ding{192}@*)
+
+  return 0 ;
+}
+\end{lstlisting}
+
+
+\paragraph{Step 2.} Change the invocation of {\tt execve()}
+in Line \ding{192} to the following; describe your observation.
+
+\begin{lstlisting}[language=C]
+execve("/usr/bin/env", argv, environ);
+\end{lstlisting}
+
+
+\paragraph{Step 3.} Please draw your conclusion regarding how the new
+program gets its environment variables.
+
+
+
+% -------------------------------------------
+% SUBSECTION
+% -------------------------------------------
+\subsection{Tarea 4: Variables de entorno y {\tt system()}}
+
+In this task, we study how environment variables are affected
+when a new program is executed via the {\tt system()} function. This
+function is used to execute a command, but unlike
+{\tt execve()}, which directly executes a command, {\tt system()}
+actually executes \texttt{"/bin/sh -c command"}, i.e., it
+executes {\tt /bin/sh}, and asks the shell to execute the command.
+
+If you look at the implementation of the {\tt system()} function, you will
+see that it uses {\tt execl()} to execute {\tt /bin/sh}; {\tt execl()}
+calls {\tt execve()}, passing to it the environment variables array.
+Therefore, using {\tt system()}, the environment variables of the calling process
+is passed to the new program {\tt /bin/sh}. Please compile and run the following program
+to verify this.
+
+
+\begin{lstlisting}[language=C]
+#include <stdio.h>
+#include <stdlib.h>
+
+int main()
+{
+  system("/usr/bin/env");
+  return 0 ;
+}
+\end{lstlisting}
+
+
+
+% -------------------------------------------
+% SUBSECTION
+% -------------------------------------------
+\subsection{Tarea 5: Variables de Entorno y Programas \setuid }
+
+{\tt Set-UID} is an important security mechanism in Unix operating systems.
+When a \setuid program runs, it assumes the owner's privileges. For
+example, if the program's owner is root, when anyone runs this
+program, the program gains the root's privileges during its execution. 
+{\tt Set-UID} allows us to do many interesting things, but since 
+it escalates the user's privilege, it is quite risky. Although the
+behaviors of \setuid programs are decided by their program logic, not by
+users, users can indeed affect the behaviors via environment variables.
+To understand how \setuid programs are affected, let us first figure out
+whether environment variables are inherited by the \setuid program's
+process from the user's process.
+
+
+\paragraph{Step 1.} Write the following program that can print out all
+the environment variables in the current process.
+
+\begin{lstlisting}[language=C]
+#include <stdio.h>
+#include <stdlib.h>
+
+extern char **environ;
+int main()
+{
+  int i = 0;
+  while (environ[i] != NULL) {
+    printf("%s\n", environ[i]);
+    i++;
+  }
+}
+\end{lstlisting}
+
+
+\paragraph{Step 2.} Compile the above program, change its ownership to {\tt
+root}, and make it a \setuid program.
+
+\begin{lstlisting}
+// Asssume the program's name is foo
+$ sudo chown root foo
+$ sudo chmod 4755 foo
+\end{lstlisting}
+
+
+
+\paragraph{Step 3.} In your shell (you need to be in a normal user account,
+not the {\tt root} account), use the {\tt export} command to set the
+following environment variables (they may have already exist):
+
+\begin{itemize}[noitemsep]
+\item {\tt PATH}
+\item {\tt LD\_LIBRARY\_PATH}
+\item {\tt ANY\_NAME} (this is an environment variable defined by you, so
+pick whatever name you want).
+\end{itemize}
+
+
+These environment variables are set in the user's shell process.
+Now, run the \setuid program from Step 2 in your shell. After you type the
+name of the program in your shell, the shell forks a child process,
+and uses the child process to run the program. Please check whether all the
+environment variables you set in the shell process (parent) get into
+the \setuid child process.  Describe your observation. If there are
+surprises to you, describe them.
+
+
+
+% -------------------------------------------
+% SUBSECTION
+% -------------------------------------------
+\subsection{Tarea 6: La Variable de Entorno PATH y Programas \setuid }
+
+Because of the shell program invoked, calling {\tt system()}
+within a \setuid program is quite dangerous. This is because the actual behavior of the
+shell program can be affected by environment variables, such
+as {\tt PATH}; these environment variables are provided by the user, who
+may be malicious.  By changing these variables, malicious users can control
+the behavior of the {\tt Set-UID} program. In {\tt Bash}, you can
+change the {\tt PATH} environment variable in the following way (this example
+adds the directory {\tt /home/seed} to the beginning of the {\tt PATH} environment variable):
+
+
+\begin{lstlisting}
+$ export PATH=/home/seed:$PATH
+\end{lstlisting}
+
+
+
+The \setuid program below is supposed to execute the {\tt /bin/ls} command;
+however, the programmer only uses the relative path for the {\tt ls}
+command, rather than the absolute path:
+
+\begin{lstlisting}[language=C]
+int main()
+{
+  system("ls");
+  return 0;
+}
+\end{lstlisting}
+
+Please compile the above program, change its owner to {\tt root}, and
+make it a \setuid program.  Can you get this \setuid program to
+run your own malicious code, instead of
+{\tt /bin/ls}?  If you can, is your malicious code running with the root privilege?
+Describe and explain your observations. \\
+
+
+\paragraph{Note:}
+The \texttt{system(cmd)} function executes the \texttt{/bin/sh} program first, and then
+asks this shell program to run the \texttt{cmd} command.
+In Ubuntu 20.04 (and several versions before), \texttt{/bin/sh} is actually
+a symbolic link pointing to \texttt{/bin/dash}.
+This shell program has a countermeasure that prevents itself
+from being executed in a \setuid process.  Basically, if \texttt{dash} detects that it is
+executed in a \setuid process, it immediately changes the effective user ID to the process's
+real user ID, essentially dropping the privilege.
+
+
+Since our victim program is a \setuid program,
+the countermeasure in \texttt{/bin/dash} can prevent our attack.
+To see how our attack works without such a countermeasure,
+we will link \texttt{/bin/sh} to another shell that does not
+have such a countermeasure.  We have installed a shell program
+called \texttt{zsh} in our Ubuntu 20.04 VM. We use the following
+commands to link \texttt{/bin/sh} to \texttt{/bin/zsh}:
+
+\begin{lstlisting}
+$ sudo ln -sf /bin/zsh /bin/sh
+\end{lstlisting}
+
+
+
+
+% -------------------------------------------
+% SUBSECTION
+% -------------------------------------------
+\subsection{Task 7: The {\tt LD\_PRELOAD} Environment
+Variable and \setuid Programs}
+
+
+In this task, we study how \setuid programs deal
+with some of the environment variables.
+Several environment variables, including {\tt LD\_PRELOAD},
+{\tt LD\_LIBRARY\_PATH}, and other {\tt LD\_*} influence the
+behavior of dynamic loader/linker.
+A dynamic loader/linker is the part of an operating system (OS) that
+loads (from persistent storage to RAM) and links the shared libraries
+needed by an executable at run time.
+
+In Linux, {\tt ld.so} or {\tt ld-linux.so}, are the dynamic
+loader/linker (each for different types of binary).
+Among the environment variables that affect their behaviors,
+{\tt LD\_LIBRARY\_PATH} and {\tt LD\_PRELOAD} are the two
+that we are concerned in this lab.
+In Linux, {\tt LD\_LIBRARY\_PATH} is a colon-separated set
+of directories where libraries should be searched for first, before the
+standard set of directories.
+{\tt LD\_PRELOAD} specifies a list of additional, user-specified, shared libraries to
+be loaded before all others. In this task, we will only
+study {\tt LD\_PRELOAD}.
+
+
+\paragraph{Step 1.}
+First, we will see how these environment variables influence the
+behavior of dynamic loader/linker when running a normal program.
+Please follow these steps:
+
+
+\begin{enumerate}
+  \item Let us build a dynamic link library. Create the following program,
+  and name it {\tt mylib.c}. It basically overrides the {\tt sleep()} function
+  in {\tt libc}:
+\begin{lstlisting}[language=C]
+#include <stdio.h>
+void sleep (int s)
+{
+  /* If this is invoked by a privileged program,
+     you can do damages here!  */
+  printf("I am not sleeping!\n");
+}
+\end{lstlisting}
+
+  \item We can compile the above program using the following commands (in the
+  {\tt -lc} argument, the second character is $\ell$):
+\begin{lstlisting}
+$ gcc -fPIC -g -c mylib.c
+$ gcc -shared -o libmylib.so.1.0.1 mylib.o -lc
+\end{lstlisting}
+
+
+
+  \item Now, set the {\tt LD\_PRELOAD} environment variable:
+\begin{lstlisting}
+$ export LD_PRELOAD=./libmylib.so.1.0.1
+\end{lstlisting}
+
+  \item Finally, compile the following program {\tt myprog}, and
+  in the same directory as the above dynamic link library {\tt
+  libmylib.so.1.0.1}:
+\begin{lstlisting}[language=C]
+/* myprog.c */
+#include <unistd.h>
+int main()
+{
+  sleep(1);
+  return 0;
+}
+\end{lstlisting}
+\end{enumerate}
+
+
+\paragraph{Step 2.}
+After you have done the above, please run {\tt myprog} under the following
+conditions, and observe what happens.
+
+  \begin{itemize}
+  \item Make {\tt myprog} a regular program, and run it as a normal user.
+  \item Make {\tt myprog} a \setuid root program, and run it as a normal user.
+  \item Make {\tt myprog} a \setuid root program, export the {\tt LD\_PRELOAD}
+  environment variable again in the root account and run it.
+
+  \item Make {\tt myprog} a \setuid user1 program (i.e., the owner is user1, which
+        is another user account), export the {\tt LD\_PRELOAD} environment variable
+	again in a different user's account (not-root user) and run it.
+  \end{itemize}
+
+
+\paragraph{Step 3.}
+You should be able to observe different behaviors in the scenarios
+described above, even though you are running the same program.  You need
+to figure out what causes the difference. Environment variables
+play a role here. Please design an experiment to figure out the
+main causes, and explain why the behaviors in Step 2 are
+different. (Hint: the child process
+may not inherit the {\tt LD\_*} environment variables).
+
+
+
+\subsection{Task 8: Invoking External Programs Using {\tt system()} versus {\tt execve()}}
+
+Although {\tt system()} and {\tt execve()} can both be used to run new
+programs, {\tt system()} is quite dangerous if used in a privileged
+program, such as \setuid programs. We have seen how the PATH environment
+variable affect the behavior of {\tt system()}, because the variable
+affects how the shell works. {\tt execve()} does not have the problem,
+because it does not invoke shell. Invoking shell has another dangerous
+consequence, and this time, it has nothing to do with environment
+variables.  Let us look at the following scenario.
+
+
+Bob works for an auditing agency, and he needs to investigate a company for a suspected
+fraud. For the investigation purpose, Bob needs to be able to read
+all the files in the
+company's \unix system; on the other hand, to protect the integrity of the system,
+Bob should not be able to modify any file.
+To achieve this goal, Vince, the superuser of the system,
+wrote a special set-root-uid program (see
+below), and then gave the executable permission to Bob. This program requires
+Bob to type a file name at the command line, and then it will
+run {\tt /bin/cat} to display the specified file. Since the program is running
+as a root, it can display any file Bob specifies. However, since the program
+has no write operations, Vince is very sure that Bob cannot use this special program
+to modify any file.
+
+\begin{lstlisting}[language=C, caption=\texttt{catall.c}]
+int main(int argc, char *argv[])
+{
+  char *v[3];
+  char *command;
+
+  if(argc < 2) {
+    printf("Please type a file name.\n");
+    return 1;
+  }
+
+  v[0] = "/bin/cat"; v[1] = argv[1]; v[2] = NULL;
+  command = malloc(strlen(v[0]) + strlen(v[1]) + 2);
+  sprintf(command, "%s %s", v[0], v[1]);
+
+  // Use only one of the followings.
+  system(command);
+  // execve(v[0], v, NULL);
+
+  return 0 ;
+}
+\end{lstlisting}
+
+
+\paragraph{Step 1:} Compile the above program, make it a root-owned
+\setuid program. The program will use
+{\tt system()} to invoke the command.
+If you were Bob, can you compromise the integrity of the system? For example,
+can you remove a file that is not writable to you?
+
+
+\paragraph{Step 2:} Comment out the {\tt system(command)} statement, and
+uncomment the {\tt execve()} statement; the program
+will use {\tt execve()} to invoke the command. Compile the program, and
+make it a root-owned \setuid.
+Do your attacks in Step 1 still work? Please describe and explain your observations.
+
+
+
+% -------------------------------------------
+% SUBSECTION
+% -------------------------------------------
+\subsection{Task 9: Capability Leaking}
+
+To follow the Principle of Least Privilege, \setuid programs often
+permanently relinquish their root privileges if such privileges are not
+needed anymore. Moreover, sometimes, the program needs to hand over its
+control to the user; in this case, root privileges must be revoked.
+The {\tt setuid()} system call can be used to revoke the privileges.
+According to the manual, ``\texttt{setuid()} sets the effective user ID of
+the calling process. If the effective UID of the caller is root, the real
+UID and saved set-user-ID are also set''. Therefore, if a \setuid program
+with effective UID 0 calls \texttt{setuid(n)}, the process will become a
+normal process, with all its UIDs being set to \texttt{n}.
+
+When revoking the privilege, one of the common mistakes is capability
+leaking. The process may have gained some privileged capabilities when it
+was still privileged; when the privilege is downgraded, if the program
+does not clean up those capabilities, they may still be accessible by the
+non-privileged process. In other words, although the effective user ID of
+the process becomes non-privileged, the process is still privileged because
+it possesses privileged capabilities.
+
+Compile the following program, change its owner to root, and
+make it a \setuid program. Run the program as a normal user.
+Can you exploit the capability leaking vulnerability in this program?
+The goal is to write to the {\tt /etc/zzz} file as a normal user.
+
+\begin{lstlisting}[language=C, caption=\texttt{cap\_leak.c}]
+void main()
+{
+  int fd;
+  char *v[2];
+
+  /* Assume that /etc/zzz is an important system file,
+   * and it is owned by root with permission 0644.
+   * Before running this program, you should create
+   * the file /etc/zzz first. */
+  fd = open("/etc/zzz", O_RDWR | O_APPEND);
+  if (fd == -1) {
+     printf("Cannot open /etc/zzz\n");
+     exit(0);
+  }
+
+  // Print out the file descriptor value
+  printf("fd is %d\n", fd);
+
+  // Permanently disable the privilege by making the
+  // effective uid the same as the real uid
+  setuid(getuid());
+
+  // Execute /bin/sh
+  v[0] = "/bin/sh"; v[1] = 0;
+  execve(v[0], v, 0);
+}
+\end{lstlisting}
+
+
+
+% *******************************************
+% SECTION
+% *******************************************
+\section{Informe del Laboratorio}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\input{\commonfolder/submission}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% *******************************************
+% SECTION
+% *******************************************
+\section*{Agradecimientos}
+
+\input{\commonfolder/acknowledgments}
+
+
+\end{document}
