@@ -14,13 +14,13 @@
 
 \newcommand{\cowFigs}{./Figs}
 
-\lhead{\bfseries SEED Labs -- Laboratorio de Dirty COW }
+\lhead{\bfseries SEED Labs -- Laboratorio del Ataque Dirty COW  }
 
 
 \begin{document}
 
 \begin{center}
-{\LARGE Laboratorio de Dirty COW }
+{\LARGE Laboratorio del Ataque Dirty COW }
 \end{center}
 
 \seedlabcopyright{2017}
@@ -32,7 +32,7 @@
 % ******************************************* 
 \section{Descripción General}
 
-Dirty COW es un caso interesante de una vulnerabilidad de race condition. Existe en el kernel de \linux desde Septiembre del 2007, fue descubierta y explotada en Octubre de 2016. 
+El Ataque de Dirty COW es un caso interesante de una vulnerabilidad de race condition. Existe en el kernel de \linux desde Septiembre del 2007, fue descubierta y explotada en Octubre de 2016. 
 Esta vulnerabilidad afecta a todos los sistemas operativos \linux-based incluyendo Android y su impacto en bastante grave: los atacantes pueden obtener privilegios de root explotando esta condición. Esta vulnerbilidad reside en el código dentro del kernel de \linux en el mecanismo de copy-on-write (COW). Explotando esta vulnerabilidad los atacantes pueden modificar cualquier archivo protegido incluso archivos que son de sólo lectura.
 
 El objetivo de este laboratorioo es que los estudiantes ganen experiencia en el ataque de la vulnerabilidad Dirty COW como así puedan entender la vulnerabilidad y su forma de explotarla. En estte laboratorio loos estudiantes explotarán esta condición de carrera y podrán obtener privilegios de root.
@@ -192,37 +192,23 @@ $ a.out
 
 \section{Tarea 2: Modificar el archivo de password para obtener privilegios de root} 
 
-Now, let's launch the attack on a real system file, so we can gain the root privilege.
-We choose the \texttt{/etc/passwd} file as our target file. This file
-is world-readable, but non-root users cannot modify it. The file contains
-the user account information, one record for each user.  Assume that our user name is
-\texttt{seed} . The following lines show the records for root and \texttt{seed}:
+Ahora, lanzaremos el ataque sobre un archivo real del sistema de esta forma podremos obtener privilegios de root.
+Hemos elegido el archivo \texttt{/etc/passwd} como archivo a atacar. Este archivo tiene permisos de lectura para todo el mundo, pero solamente el usuario root puede modificarlo. Este archivo contiene información sobre las cuentas de usuarios del sistema, un registro por usuario. Asuma que nuestro nombre de usuario es \texttt{seed}. Las siguientes líneas muestran los registros para el usuario root y el usuario \texttt{seed}:
 
 \begin{lstlisting}
 root:x:0:0:root:/root:/bin/bash
 seed:x:1000:1000:Seed,123,,:/home/seed:/bin/bash
 \end{lstlisting}
 
-Each of the above record contains seven colon-separated fields. Our interest is on the third
-field, which specifies the user ID~(UID) value assigned to a user. UID is the primary
-basis for access control in \linux, so this value is critical to security.
-The root user's UID field contains a special value 0; that is what makes it the superuser,
-not its name. Any user with UID \texttt{0} is treated by the system as root,
-regardless of what user name he or she has.
-The \texttt{seed} user's ID is only \texttt{1000}, so
-it does not have the root privilege. However, if we can change the value to
-\texttt{0}, we can turn it
-into root. We will exploit the Dirty COW vulnerability to achieve this goal.
+Cada registro del fragmento mostrado anteriormente, contiene siete campos separados por dos puntos. Nuestro interés se enfoca en el tercer campo que especifica el valor del user ID del usuario. El UID o user ID es el primer control básico de seguridad para el acceso en \linux, este valor es crítico en términos de seguridad.
+El usuario root contiene un UID especial cuyo valor es 0; eso es lo que lo hace superusuario, y no su nombre. Cualquier usuario con UID \texttt{0} es tratado por el sistema como un usuario root sin importar cual sea su nombre de usuario.
+El UID del usuario \texttt{seed} es \texttt{1000}, por lo que no tiene privilegios de root. Sin embargo si logramos cambiarlo a \texttt{0} podremos hacer que este usuario sea root. Para lograr esto explotaremos la vulnerabilidad de Dirty COW.
 
-In our experiment, we will not use the \texttt{seed} account, because this account is used
-for most of the experiments in this book; if we forget to change the UID back after the
-experiment, other experiments will be affected.  Instead, we create a new account called
-\texttt{charlie}, and we will turn this normal user into root using
-the Dirty COW attack.
-Adding a new account can be achieved using the \texttt{adduser} command.
-After the account is created, a new
-record will be added to \texttt{/etc/passwd}.  See
-the following:
+En nuestro experimento, no usaremos la cuenta \texttt{seed}, porque esta cuenta es usada en la mayoría de nuestros experimentos en el libro; si olvidamos cambiar el UID de esta cuenta al original después de este experimento, otros experimentos se verán afectados. En cambio hemos creado una nueva cuenta llamada \texttt{charlie} y haremos que esta cuenta de usuario normal gane privilegios de root a través de la explotación de la vulnerabiliad de Dirty COW.
+
+Puede agregar una nueva cuenta en el sistema usando el comando  \texttt{adduser}.
+Una vez que la cuenta haya sido agregada un nuevo registro se creará en el archivo  \texttt{/etc/passwd}, a continuación se detalla el procedimiento:
+
 
 \begin{lstlisting}
 $ sudo adduser charlie
@@ -231,23 +217,14 @@ $ cat /etc/passwd | grep charlie
 charlie:x:1001:1001:,,,:/home/charlie:/bin/bash
 \end{lstlisting}
 
-We suggest that you save a copy of the \texttt{/etc/passwd} file, just in case you 
-make a mistake and corrupt this file. An alternative is to take a snapshot of your VM before
-working on this lab, so you can always roll back if the VM got corrupted. 
+Sugerimos que haga una copia del archivo \texttt{/etc/passwd}, por si en medio del experimento surge algún problema y este archivo se corrompe. Otra alternativa es hacer un snapshot de la Máquina Virtual antes de empezar a trabajar en el laboratorio que sirva de backup.
 
 
+\paragraph{Tarea:} Debe modificar la entradda del usuario \texttt{charlie} en el archivo \texttt{/etc/passwd}, de forma tal que el tercer campo de la entrada cuyo valor es \texttt{1001} sea \texttt{0000}, de esta forma hará que el usuario charlie tenga privilegios de root.
+Este archivo no puede ser escrito por el usuario \texttt{charlie}, pero podemos usar el ataque de Dirty COW para escribir en el mismo. Puede modificar el programa 
+\texttt{cow\_attack.c} de la tarea 1 para lograr este objetivo.
 
-\paragraph{Tarea:} You need to modify the \texttt{charlie}'s entry in
-\texttt{/etc/passwd}, so the third field is changed from \texttt{1001} to 
-\texttt{0000}, essentially turning \texttt{charlie} into a root account. 
-The file is not writable to \texttt{charlie}, but we can use 
-the Dirty COW attack to write to this file. You can  
-modify the \texttt{cow\_attack.c} program from Task 1 to achieve 
-this goal. 
-
-After your attack is successful, if you switch user to \texttt{charlie}, you should be able to see the 
-\texttt{\#} sign at the shell prompt, which is an indicator of the root shell. If you 
-run the \texttt{id} command, you should be able to see that you have gained the root privilege. 
+Después que el ataque haya sido exitoso, debe de switchear al usuario  \texttt{charlie} y debería de ver el signo \texttt{\#} en la consola shell, lo que es indicador que es una shell de root. Si ud. ejecuta el comando \texttt{id}, debería de observar que obtuvo privilegios de root.
 
 \begin{lstlisting}
 seed@ubuntu$ su charlie
