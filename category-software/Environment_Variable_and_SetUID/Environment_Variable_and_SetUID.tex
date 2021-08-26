@@ -134,23 +134,10 @@ void main()
 % -------------------------------------------
 \subsection{Tarea 3: Variables de Entorno y {\tt execve()}}
 
-In this task, we study how environment variables are affected
-when a new program is
-executed via {\tt execve()}. The
-function {\tt execve()} calls a system call to load
-a new command and execute it; this function never returns.
-No new process is created; instead, the calling
-process's text,  data, bss, and stack  are overwritten by that of
-the program loaded. Essentially, {\tt execve()} runs the new program inside
-the calling process. We are interested in what happens to the
-environment variables; are they automatically inherited by the
-new program?
+En esta tarea, estudiaremos como las variables de entorno son afectadas cuando se ejecuta un nuevo programa a través de {\tt execve()}. La función {\tt execve()} realiza una llamada al sistema que carga un comando y lo ejecuta; esta función no retorna del llamado. No crea un nuevo proceso; en vez de eso, se llamada a la sección text del proceso, y las secciones data, bss y el stack son sobreescritas por ese programa que se carga. Esencialmente, {\tt execve()} corre un nuevo programa dentro del proceso que lo invoca. Estamos interesados en las variables de entorno; Son heredadas por el nuevo programa?
 
 
-\paragraph{Step 1.} Please compile and run the following
-program, and describe your observation. This program simply executes
-a program called \texttt{/usr/bin/env}, which prints out the environment
-variables of the current process.
+\paragraph{Paso 1.} Por favor compile y corra el siguiente programa, describa sus observaciones. Este programa ejecuta un programa llamado \texttt{/usr/bin/env}, que muestra las variables de entorno del proceso en curso.
 
 \begin{lstlisting}[language=C, caption=\texttt{myenv.c}]
 #include <unistd.h>
@@ -169,16 +156,15 @@ int main()
 \end{lstlisting}
 
 
-\paragraph{Step 2.} Change the invocation of {\tt execve()}
-in Line \ding{192} to the following; describe your observation.
+\paragraph{Paso 2.} Cambie la invocación a la función {\tt execve()} (Línea \ding{192}) con la siguiente declaración; describa sus observaciones.
+
 
 \begin{lstlisting}[language=C]
 execve("/usr/bin/env", argv, environ);
 \end{lstlisting}
 
 
-\paragraph{Step 3.} Please draw your conclusion regarding how the new
-program gets its environment variables.
+\paragraph{Paso 3.} Por favor explique como es que el nuevo programa obtiene sus variables de entorno.
 
 
 
@@ -187,19 +173,10 @@ program gets its environment variables.
 % -------------------------------------------
 \subsection{Tarea 4: Variables de entorno y {\tt system()}}
 
-In this task, we study how environment variables are affected
-when a new program is executed via the {\tt system()} function. This
-function is used to execute a command, but unlike
-{\tt execve()}, which directly executes a command, {\tt system()}
-actually executes \texttt{"/bin/sh -c command"}, i.e., it
-executes {\tt /bin/sh}, and asks the shell to execute the command.
+En esta tarea, estudiaremos como las variables de entorno son afectadas cuando se ejecuta un nuevo programa a través de la función {\tt system()}. Esta función se usa para ejecutar un comando pero a diferencia de {\tt execve()} que directamente ejecuta el comando, {\tt system()} ejecuta \texttt{"/bin/sh -c comando"} es decir ejecuta el comando  a través de la ejecución de {\tt /bin/sh}.
 
-If you look at the implementation of the {\tt system()} function, you will
-see that it uses {\tt execl()} to execute {\tt /bin/sh}; {\tt execl()}
-calls {\tt execve()}, passing to it the environment variables array.
-Therefore, using {\tt system()}, the environment variables of the calling process
-is passed to the new program {\tt /bin/sh}. Please compile and run the following program
-to verify this.
+Si observa la implementación de la función {\tt systte(()(}, podrá ver que usa {\tt execl()} para ejecutar {\tt /bin/sh}; {\tt execl()} llama a {\tt execve()}, pasándole un arreglo con las variables de entorno. 
+Ademas usando {\tt system()}, las variables de entorno son pasadas del proceso llamador al nuevo programa {\tt /bin/sh}. Por favor compile y corra el siguiente programa para verificarlo.
 
 
 \begin{lstlisting}[language=C]
