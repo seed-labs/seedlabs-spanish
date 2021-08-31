@@ -197,21 +197,13 @@ int main()
 % -------------------------------------------
 \subsection{Tarea 5: Variables de Entorno y Programas \setuid }
 
-{\tt Set-UID} is an important security mechanism in Unix operating systems.
-When a \setuid program runs, it assumes the owner's privileges. For
-example, if the program's owner is root, when anyone runs this
-program, the program gains the root's privileges during its execution. 
-{\tt Set-UID} allows us to do many interesting things, but since 
-it escalates the user's privilege, it is quite risky. Although the
-behaviors of \setuid programs are decided by their program logic, not by
-users, users can indeed affect the behaviors via environment variables.
-To understand how \setuid programs are affected, let us first figure out
-whether environment variables are inherited by the \setuid program's
-process from the user's process.
+El bit de {\tt Set-UID} es un mecanismo de seguridad importante dentro de los sistemas operativos basados en UNIX.
+Cuando se corre un programa con el bit \setuid activado, este asume que los privilegios del programa son los privilegios del dueño del archivoo. Por ejemplo, si el dueño del programa es el usuario root, cuando cualquier usuario corra este programa, el programa tendrá privilegios de root durante la ejecución del mismo.
+El bit de {\tt Set-UID} nos permite hace varias cosas interesantes, dado que usa los privilegios del usuario dueño para escalar, es algo peligroso. Sin embargo el comportamiento de un programa \setuid está determinado por la lógica del mismo no por los usuarios, los usuarios pueden afectar este comportamiento por medio de las variables de entorno.
+Para entender como los un programa \setuid se ve afectado por esto, vamos a ver como las variables de entorno son heredadas por los procesos de los programas \setuid desde el proceso que corre un usuario.
 
 
-\paragraph{Step 1.} Write the following program that can print out all
-the environment variables in the current process.
+\paragraph{Paso 1.} Escriba el siguiente programa y imprima toda las variables de entorno del proceso en ejecución
 
 \begin{lstlisting}[language=C]
 #include <stdio.h>
@@ -229,8 +221,8 @@ int main()
 \end{lstlisting}
 
 
-\paragraph{Step 2.} Compile the above program, change its ownership to {\tt
-root}, and make it a \setuid program.
+\paragraph{Paso 2.} Compile el siguiente programa y haga que el usuario {\tt
+root} sea el dueño del mismo y active el bit \setuid en el programa. 
 
 \begin{lstlisting}
 // Asssume the program's name is foo
@@ -240,25 +232,15 @@ $ sudo chmod 4755 foo
 
 
 
-\paragraph{Step 3.} In your shell (you need to be in a normal user account,
-not the {\tt root} account), use the {\tt export} command to set the
-following environment variables (they may have already exist):
+\paragraph{Paso 3.} Dentro de su shell como un usuario normal, use el comando {\tt export} para setear las siguientes variables de entorno (puede que estás ya existan).
 
 \begin{itemize}[noitemsep]
 \item {\tt PATH}
 \item {\tt LD\_LIBRARY\_PATH}
-\item {\tt ANY\_NAME} (this is an environment variable defined by you, so
-pick whatever name you want).
+\item {\tt ANY\_NAME} (Esta variable puede tener cualquier nombre definido por usted).
 \end{itemize}
 
-
-These environment variables are set in the user's shell process.
-Now, run the \setuid program from Step 2 in your shell. After you type the
-name of the program in your shell, the shell forks a child process,
-and uses the child process to run the program. Please check whether all the
-environment variables you set in the shell process (parent) get into
-the \setuid child process.  Describe your observation. If there are
-surprises to you, describe them.
+Estas variabbles de enttorno son seteadas en la shell del usuario que va a correr el proceso. Proceda a corrar el programa \setuid del Paso 2 en su shell. Después de esto tipee el nombre del programa en su shell, y la shell creará un proceso hijo y use ese proceso hijo para correr el programa. Por favor chequee que todas las variables de entornos seteadas anteriormente en su proceso shell (osea proceso padre) estén dentro del proceso \setuid hijo. Describa sus observaciones. Si hay algo que le llama atención, mencionelo.
 
 
 
@@ -302,7 +284,7 @@ run your own malicious code, instead of
 Describe and explain your observations. \\
 
 
-\paragraph{Note:}
+\paragraph{Nota:}
 The \texttt{system(cmd)} function executes the \texttt{/bin/sh} program first, and then
 asks this shell program to run the \texttt{cmd} command.
 In Ubuntu 20.04 (and several versions before), \texttt{/bin/sh} is actually
@@ -331,8 +313,7 @@ $ sudo ln -sf /bin/zsh /bin/sh
 % -------------------------------------------
 % SUBSECTION
 % -------------------------------------------
-\subsection{Task 7: The {\tt LD\_PRELOAD} Environment
-Variable and \setuid Programs}
+\subsection{Tarea 7: La variable de entornoo {\tt LD\_PRELOAD} y el Programa \setuid}
 
 
 In this task, we study how \setuid programs deal
