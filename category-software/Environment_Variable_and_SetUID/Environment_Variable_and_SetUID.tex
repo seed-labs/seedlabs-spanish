@@ -40,8 +40,8 @@ Este laboratorio cubre los siguientes tópicos:
 \item Variables de Entorno
 \item Programas \setuid
 \item Invocar de forma segura programas externos
+\item Loader/Linker Dinámico
 \item Fugas/Leaking
-\item Carga/Linkeo Dinámico
 \end{itemize}
 
 
@@ -134,7 +134,7 @@ void main()
 % -------------------------------------------
 \subsection{Tarea 3: Variables de Entorno y {\tt execve()}}
 
-En esta tarea, estudiaremos como las variables de entorno son afectadas cuando se ejecuta un nuevo programa a través de {\tt execve()}. La función {\tt execve()} realiza una llamada al sistema que carga un comando y lo ejecuta; esta función no retorna del llamado. No crea un nuevo proceso; en vez de eso, se llamada a la sección text del proceso, y las secciones data, bss y el stack son sobreescritas por ese programa que se carga. Esencialmente, {\tt execve()} corre un nuevo programa dentro del proceso que lo invoca. Estamos interesados en las variables de entorno; Son heredadas por el nuevo programa?
+En esta tarea, estudiaremos como las variables de entorno son afectadas cuando se ejecuta un nuevo programa a través de {\tt execve()}. La función {\tt execve()} realiza una llamada al sistema que carga un comando y lo ejecuta; esta función no retorna del llamado. No crea un nuevo proceso; en vez de eso, llama a la sección text del proceso, y las secciones data, bss y el stack son sobreescritas por ese programa que se carga. Esencialmente, {\tt execve()} corre un nuevo programa dentro del proceso que lo invoca. Estamos interesados en las variables de entorno; ¿Son heredadas por el nuevo programa?
 
 
 \paragraph{Paso 1.} Por favor compile y corra el siguiente programa, describa sus observaciones. Este programa ejecuta un programa llamado \texttt{/usr/bin/env}, que muestra las variables de entorno del proceso en curso.
@@ -173,9 +173,9 @@ execve("/usr/bin/env", argv, environ);
 % -------------------------------------------
 \subsection{Tarea 4: Variables de entorno y {\tt system()}}
 
-En esta tarea, estudiaremos como las variables de entorno son afectadas cuando se ejecuta un nuevo programa a través de la función {\tt system()}. Esta función se usa para ejecutar un comando pero a diferencia de {\tt execve()} que directamente ejecuta el comando, {\tt system()} ejecuta \texttt{"/bin/sh -c comando"} es decir ejecuta el comando  a través de la ejecución de {\tt /bin/sh}.
+En esta tarea, estudiaremos como las variables de entorno son afectadas cuando se ejecuta un nuevo programa a través de la función {\tt system()}. Esta función se usa para ejecutar un comando pero a diferencia de {\tt execve()} que directamente ejecuta el comando, {\tt system()} ejecuta \texttt{"/bin/sh -c comando"} es decir ejecuta el comando a través de la invocación de {\tt /bin/sh}.
 
-Si observa la implementación de la función {\tt systte(()(}, podrá ver que usa {\tt execl()} para ejecutar {\tt /bin/sh}; {\tt execl()} llama a {\tt execve()}, pasándole un arreglo con las variables de entorno. 
+Si observa la implementación de la función {\tt system(()(}, podrá ver que usa {\tt execl()} para ejecutar {\tt /bin/sh}; {\tt execl()} llama a {\tt execve()}, pasándole un arreglo con las variables de entorno. 
 Ademas usando {\tt system()}, las variables de entorno son pasadas del proceso llamador al nuevo programa {\tt /bin/sh}. Por favor compile y corra el siguiente programa para verificarlo.
 
 
@@ -240,7 +240,7 @@ $ sudo chmod 4755 foo
 \item {\tt ANY\_NAME} (Esta variable puede tener cualquier nombre definido por usted).
 \end{itemize}
 
-Estas variabbles de enttorno son seteadas en la shell del usuario que va a correr el proceso. Proceda a corrar el programa \setuid del Paso 2 en su shell. Después de esto tipee el nombre del programa en su shell, y la shell creará un proceso hijo y use ese proceso hijo para correr el programa. Por favor chequee que todas las variables de entornos seteadas anteriormente en su proceso shell (osea proceso padre) estén dentro del proceso \setuid hijo. Describa sus observaciones. Si hay algo que le llama atención, mencionelo.
+Estas variables de entorno son seteadas en la shell del usuario que va a correr el proceso. Proceda a corrar el programa \setuid del Paso 2 en su shell. Después de esto tipee el nombre del programa en su shell, y la shell creará un proceso hijo, use ese proceso hijo para correr el programa. Por favor chequee que todas las variables de entornos seteadas anteriormente en su proceso shell (osea proceso padre) estén dentro del proceso \setuid hijo. Describa sus observaciones. Si hay algo que le llama atención, mencionelo.
 
 
 
@@ -249,14 +249,8 @@ Estas variabbles de enttorno son seteadas en la shell del usuario que va a corre
 % -------------------------------------------
 \subsection{Tarea 6: La Variable de Entorno PATH y Programas \setuid }
 
-Because of the shell program invoked, calling {\tt system()}
-within a \setuid program is quite dangerous. This is because the actual behavior of the
-shell program can be affected by environment variables, such
-as {\tt PATH}; these environment variables are provided by the user, who
-may be malicious.  By changing these variables, malicious users can control
-the behavior of the {\tt Set-UID} program. In {\tt Bash}, you can
-change the {\tt PATH} environment variable in the following way (this example
-adds the directory {\tt /home/seed} to the beginning of the {\tt PATH} environment variable):
+Invocar la shell usando {\tt system()} dentro de un programa \setuid es algo peligroso. Esto se debe a que el comportamiento del shell puede ser afectado por las variables de entorno, como {\tt PATH}; dichas variables de entorno son provistas por el usuario y pueden ser maliciosas. Cambiando estas variables, usuarios maliciosos pueden controlar el comportamiento del programa {\tt Set-UID}.
+En {\tt Bash}, puede cambiar cambiar la variable de entorno {\tt PATH} de la siguiente manera (En este ejemplo se agrega el directorio {\tt /home/seed} al principio de la variable de entorno {\tt PATH}):
 
 
 \begin{lstlisting}
@@ -264,10 +258,7 @@ $ export PATH=/home/seed:$PATH
 \end{lstlisting}
 
 
-
-The \setuid program below is supposed to execute the {\tt /bin/ls} command;
-however, the programmer only uses the relative path for the {\tt ls}
-command, rather than the absolute path:
+El programa \setuid anterior debería de ejecutar el comando  {\tt /bin/ls}; ssin embargo, el programador solamente usa el path relativo para el comando  {\tt /bin/ls} en vez del path absoluto:
 
 \begin{lstlisting}[language=C]
 int main()
@@ -277,77 +268,48 @@ int main()
 }
 \end{lstlisting}
 
-Please compile the above program, change its owner to {\tt root}, and
-make it a \setuid program.  Can you get this \setuid program to
-run your own malicious code, instead of
-{\tt /bin/ls}?  If you can, is your malicious code running with the root privilege?
-Describe and explain your observations. \\
+Por favor compile el programa, haga que el usuario  {\tt root} sea el propietario del mismo y active el bit de \setuid en el programa. ¿Puede hacer que el programa \setuid corra código malicioso propio en vez de {\tt /bin/ls}? Si puede hacerlo, ¿Este código se corre con privilegios de root?
+Describa y explique sus observaciones.
 
 
 \paragraph{Nota:}
-The \texttt{system(cmd)} function executes the \texttt{/bin/sh} program first, and then
-asks this shell program to run the \texttt{cmd} command.
-In Ubuntu 20.04 (and several versions before), \texttt{/bin/sh} is actually
-a symbolic link pointing to \texttt{/bin/dash}.
-This shell program has a countermeasure that prevents itself
-from being executed in a \setuid process.  Basically, if \texttt{dash} detects that it is
-executed in a \setuid process, it immediately changes the effective user ID to the process's
-real user ID, essentially dropping the privilege.
+La función \texttt{system(cmd)} ejecuta primero el programa \texttt{/bin/sh} y después le pide a esta shell que corra el comando \texttt{cmd}.
+En Ubuntu 20.04 (y versiones anteriores), \texttt{/bin/sh} es un link simbólico que apunta a \texttt{/bin/dash}.
+Esta shell tiene una protección que impide ser ejecutada en un proceso \setuid. Básicamente, si \texttt{dash} detecta que esta siendo ejecutada dentro de un proceso \setuid, esta inmediatamente cambia el effective user ID al real user ID del proceso, eliminando el privilegio.
 
+Dado que nuestro programa objetivo es \setuid, la protección anteriormente mencionada puede frustrar nuestro ataque.
+Para ver como nuestro ataque funciona sin dicha protección, haremos un link simbólico de la shell \texttt{/bin/sh} a otra que no tenga la protección ya discutida. En nuestra Máquina Virtual de Ubuntu 20.04, hemos instalado una shell llamada \texttt{zsh}. Usaremos el siguiente comando para realizar el link de \texttt{/bin/sh} a \texttt{/bin/zsh}:
 
-Since our victim program is a \setuid program,
-the countermeasure in \texttt{/bin/dash} can prevent our attack.
-To see how our attack works without such a countermeasure,
-we will link \texttt{/bin/sh} to another shell that does not
-have such a countermeasure.  We have installed a shell program
-called \texttt{zsh} in our Ubuntu 20.04 VM. We use the following
-commands to link \texttt{/bin/sh} to \texttt{/bin/zsh}:
 
 \begin{lstlisting}
 $ sudo ln -sf /bin/zsh /bin/sh
 \end{lstlisting}
 
 
-
-
 % -------------------------------------------
 % SUBSECTION
 % -------------------------------------------
-\subsection{Tarea 7: La variable de entornoo {\tt LD\_PRELOAD} y el Programa \setuid}
+\subsection{Tarea 7: La variable de entorno {\tt LD\_PRELOAD} y el Programa \setuid}
+
+En esta tarea, estudiaremos como los programas \setuid interactuan con algunas de las variables de entorno.
+Muchas de estas variables, incluyendo {\tt LD\_PRELOAD}, {\tt LD\_LIBRARY\_PATH}, y otras {\tt LD\_*} tienen la capacidad de influenciar en el comportamiento del loader/linker dinámico.
+El loader/linker dinámico es la parte del sistema operativo que carga (desde un medio de almacenamiento persistente a la RAM) y linkea las librerías compartidas que son necesarias para correr el ejecutable.
+
+En linux, el loader/linker dináico se encuentra en {\tt ld.so} o {\tt ld-linux.so}.
+Dentro de las variable de entorno que afectan su comportamiento, nos centraremos en dos que son de especial interés para nuestro laboratorio, {\tt LD\_LIBRARY\_PATH} y {\tt LD\_PRELOAD}.
+En linux,  {\tt LD\_LIBRARY\_PATH} es un conjunto de directorios separados por dos puntos donde se deben de buscar estas librerías en primera instancia, antes de otros directorios standards del sistema operativo.
+{\tt LD\_PRELOAD} especifíca una lista de librerías compartidas adicionales que son establecidas por el usuario y que deben ser cargadas antes que cualquier otra. En esta tarea sólo estudiaremos {\tt LD\_PRELOAD}.
 
 
-In this task, we study how \setuid programs deal
-with some of the environment variables.
-Several environment variables, including {\tt LD\_PRELOAD},
-{\tt LD\_LIBRARY\_PATH}, and other {\tt LD\_*} influence the
-behavior of dynamic loader/linker.
-A dynamic loader/linker is the part of an operating system (OS) that
-loads (from persistent storage to RAM) and links the shared libraries
-needed by an executable at run time.
-
-In Linux, {\tt ld.so} or {\tt ld-linux.so}, are the dynamic
-loader/linker (each for different types of binary).
-Among the environment variables that affect their behaviors,
-{\tt LD\_LIBRARY\_PATH} and {\tt LD\_PRELOAD} are the two
-that we are concerned in this lab.
-In Linux, {\tt LD\_LIBRARY\_PATH} is a colon-separated set
-of directories where libraries should be searched for first, before the
-standard set of directories.
-{\tt LD\_PRELOAD} specifies a list of additional, user-specified, shared libraries to
-be loaded before all others. In this task, we will only
-study {\tt LD\_PRELOAD}.
-
-
-\paragraph{Step 1.}
-First, we will see how these environment variables influence the
-behavior of dynamic loader/linker when running a normal program.
-Please follow these steps:
+\paragraph{Paso 1.}
+Primero veremos como estas variables de entorno influencian el comportamiento dinámico del loader/linker cuando se corre un programa común y coorriente.
+Siga los siguientes pasos:
 
 
 \begin{enumerate}
-  \item Let us build a dynamic link library. Create the following program,
-  and name it {\tt mylib.c}. It basically overrides the {\tt sleep()} function
-  in {\tt libc}:
+
+  \item Vamos a construir una librería dinámica. Cree el siguiente programa y nombrelo como {\tt mylib.c}. La función del mismo es sobreescribir la función {\tt sleep()} en {\tt libc}:
+
 \begin{lstlisting}[language=C]
 #include <stdio.h>
 void sleep (int s)
@@ -358,8 +320,8 @@ void sleep (int s)
 }
 \end{lstlisting}
 
-  \item We can compile the above program using the following commands (in the
-  {\tt -lc} argument, the second character is $\ell$):
+ \item Podemos compilar el programa usando los siguientes comandos (en el parámetro {\tt -lc} el segundo caracter es $\ell$):
+
 \begin{lstlisting}
 $ gcc -fPIC -g -c mylib.c
 $ gcc -shared -o libmylib.so.1.0.1 mylib.o -lc
@@ -367,14 +329,13 @@ $ gcc -shared -o libmylib.so.1.0.1 mylib.o -lc
 
 
 
-  \item Now, set the {\tt LD\_PRELOAD} environment variable:
+  \item Ahora establezca el valor de la variable de entorno {\tt LD\_PRELOAD}:
 \begin{lstlisting}
 $ export LD_PRELOAD=./libmylib.so.1.0.1
 \end{lstlisting}
 
-  \item Finally, compile the following program {\tt myprog}, and
-  in the same directory as the above dynamic link library {\tt
-  libmylib.so.1.0.1}:
+ \item Por último compile el siguiente programa {\tt myprog} dentro del mismo directorio en que se encuentra la librería dinámica {\tt libmylib.so.1.0.1} generada en el paso anterior :
+
 \begin{lstlisting}[language=C]
 /* myprog.c */
 #include <unistd.h>
@@ -387,58 +348,30 @@ int main()
 \end{enumerate}
 
 
-\paragraph{Step 2.}
-After you have done the above, please run {\tt myprog} under the following
-conditions, and observe what happens.
+\paragraph{Paso 2.}
+Después de haber hecho el Paso 1, por favor proceda a ejecutar  {\tt myprog} bajo las siguientes condiciones y observe que sucede.
 
   \begin{itemize}
-  \item Make {\tt myprog} a regular program, and run it as a normal user.
-  \item Make {\tt myprog} a \setuid root program, and run it as a normal user.
-  \item Make {\tt myprog} a \setuid root program, export the {\tt LD\_PRELOAD}
-  environment variable again in the root account and run it.
-
-  \item Make {\tt myprog} a \setuid user1 program (i.e., the owner is user1, which
-        is another user account), export the {\tt LD\_PRELOAD} environment variable
-	again in a different user's account (not-root user) and run it.
+   \item Haga que {\tt myprog} sea un programa normal y corrálo como un usuario normal.
+   \item Haga que {\tt myprog} sea un programa root \setuid y corrálo como un usuario normal.
+   \item Haga que {\tt myprog} sea un programa root \setuid, exporte la variable de entorno {\tt LD\_PRELOAD} en la cuenta root y corrálo.
+  \item Haga que {\tt myprog} sea un programa \setuid cuyo propietario sea user1,
+  exporte la variable de entorno {\tt LD\_PRELOAD}  nuevamente pero esta vez use una cuenta de usuario diferente que no sea la cuenta de root y corrálo.
   \end{itemize}
 
 
-\paragraph{Step 3.}
-You should be able to observe different behaviors in the scenarios
-described above, even though you are running the same program.  You need
-to figure out what causes the difference. Environment variables
-play a role here. Please design an experiment to figure out the
-main causes, and explain why the behaviors in Step 2 are
-different. (Hint: the child process
-may not inherit the {\tt LD\_*} environment variables).
+\paragraph{Paso 3.}
+Aunque esté corriendo el mismo programa, ud. debería de observar diferentes comportamientos en los escenarios descriptos anteriormente. Necesita descubrir las diferencias y que las causa entre las diferentes ejecuciones. Las variables de entorno juegan un rol esencial en este escenario. por favor diseñe un experimento para descubrir las principales causas y explique porque los comportamientos del Paso 2 son diferent (Pista: el proceso hijo puede no heredar las variables de entorno {\tt LD\_*}).
 
 
 
 \subsection{Tarea 8: Invocando programas externos, {\tt system()} vs {\tt execve()}}
 
-Although {\tt system()} and {\tt execve()} can both be used to run new
-programs, {\tt system()} is quite dangerous if used in a privileged
-program, such as \setuid programs. We have seen how the PATH environment
-variable affect the behavior of {\tt system()}, because the variable
-affects how the shell works. {\tt execve()} does not have the problem,
-because it does not invoke shell. Invoking shell has another dangerous
-consequence, and this time, it has nothing to do with environment
-variables.  Let us look at the following scenario.
+Aunque {\tt system()} y {\tt execve()} pueden ser usados para ejecutar nuevos programas, {\tt system()} es algo peligroso si es usado para ejecutar programas con privilegios, como lo son los programas \setuid. Hemos visto como la variable de entorno PATH afecta el comportamiento de {\tt system()}, porque altera el comportamiento del shell. En cambio {\tt execve()} no tiene este problema, porque no invoca una shell. Invocar una shell tiene otra consecuencia peligrosa y esta vez no tiene nada que ver con las variables de entorno. Observemos los siguientes escenarios.
 
+Bob trabaja para una agencia de auditoría y necesita investigar un caso de posible fraude en un compania. Para esta investigación, Bob necesita leer todos los archivos de la compania que se encuentran en un sistema \unix; por otro lado, para proteger la integridad del sistema, Bob no debería de poder modificar ninguno de estos archivos.
+Para asegurar este cumplimiento, Vince el superusuario del sistema, ha escrito un archivo programa especial set-root-uid (vea más abajo), y le ha dado permisos de ejecución a Bob. Este programa requiere que Bob escriba el nombre del archivo en la línea de comandos y el programa ejecutará {\tt /bin/cat} para mostrar el contenido de este archivo. Dado que el programa está corriendo como root, puede mostrar el contenido de cualquier archivo que Bob escriba. Sin embargo, dado que no tiene permisos de escritura, Vince está seguro que Bob no puede usar este programa para modificar ningún archivo.
 
-Bob works for an auditing agency, and he needs to investigate a company for a suspected
-fraud. For the investigation purpose, Bob needs to be able to read
-all the files in the
-company's \unix system; on the other hand, to protect the integrity of the system,
-Bob should not be able to modify any file.
-To achieve this goal, Vince, the superuser of the system,
-wrote a special set-root-uid program (see
-below), and then gave the executable permission to Bob. This program requires
-Bob to type a file name at the command line, and then it will
-run {\tt /bin/cat} to display the specified file. Since the program is running
-as a root, it can display any file Bob specifies. However, since the program
-has no write operations, Vince is very sure that Bob cannot use this special program
-to modify any file.
 
 \begin{lstlisting}[language=C, caption=\texttt{catall.c}]
 int main(int argc, char *argv[])
@@ -464,18 +397,10 @@ int main(int argc, char *argv[])
 \end{lstlisting}
 
 
-\paragraph{Step 1:} Compile the above program, make it a root-owned
-\setuid program. The program will use
-{\tt system()} to invoke the command.
-If you were Bob, can you compromise the integrity of the system? For example,
-can you remove a file that is not writable to you?
+\paragraph{Paso 1:} Compile el programa y haga que el usuario root sea el propietario del mismo active el bit \setuid sobre el missmo. Este programa usará {\tt system()} para invocar el comando. Si ud. fuera Bob, ¿Podría comprometer la integridad del sistema? Por ejemplo ¿Puede borrar un archivo en el cual no posee permisos de escritura?
 
-
-\paragraph{Step 2:} Comment out the {\tt system(command)} statement, and
-uncomment the {\tt execve()} statement; the program
-will use {\tt execve()} to invoke the command. Compile the program, and
-make it a root-owned \setuid.
-Do your attacks in Step 1 still work? Please describe and explain your observations.
+\paragraph{Paso 2:} Comente el código en la línea {\tt system(command)} y descomente la línea que llama a {\tt execve()}; el programa usará {\tt execve()} para ejecutar el coomando. Compile el programa nuevamente y haga que el usuario root sea el propietario y active el bit \setuid.
+¿Funcionan los ataques del Paso 1? Por favor describa y explique sus observaciones.
 
 
 
@@ -484,29 +409,16 @@ Do your attacks in Step 1 still work? Please describe and explain your observati
 % -------------------------------------------
 \subsection{Tarea 9: Fuga/Leaking}
 
-To follow the Principle of Least Privilege, \setuid programs often
-permanently relinquish their root privileges if such privileges are not
-needed anymore. Moreover, sometimes, the program needs to hand over its
-control to the user; in this case, root privileges must be revoked.
-The {\tt setuid()} system call can be used to revoke the privileges.
-According to the manual, ``\texttt{setuid()} sets the effective user ID of
-the calling process. If the effective UID of the caller is root, the real
-UID and saved set-user-ID are also set''. Therefore, if a \setuid program
-with effective UID 0 calls \texttt{setuid(n)}, the process will become a
-normal process, with all its UIDs being set to \texttt{n}.
+Siguiendo el principio del Menor Privilegio, los programas \setuid evitan sus privilegios de root si estos no son necesarios. Más aún, a veces los programas necesitan entregar el control al usuario; en este caso, los privilegios de root deben de ser revocados. 
+La llamada al sistema {\tt setuid()}  puede ser usada para revocar tales privilegios. 
+De acuerdo al manual ``\texttt{setuid()} establece el effect user ID del proceso que es llamado. Si el effective user ID de quién invoca el programa es el usuario root, está llamada al sistema permite setear estos UIDs''.
+Si un programa \setuid con effective user ID 0 llama a \texttt{setuid(n)}, el proceso se convertirá en un proceso normal seteando todos sus UIDs a \texttt{n}.
 
-When revoking the privilege, one of the common mistakes is capability
-leaking. The process may have gained some privileged capabilities when it
-was still privileged; when the privilege is downgraded, if the program
-does not clean up those capabilities, they may still be accessible by the
-non-privileged process. In other words, although the effective user ID of
-the process becomes non-privileged, the process is still privileged because
-it possesses privileged capabilities.
+Cuando se revocan privilegios, uno de los errores más comunes es la posibilidad de una fuga o leaking. El proceso pudo obtener capacidades privilegiadas cuando aún estaba corriendo como proceso con privilegios elevados; pero si al momento de revocar esos privilegios no se limpian esas capacidades del programa, estos privilegios pueden permanecer accesibles por el proceso no privilegiado. En otras palabras, aunque el effective user ID del proceso se convierta en un effective user ID no privilegiado, el proceso aún sigue siendo privilegiado porque posee capacidades privilegiadas.
 
-Compile the following program, change its owner to root, and
-make it a \setuid program. Run the program as a normal user.
-Can you exploit the capability leaking vulnerability in this program?
-The goal is to write to the {\tt /etc/zzz} file as a normal user.
+Compile el siguiente programa, haga que el propietario sea el usuario root y active el bit \setuid en el programa. Ejecútelo como un usuario normal.
+¿Puede explotar esta capacidad privilegiada que da lugar a una fuga en el programa?
+El objetivo es escribir en el archivo {\tt /etc/zzz} siendo un usuario normal.
 
 \begin{lstlisting}[language=C, caption=\texttt{cap\_leak.c}]
 void main()
