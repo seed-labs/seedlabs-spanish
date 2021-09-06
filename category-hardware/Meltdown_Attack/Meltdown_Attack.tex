@@ -98,12 +98,8 @@ Sin embargo, este mecanismo se ve vulnerado con el ataque Meltdown, que permite 
 % ------------------------------------------- 
 \subsection{Tarea 3: Guardando data sensible en el Espacio del Kernel}
 
-To simplify our attack, we store 
-a secret data in the kernel space, and we show how a user-level program can find out what the
-secret data is. We use a kernel module to store the secret data.  The implementation of the
-kernel module is provided in \texttt{MeltdownKernel.c}. 
-Students' task is to compile and install the kernel module. The code is shown below. 
-
+Para simplificar nuestra tarea, hemos guardado un dato secreto en el espacio del kernel y mostramos como un programa corriendo en el espacio de usuario puede encontrar cual es ese dato secreto. Hemos usado un módulo kernel para guardar este dato secreto. La implementación de este módulo se encuentra en el archivo \texttt{MeltdownKernel.c}. 
+La tarea de loos estudiantes será compilar y instalar este módulo. El código es mostrado a continuación.
 
 \begin{lstlisting}[caption=\texttt{MeltdownKernel.c}, label=meltdown:list:kernelmodule]
 static char secret[8] = {'S', 'E', 'E', 'D', 'L', 'a', 'b', 's'};
@@ -160,38 +156,19 @@ module_init(test_proc_init);
 module_exit(test_proc_cleanup);
 \end{lstlisting}
 
-
-Two important conditions need to be held, or Meltdown attacks will be quite difficult to
-succeed. In our kernel module, we ensure that the conditions are met:
+Existen dos cuestiones importantes a tener en cuenta o los ataques Meltdown serán difíciles de lograr. En nuestro módulo kernel, debemos de asegurarnos que se cumplan las siguientes condiciones:
 
 \begin{itemize}
-\item We need to know the address of the target secret data. 
-The kernel module saves the address of the secret data into the kernel message buffer~(Line
-\ding{193}), which is public accessible; we will get the address from there. In real Meltdown
-attacks, attackers have to figure out a way to get the address, or they have to guess.
+\item Necesitamoos saber la dirección del dato secreto. El módulo guarda la dirección de este dato en el buffer de mensajes del kernel (Línea \ding{193}), que es accesible de forma pública; de ahí obtendremos la dirección. En los escenarios reales de un ataque Meltdown, los atacantes deben de descubrir la forma de obtener la dirección o adivinarla de alguna forma.
 
-
-\item The secret data need to be cached, or the attack's success rate will be low. 
-The reason for this condition will be explained later. To achieve this, we just need to use the secret once. 
-We create a data entry \texttt{/proc/secret\_data}~(Line \ding{194}), which provides a window
-for user-level programs to interact with the kernel module. When a user-level program reads
-from this entry, the \texttt{read\_proc()} function in the kernel module will be invoked,
-inside which, the secret variable will be loaded~(Line \ding{192}) and thus be cached by the CPU. 
-It should be noted that \texttt{read\_proc()} does not return
-the secret data to the user space, so it does not leak the secret data. We still need
-to use the Meltdown attack to get the secret.
+\item El dato secreto necesita estar cacheado or la taza de probabilidad de que el ataque sea exitoso será baja.  La razón de esto será explicada después. Para lograr esto, necesitamos usar el dato secreto solamente una vez. Hemos creado una entrada de datos en \texttt{/proc/secret\_data}~(Línea \ding{194}), la cual provee una ventana para programas que corren en el espacio de usuario y que permite interactuar con el móduloo del kernel. Cuando el programa en el espacio del usuario lee de esta entrada, la función \texttt{read\_proc()} será invocada en el módulo del kernel, dentro de la cual el dato secreto será cargado (Línea \ding{192}) y así será almacenada en la cache del CPU.
+Cabe señalar que la función \texttt{read\_proc()} no devuelve el dato secreto al espacio de usuario, para que este no se filtre, por lo que necesitamos usar el ataque Meltdown para obtener este dato secreto.
 \end{itemize}
 
 
-\paragraph{Compilation and execution.}
-Download the code from the lab website, and go to the directory that contains 
-\textit{Makefile} and \textit{MeltdownKernel.c}. Type the \texttt{make} command
-to compile the kernel module. 
-To install this kernel module, use the \texttt{insmod} command. 
-Once we have successfully installed the kernel module, we can 
-use the \texttt{dmesg} command to find the 
-secret data's address from the kernel message buffer. Take a note of this address, as we need
-it later.
+\paragraph{Compilación y ejecución.}
+Descargue el código del sitio oficial del laboratorio y entre al directorio que contiene el \textit{Makefile} y \textit{MeltdownKernel.c}. Escriba el comando \texttt{make} para compilar el módulo del kernel.
+Para instalar este módulo, usaremos el comando  \texttt{insmod}. Una vez que hemos instalado el módulo de forma correcta, podemos usar el comando \texttt{dmesg} para obtener la dirección del dato secreto en el buffer de mensajes del kernel. Anote esta dirección ya que será usada más adelante.
 
 \begin{lstlisting}
  $ make
@@ -206,16 +183,13 @@ it later.
 % -------------------------------------------
 % SUBSECTION
 % ------------------------------------------- 
-\subsection{Tarea 4: Accediento a la memoria del kernel desde el User Space}
+\subsection{Tarea 4: Accediendo a la Memoria del Kernel desde el Espacio de Usuario}
 
-Now we know the address of the secret data, let us do an experiment to see 
-whether we can directly get the secret from this address or not. 
-You can write your own code for this experiment. We provide
-a code sample in the following. For the address in Line \ding{192}, 
-you should replace it with the address obtained from the previous task. 
-Compile and run this program (or your own code) and describe your observation. 
-Will the program succeed in Line \ding{193}? Can the program execute 
-Line \ding{193}?
+Ahora que conocemos la dirección del dato secreto, procederemos a hacer un experimento y observar si podemos acceder o no a la dirección antes anotada y obtener el dato secreto.
+Puede escribir su propio código para este experimento. Hemos hecho un código de ejemplo que se muestra a continuación. Debe de reemplazar la dirección en la Línea \ding{192}, con la que anotó en la Tarea anterior.
+Compile y ejecute este programa (o su propio código) y describa su observación.
+¿Será exitosa la ejecución de la Línea \ding{193}? ¿Puede ejecutar el programa la Línea \ding{193}?
+
 
 \begin{lstlisting}
 int main()
@@ -232,7 +206,7 @@ int main()
 % -------------------------------------------
 % SUBSECTION
 % ------------------------------------------- 
-\subsection{Task 5: Handle Error/Exceptions in C}
+\subsection{Tarea 5: Manejar Errores/Excepciones en C}
 
 
 From Task 4, you have probably learned that accessing a kernel memory from the user space will
@@ -370,7 +344,7 @@ cannot access kernel memory).
 % *******************************************
 % SECTION
 % *******************************************
-\section{Task 6: Out-of-Order Execution by CPU}
+\section{Tarea 6: Ejecución Fuera de Orden en el CPU}
 
 
 From the previous tasks, we know that if a program tries to read 
@@ -775,6 +749,13 @@ to get all the 8 bytes of the secret.
 \input{\commonfolder/submission}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+
+% *******************************************
+% SECTION
+% *******************************************
+\section*{Agradecimientos}
+
+\input{\commonfolder/acknowledgments}
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
