@@ -89,19 +89,9 @@ Hao Zhang y Kuber Kohli, estos estudiantes son estudiantes graduado en el Depart
 % ******************************************* 
 \section{Tarea 3-5: Preparación para el Ataque Meltdown}
 
-
-Memory isolation is the foundation of system security. In most operating systems, 
-kernel memory is not directly accessible to user-space programs. This isolation is achieved 
-by a supervisor bit of the processor that defines whether a memory page of the kernel can be
-accessed or not. This bit is set when CPU enters the kernel space and
-cleared when it exits to the user space~\cite{wiki:protectionring}. 
-With this feature, kernel memory can be safely mapped into the address space 
-of every process, so the page table does not need to change when a user-level program
-traps into the kernel. 
-However, this isolation feature is broken by the Meltdown attack, 
-which allow unprivileged user-level programs to read arbitrary kernel memory.
-
-
+La isolación de memoria es uno de los fundamentos principales la seguridad de los sistemas. En la mayoría de los sistemas operativos, la memoria del kernel no se puede acceder directamente desde programas que son ejecutados en el espacio de usuario. Esta isolación se logra por medio de un bit (supervisor bit) en el proesador que define cuando una página de memoria del kernel puede ser o no accedida. Este bit es seteado cuando la CPU entra en el espacio del kernel y se borra cuando este salta al espacio de usuario (\cite{wiki:protectionring}).
+A través de este mecanismo el kernel puede asignar de manera segura el espacio de direcciones a cada uno de los procesos, por lo que la tabla de páginas no necesita cambiar cuando un programa del espacio de usuario cambia al espacio del kernel.
+Sin embargo, este mecanismo se ve vulnerado con el ataque Meltdown, que permite que programas no privilegiados del espacio del usuario pueda lear de forma arbitraria memoria del espacio de direcciones del kernel.
 
 % -------------------------------------------
 % SUBSECTION

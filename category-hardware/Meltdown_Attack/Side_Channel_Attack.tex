@@ -114,14 +114,8 @@ Debemos de averiguar cual es su valor secreto.
 El siguiente programa usa la técnica FLUSH+RELOAD para encontrar un valor secreto de 1 byte ubicado en la variable \texttt{secret}. Dado que existen 256 valores posibles para un secreto de 1 byte, necesitamos mapear cada valor en un elemento diferente dentro del arreglo. La forma naive de hacer es definir un arreglo de 256 ellementos (es decir \texttt{array[256]}). Sin embargo, esto no va a funcionar. El cacheo se hace a nivel blooque, no a nivel bbyte. Si se accede a \texttt{array[k]} un blooque de memoria que contiene este elemento será cacheado junto con los elementos adyacentes del arreglo \texttt{array[k]}, dificultando la inferencia de cual es el valor secreto.
 Para solucionar este problema, hemos creado un arreglo de \texttt{256*4096} bytes, dado que \texttt{4096} es mucho mayor en tamaño que el bloque default de la cache (64 bytes), de esta forma nos aseguramos que no existan elementos adyacentes en el mismo bloque por lo que \texttt{array[i*4096]} y \texttt{array[j*4096]} estarán en diferentes bloques.
 
-Since \texttt{array[0*4096]} may fall into the same cache block as the variables 
-in the adjacent memory, it may be accidentally cached due to the caching 
-of those variables. Therefore, we should avoid using \texttt{array[0*4096]} in
-the FLUSH+RELOAD method (for other index \texttt{k}, \texttt{array[k*4096]} does not
-have a problem).
-To make it consistent in the program, we use 
-\texttt{array[k*4096 + DELTA]} for all \texttt{k} values, 
-where \texttt{DELTA} is defined as a constant \texttt{1024}. 
+Dado que  \texttt{array[0*4096]} puede caer en el mismo bloque de cache que las variables de memoria adyacentes, puede ser accidentalmente cacheado durante el proceso de cacheo de esas variabbles. Por otro lado debemos evitar usar  \texttt{array[0*4096]} en el método de FLUSH+RELOAD (para otro índice \texttt{k}, \texttt{array[k*4096]} no hay problema).
+Para hacer esto consistente dentro del programa, usamos \texttt{array[k*4096 + DELTA]} para todos los valores \texttt{k} donde \texttt{DELTA} es una constante ya definida con el valor \texttt{1024}. 
 
 
 \begin{lstlisting}[caption=\texttt{FlushReload.c}, label={sidechannel:list:flushreload}]
@@ -179,15 +173,9 @@ int main(int argc, const char **argv)
   return (0);
 }
 \end{lstlisting}
- 
 
-Please compile the program using \texttt{gcc} and run it (see Section~\ref{sidechannel:sec:compilation}
-for compilation instruction).
-It should be noted that the technique is not 100 percent accurate, and you may not 
-be able to observe the expected output all the time. 
-Run the program for at least 20 times, and count how many times 
-you will get the secret correctly. You can also adjust the 
-threshold \texttt{CACHE\_HIT\_THRESHOLD} to the one derived from
-Task 1 (80 is used in this code). 
 
+Por favoor compile el programa usando \texttt{gcc} ejecútelo (Vea la Sección \ref{sidechannel:sec:compilation} para las instrucciones de compilación).
+Debe de nootar que esta técnica no es 100\% precisas y puede que los resultados que observa no sean los esperados en muchas instancias de su ejecución.
+Ejecute el programa al menos 20 veces y cuenta cuantas veces obtiene el valor secreto de forma correcta. Puede ajustar el valor umbral \texttt{CACHE\_HIT\_THRESHOLD} al usado en la Tarea 1 (en este código se usa 80).
 
