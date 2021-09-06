@@ -9,15 +9,11 @@
 % *******************************************
 % SECTION
 % *******************************************
-\section{Code Compilation}
+\section{Compilación del Código}
 \label{sidechannel:sec:compilation}
 
-
-For most of our tasks, you need to add \texttt{-march=native}
-flag when compiling the code with
-\texttt{gcc}. The \texttt{march} flag tells the compiler to enable all
-instruction subsets supported by the local machine.
-For example, we compile \texttt{myprog.c} using the following command:
+Para la mayoría de nuestras tareas, necesitará agregar la opción \texttt{-march=native} a la hora de copilar el código con \texttt{gcc}. La opción \texttt{march} le indica al compilador que debe activar todas el conjunto de  instrucciones soportadas por la máquina en donde se va a ejecutar este código.
+Por ejemplo, compilaremos \texttt{myprog.c} usando el siguiente comando:
 
 \begin{lstlisting}
 $ gcc -march=native -o myprog myprog.c
@@ -25,32 +21,15 @@ $ gcc -march=native -o myprog myprog.c
 
 
 
-
-
 % *******************************************
 % SECTION
 % ******************************************* 
-\section{Tasks 1 and 2: Side Channel Attacks via CPU Caches}
+\section{Tarea 1 y 2: Ataque de Side Channel usando la cache del CPU}
 
-Both the Meltdown and Spectre attacks use CPU cache as a side channel to steal
-a protected secret. The technique used in this side-channel attack is called 
-FLUSH+RELOAD~\cite{Yarom2014}. 
-We will study this technique first. The code developed in these two tasks will be 
-used as a building block in later tasks. 
+Los ataques Meltdown y Spectre usan la cache del CPU como side channel (canal encubierto) para robar información que se supone protegida. La técnica usada en este ataque de side channel se llama FLUSH+RELOAD~\cite{Yarom2014}. 
+Primero estudiaremos esta técnica. El código desarrollado en las tareas siguientess serán usados como base para futuras tareas.
 
-
-A CPU cache is a hardware cache used by the CPU of a computer 
-to reduce the average cost (time or energy) to access
-data from the main memory. Accessing data from CPU cache is much faster
-than accessing from the main memory. When data are fetched from the main memory, they
-are usually cached by the CPU, so if the same data are used again, the access
-time will be much faster. Therefore, when a CPU needs to access some data, it
-first looks at its caches. If the data is there (this is called cache hit), 
-it will be fetched directly from there. If the data is not there (this is
-called miss), the CPU will go to the main memory to get the data. The time 
-spent in the latter case is significant longer. Most modern CPUs have
-CPU caches. 
-
+La cache del CPU es una cache a nivel hardware usada por la CPU de una computadora para reducir el tiempo promedio de acceso a los datos en la memoria principal. Aceder a los datos en la cache del CPU es mucho más rápido que hacerlo en la memoria principal. Cuando los datos son obtenidos de la memoria principal por lo general son cacheados por la CPU, por lo que si se esos datos se usan nuevamente el tiempo de acceso será mucho más rápido. Ademas cuando la CPU necesita acceder a cierta porción de datos, primero busca en su cache. Si los datos están ahí (cache hit) serán obtenidos directtamente de esa cache de otra forma la CPU irá a la memoria principal para obtenerlos. El tiempo que se usa en la última operación es significativamente más alto. La mayoría de los CPUs modernos poseen estas caches.
 
 
 \begin{figure}[htb]
@@ -61,24 +40,13 @@ CPU caches.
 \end{figure}
 
 
-\subsection{Task 1: Reading from Cache versus from Memory}
+\subsection{Tarea 1: Leyendo de la Cache vs Memoria }
 
-The cache memory is used to provide data to the high speed processors at a faster speed. The
-cache memories are very fast compared to the main memory. 
-Let us see the time difference. In the following code (\texttt{CacheTime.c}), we 
-have an array of size \texttt{10*4096}. We first access two of its elements,
-\texttt{array[3*4096]} and \texttt{array[7*4096]}. Therefore, the pages 
-containing these two elements will be cached. We then
-read the elements from \texttt{array[0*4096]} to \texttt{array[9*4096]} and measure 
-the time spent in the memory reading.
-Figure~\ref{sidechannel:fig:cachehitmiss} illustrates the difference. 
-In the code, Line \ding{192} reads the CPU's
-timestamp (TSC) counter before the memory read, while Line \ding{193}
-reads the counter after the memory read. Their difference is the time (in terms of number of
-CPU cycles) spent in the memory read.  It should be noted that 
-caching is done at the cache block level, not at the byte level. A typical cache block size 
-is 64 bytes. We use \texttt{array[k*4096]}, so no two elements used in 
-the program fall into the same cache block. 
+La memoria cache es usada por los procesadores para acelerar el tiempo de acceso a los datos. Las memorias cachess son más rapidas en comparación a la memoria principal.
+Veamos el tiempo diferencial. En el siguiente código (\texttt{CacheTime.c}), tenemos un arreglo de tamaño \texttt{10*4096}. Primero accedemos a dos de sus elementos \texttt{array[3*4096]} y \texttt{array[7*4096]}. Lás páginas que contienen estos dos elementos serán cacheadas. Luego procederemos a leer los elementos desde \texttt{array[0*4096]} hasta \texttt{array[9*4096]} y medireos el tiempo de lectura usado en la memoria.
+La Figura \ref{sidechannel:fig:cachehitmiss} ilustra la diferencia.
+En la Línea \ding{192} del código usado se realiza la lectura del contador del timestamp del CPU (TSC) antes de que realizar la lectura en memoria, mientras que en la Línea \ding{193} se lee el contador después de realizar la lectura en memoria. La diferencia de tiempo (expresada en el números de ciclos de CPU), representa el tiempo de lectura en memoria.
+Cabe destacar que el proceso de cacheo se hace a nivel bloque, no a nivel de byte. El tamaño habitual de un bloque de cache son 64 bytes. Hemos usado \texttt{array[k*4096]}, para que los dos elementos que son cacheados no estén ubicados en el mismo bloque de la cache. 
 
 
 \begin{lstlisting}[caption=\texttt{CacheTime.c}]
@@ -114,22 +82,13 @@ int main(int argc, const char **argv) {
 }
 \end{lstlisting}
 
-
-Please compile the following code using \texttt{gcc -march=native
-CacheTime.c}, and run it.  Is the access of 
-\texttt{array[3*4096]} and \texttt{array[7*4096]} faster than
-that of the other elements? You should run the program at least 10 times 
-and describe your observations. From the experiment,
-you need to find a threshold
-that can be used to distinguish these two types of memory access: accessing
-data from the cache versus accessing data from the main memory.  This
-threshold is important for the rest of the tasks in this lab.
-
+Por favor compile el siguiente código usando \texttt{gcc -march=native
+CacheTime.c} y ejecútelo. ¿Es más rápido acceder a \texttt{array[3*4096]} y \texttt{array[7*4096]} que acceder a otros elementos? Debe ejecutar el programa al menos 10 veces y describir sus observaciones. Dado este experimento debe de encontrar un valor umbral que pueda ser usado para distinguir entre estos dos tipos de acceso en memoria: acceder a los datos desde la cache versus acceder a los datos desde la memoria principal. Este umbral es importante para el resto de las tareas en este laboratorio.
 
 % -------------------------------------------
 % SUBSECTION
 % ------------------------------------------- 
-\subsection{Task 2: Using Cache as a Side Channel}
+\subsection{Tarea 2: Usando la Cache como Side Channel}
 
 
 \begin{figure}[htb]
@@ -139,45 +98,21 @@ threshold is important for the rest of the tasks in this lab.
 \label{sidechannel:fig:flushreload}
 \end{figure}
 
-
-The objective of this task is to use the side channel to extract a secret value used by the
-victim function. Assume there is a victim  function that uses a secret value as index
-to load some values from an array. Also assume that the secret value cannot be accessed from
-the outside. Our goal is to use side channels to
-get this secret value. The technique that we will be using is called 
-FLUSH+RELOAD~\cite{Yarom2014}. Figure~\ref{sidechannel:fig:flushreload} illustrates the 
-technique, which consists of three steps: 
+El objetivo de esta tarea es usar el side channel para extraer un valor secreto usado por la función víctima. Asuma que existe una función víctima que usa un valoor secret como índice para cargar algunos valores de un arreglo. También asuma que ese valor secreto no puede ser accedido desde afuera. Nuestro objetivo es usar side channels para obtener este valor secreto. Esta técnica llamada FLUSH+RELOAD~\cite{Yarom2014}. Figura \ref{sidechannel:fig:flushreload} ilustra esta técnica que se conforma en tres pasos:
 
 \begin{enumerate}[noitemsep]
 
-\item FLUSH the entire array from the cache memory to make sure the array is not cached. 
+\item Hace un FLUSH de todo el arreglo en la memoria cache para asegurarse que el arreglo no este cacheado.
 
-\item Invoke the victim function, which accesses one of the array
-elements based on the value of the secret. This action causes 
-the corresponding array element to be cached. 
+\item Invoca la función víctima, que accede a uno de los elementos del arreglo basado en el valor del secreto. Esta acción provoca que este elemento sea cacheado.
 
-\item RELOAD the entire array, and measure the time it takes to reload 
-each element. If one specific element's loading time is fast, 
-it is very likely that element is already in the cache. 
-This element must be the one accessed by the victim function. 
-Therefore, we can figure out what the secret value is.
+\item Hace un RELOAD de todo el arreglo y mide el tiempo que toma en hacer el reload por cada uno de los elementos que contiene el arreglo. Si el tiempo de carga de un elemento específico del arreglo es más rápido, lo más probable es que ese elemento este dentro de la ache.
+Este elemento debe ser el que usa la función víctima. 
+Debemos de averiguar cual es su valor secreto.
 \end{enumerate}
 
-
-The following program uses the FLUSH+RELOAD technique to 
-find out a one-byte secret value contained in the variable \texttt{secret}. 
-Since there are 256 possible values for a one-byte secret, we 
-need to map each value to an array element. The naive way is to define an
-array of 256 elements (i.e., \texttt{array[256]}).  However, this does not
-work. Caching is done at a block level, not at a byte level. If
-\texttt{array[k]} is accessed, a block of memory containing this element  
-will be cached. Therefore, the adjacent elements of \texttt{array[k]} 
-will also be cached, making it difficult to infer what the secret is. 
-To solve this problem, we create an array of \texttt{256*4096} 
-bytes. Each element used in our RELOAD step is \texttt{array[k*4096]}. 
-Because \texttt{4096} is larger than a typical cache block size (64 bytes), 
-no two different elements \texttt{array[i*4096]} and \texttt{array[j*4096]} will
-be in the same cache block.
+El siguiente programa usa la técnica FLUSH+RELOAD para encontrar un valor secreto de 1 byte ubicado en la variable \texttt{secret}. Dado que existen 256 valores posibles para un secreto de 1 byte, necesitamos mapear cada valor en un elemento diferente dentro del arreglo. La forma naive de hacer es definir un arreglo de 256 ellementos (es decir \texttt{array[256]}). Sin embargo, esto no va a funcionar. El cacheo se hace a nivel blooque, no a nivel bbyte. Si se accede a \texttt{array[k]} un blooque de memoria que contiene este elemento será cacheado junto con los elementos adyacentes del arreglo \texttt{array[k]}, dificultando la inferencia de cual es el valor secreto.
+Para solucionar este problema, hemos creado un arreglo de \texttt{256*4096} bytes, dado que \texttt{4096} es mucho mayor en tamaño que el bloque default de la cache (64 bytes), de esta forma nos aseguramos que no existan elementos adyacentes en el mismo bloque por lo que \texttt{array[i*4096]} y \texttt{array[j*4096]} estarán en diferentes bloques.
 
 Since \texttt{array[0*4096]} may fall into the same cache block as the variables 
 in the adjacent memory, it may be accidentally cached due to the caching 
