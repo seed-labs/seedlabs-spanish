@@ -58,7 +58,7 @@ Para una cobertura más detallada sobre el ataque Meltdown puede consultar:
 
 
 
-\paragraph{Entorno de Labooratorio.} \seedenvironment Dentro de la Máquina Virtual de SEED que corre Ubuntu 20.04, las tareas de la 1 a la 6 funcionarán como se espera, pero las tareas 7 y 8 no loo harán debido a la protección implementada en el sistema operativo.
+\paragraph{Entorno de Labooratorio.} \seedenvironment Dentro de la Máquina Virtual de SEED que corre Ubuntu 20.04, las tareas de la 1 a la 6 funcionarán como se espera, pero las tareas 7 y 8 no lo harán debido a la protección implementada en el sistema operativo.
 
 Al usar este laboratorio, los instructores deberán tener en cuenta lo siguiente:
 Primero, la vulnerabilidad de Meltdown es una falla dentro de los CPUs Intel, por lo que sí la máquina de un estudiante se encuentra corriendo un procesador AMD el ataque no funcionará. 
@@ -89,7 +89,7 @@ Hao Zhang y Kuber Kohli, estos estudiantes son estudiantes graduado en el Depart
 % ******************************************* 
 \section{Tarea 3-5: Preparación para el Ataque Meltdown}
 
-La isolación de memoria es uno de los fundamentos principales la seguridad de los sistemas. En la mayoría de los sistemas operativos, la memoria del kernel no se puede acceder directamente desde programas que son ejecutados en el espacio de usuario. Esta isolación se logra por medio de un bit (supervisor bit) en el proesador que define cuando una página de memoria del kernel puede ser o no accedida. Este bit es seteado cuando la CPU entra en el espacio del kernel y se borra cuando este salta al espacio de usuario (\cite{wiki:protectionring}).
+La isolación de memoria es uno de los fundamentos principales en la seguridad de los sistemas. En la mayoría de los sistemas operativos, la memoria del kernel no se puede acceder directamente desde programas que son ejecutados en el espacio de usuario. Esta isolación se logra por medio de un bit (el bit supervisor) en el proesador que define cuando una página de memoria del kernel puede ser o no accedida. Este bit es seteado cuando la CPU entra en el espacio del kernel y se borra cuando este salta al espacio de usuario (\cite{wiki:protectionring}).
 A través de este mecanismo el kernel puede asignar de manera segura el espacio de direcciones a cada uno de los procesos, por lo que la tabla de páginas no necesita cambiar cuando un programa del espacio de usuario cambia al espacio del kernel.
 Sin embargo, este mecanismo se ve vulnerado con el ataque Meltdown, que permite que programas no privilegiados del espacio del usuario pueda lear de forma arbitraria memoria del espacio de direcciones del kernel.
 
@@ -159,9 +159,9 @@ module_exit(test_proc_cleanup);
 Existen dos cuestiones importantes a tener en cuenta o los ataques Meltdown serán difíciles de lograr. En nuestro módulo kernel, debemos de asegurarnos que se cumplan las siguientes condiciones:
 
 \begin{itemize}
-\item Necesitamoos saber la dirección del dato secreto. El módulo guarda la dirección de este dato en el buffer de mensajes del kernel (Línea \ding{193}), que es accesible de forma pública; de ahí obtendremos la dirección. En los escenarios reales de un ataque Meltdown, los atacantes deben de descubrir la forma de obtener la dirección o adivinarla de alguna forma.
+\item Necesitamos saber la dirección del dato secreto. El módulo guarda la dirección de este dato en el buffer de mensajes del kernel (Línea \ding{193}), que es accesible de forma pública; de ahí obtendremos la dirección. En los escenarios reales de un ataque Meltdown, los atacantes deben de descubrir la forma de obtener la dirección o adivinarla de alguna forma.
 
-\item El dato secreto necesita estar cacheado or la taza de probabilidad de que el ataque sea exitoso será baja.  La razón de esto será explicada después. Para lograr esto, necesitamos usar el dato secreto solamente una vez. Hemos creado una entrada de datos en \texttt{/proc/secret\_data}~(Línea \ding{194}), la cual provee una ventana para programas que corren en el espacio de usuario y que permite interactuar con el móduloo del kernel. Cuando el programa en el espacio del usuario lee de esta entrada, la función \texttt{read\_proc()} será invocada en el módulo del kernel, dentro de la cual el dato secreto será cargado (Línea \ding{192}) y así será almacenada en la cache del CPU.
+\item El dato secreto necesita estar cacheado o la tasa de probabilidad de éxito en el ataque será baja.  La razón de esto será explicada después. Para lograr esto, necesitamos usar el dato secreto solamente una vez. Hemos creado una entrada de datos en \texttt{/proc/secret\_data}~(Línea \ding{194}), la cual provee una ventana para programas que corren en el espacio de usuario y que permite interactuar con el móduloo del kernel. Cuando el programa en el espacio del usuario lee de esta entrada, la función \texttt{read\_proc()} será invocada en el módulo del kernel, dentro de la cual el dato secreto será cargado (Línea \ding{192}) y así será almacenada en la caché del CPU.
 Cabe señalar que la función \texttt{read\_proc()} no devuelve el dato secreto al espacio de usuario, para que este no se filtre, por lo que necesitamos usar el ataque Meltdown para obtener este dato secreto.
 \end{itemize}
 
@@ -208,31 +208,18 @@ int main()
 % ------------------------------------------- 
 \subsection{Tarea 5: Manejar Errores/Excepciones en C}
 
+En la Tarea 4, es probable que haya aprendido que el acceso directo al espacio de memoria del kernel desde el espacio de usuario cause que el programa rompa. En el ataque Meltdown, necesitamos hacer algo después de acceder a la memoria del kernel, por lo que no dejaremos que el programa rompa abruptamente. El acceso a espacios no permitidos de memoria provocan una señal SIGSEGV; si el programa no maneja este tipo de excepción, el sistema operativo se encargará de hacerlo y terminará el programa. Ese es el porque de la terminación abrupta del programa en cuestión. Existen varias formas de prevenir que un programa termine de forma abrupta debido al suceso de eventos de este tipo.
 
-From Task 4, you have probably learned that accessing a kernel memory from the user space will
-cause the program to crash. In the Meltdown attack, we need to do something 
-after accessing the kernel memory, so we cannot let the program crash. 
-Accessing prohibited memory location will raise a SIGSEGV signal; if a program does not 
-handle this exception by itself, the operating system will handle it and terminate the 
-program. That is why the program crashes. There are several ways to prevent
-programs from crashing by a catastrophic event. 
 %With Intel TSX technology,
 %exceptions can be suppressed in the first place by making several instruction
 %statements atomic. Due to the lack of support of TSX in VirtualBox, even if your CPU has TSX
 %feature enabled, our VM cannot benefit from it. Thus, we will not use this technique.
-One way is to define our own signal handler in the program to capture
-the exceptions raised by catastrophic events. 
+Una de esas formas es definir un handler de señales en el programa para capturar las excepciones provocadas por este tipo de eventos.
 
 
-Unlike C++ or other high-level languages, C does not provide direct support
-for error handling~(also 
-known as exception handling), such as the try/catch clause. 
-However, we can emulate the try/catch clause using \texttt{sigsetjmp()} and \texttt{siglongjmp()}.
-We provide a C program called \texttt{ExceptionHandling.c} in the following 
-to demonstrate how
-a program can continue to execute even if there is a critical exception, such as memory access
-violation. Please run this code, and describe your observations. 
-
+A diferencia de C++ o otros lenguajes de alto nivel, C no ofrece soporte directo para el manejo de errores (también conocido como el manejo de excepciones), bloques tales como try/catch. 
+Sin embargo, podemos emular un bloque try/catch usando \texttt{sigsetjmp()} y \texttt{siglongjmp()}.
+Hemos hecho un programa en C llamado \texttt{ExceptionHandling.c} dentro de este demostramos como un programa puede continuar su ejecución incluso después de ocurrida una exepción, como una violación de acceso en memoria. Por favor ejecute este código y describa sus observaciones.
 
 \begin{lstlisting}[caption=\texttt{ExceptionHandling.c}]
 static sigjmp_buf jbuf;
@@ -268,36 +255,19 @@ int main()
 }
 \end{lstlisting}
 
+El manejo de excepciones en este código es algo complicado, por lo que procederemos a explicarlo:
 
-
-The exception handling mechanism in the above code is quite complicated, so we provide further
-explanation in the following:
 
 \begin{itemize}
+\item Se establece un handler de señales; registramos la señal \texttt{SIGSEGV} en la Línea \ding{193}, por lo tanto cuando se dispare una señal \texttt{SIGSEGV}, la función del handler \texttt{catch\_segv()} será invocada.
 
-\item Set up a signal handler: we register a \texttt{SIGSEGV} signal handler in Line \ding{193}, so when
-a \texttt{SIGSEGV} signal is raised, the handler function \texttt{catch\_segv()} will be invoked. 
+\item Se establece un checkpoint: después de que el handler de señales termino de procesar la exepción, este permitirá que el programa continue con su ejecución a partir de ese checkpoint. Es necesario definir el checkpoint primero. Esto se hace a través de \texttt{sigsetjmp()} en la Línea \ding{194}: 
+\texttt{sigsetjmp(jbuf, 1)} guarda el contexto del stack en \texttt{jbuf} para su uso posterior por \texttt{siglongjmp()}; retorna 0 cuando el checkpoint se establece usando ~\cite{sigsetjmp}. 
 
-\item Set up a checkpoint: after the signal handler has finished processing the exception, it
-needs to let the program continue its execution from particular checkpoint. 
-Therefore, we need to define a checkpoint first. This is achieved via
-\texttt{sigsetjmp()} in Line \ding{194}: 
-\texttt{sigsetjmp(jbuf, 1)} saves the stack context/environment in \texttt{jbuf} 
-for later use by \texttt{siglongjmp()};  it returns 0 when the 
-checkpoint is set up~\cite{sigsetjmp}. 
+\item Cuando \texttt{siglongjmp(jbuf, 1)} se ejecuta, se vuelve al checkpoint, todo el contexto guardado en \texttt{jbuf} es copiado nuevamente en el procesador y se retoma la ejecución a partir del punto de retorno de la función \texttt{sigsetjmp()} pero el valor de retorno de la función \texttt{sigsetjmp()} es el segundo argumento de la función \texttt{siglongjmp()}, que en este caso es \texttt{1}.
+Es así como después de manejar esta excepción, el programa continua ejecutando desde el \texttt{else}.
 
-
-\item Roll back to a checkpoint: When \texttt{siglongjmp(jbuf, 1)} is called, the
-state saved in the \texttt{jbuf} variable is copied back in the processor and computation starts over
-from the return point of the \texttt{sigsetjmp()} function, 
-but the returned value of the \texttt{sigsetjmp()} function  
-is the second argument of the \texttt{siglongjmp()} function, which is \texttt{1} in our case.
-Therefore, after the exception handling, the program continues its execution from the
-\texttt{else} branch.  
-
-\item Triggering the exception: The code at Line \ding{195} will 
-trigger a \texttt{SIGSEGV} signal due to the memory access violation (user-level programs
-cannot access kernel memory).
+\item Disparando la excepción: La señal de \texttt{SIGSEGV} se produce por un acceso no permitido en memoria y es disparada en la Línea \ding{195} (recordemos que en un programa en el espacio de usuario no puede acceder a la memoria del kernel).
 
 \end{itemize}
 
@@ -346,14 +316,8 @@ cannot access kernel memory).
 % *******************************************
 \section{Tarea 6: Ejecución Fuera de Orden en el CPU}
 
-
-From the previous tasks, we know that if a program tries to read 
-kernel memory, the access will fail and an exception will be raised. 
-Using the following code as an example, we know that 
-Line 3 will raise an exception because the memory at address \texttt{0xfb61b000}
-belongs to the kernel. Therefore, the execution will be interrupted at Line 3, and 
-Line 4 will never be executed, so the value of 
-the \texttt{number} variable will still be 0.
+Ya aprendimos en las tareas anteriores que si un programa trata de leer en la memoria del kernel esto provocará una falla de acceso y se producirá una excepción. 
+Usando el siguiente código como ejemplo, sabemos que la Línea 3 producirá una excepción debido a que la dirección \texttt{0xfb61b000} pertenece al espacio de direcciones del kernel. Por lo tanto, se interrumpirá la ejecución en la Línea 3 y la Línea 4 nunca será ejecutada por lo que el valor de la variable \texttt{number} seguirá siendo 0.
 
 \begin{lstlisting}
 1  number = 0;
@@ -362,69 +326,35 @@ the \texttt{number} variable will still be 0.
 4  number = number + kernel_data;
 \end{lstlisting}
 
-The above statement about the code example is true when looking from outside of the CPU. 
-However, it is not completely true if we get into the CPU, and look at the execution sequence
-at the microarchitectural level. If we do that, we will find out that 
-Line 3 will successfully get the kernel data, and Line 4 and subsequent instructions 
-will be executed. This is due to an important optimization technique adopted by
-modern CPUs. It is called out-of-order execution. 
+La declaración anterior sobre el código de ejemplo es cierta si se mirá por fuera del CPU.
+Sin embargo esto no es así si nos metemos dentro del mismo y observacioness la secuencia de ejecución a nivel de microarquitectura. Si hacemos esto, descubriremos que la Línea 3 obtiene el dato desdde el kernel y que la Línea 4 y el resto de las instrucciones son ejecutadas. Esto se debe a una técnica de optimización implementada en los CPUs modernos, llamada ejecución fuera de orden (out-of-order execution).
 
+En lugar de ejecutar las instrucciones en el orden estricto en que fueron establecidas, los CPUs modernos de alta performance permiten que la ejecución fuera de orden usen todas sus unidades de ejecución para optimizar la performance y manejar de manera eficiente el uso de recursos, de otra forma estaríamos en un escenario donde una instrucción esperaría que termine la ejecución de una instrucción anterior teniendo la posibilidad de poder ser ejecutada en unidades de ejecución en el CPU que están ociosas \cite{wiki:outoforder}. 
 
-Instead of executing the instructions strictly in their original order, modern high performance
-CPUs allow out-of-order execution to exhaust all of the execution units. Executing instructions
-one after another may lead to poor performance and inefficient resources usage, i.e., current
-instruction is waiting for previous instruction to complete even though some execution units
-are idle~\cite{wiki:outoforder}. With the out-of-order execution feature, CPU can 
-run ahead once the required resources are available.
-
-
-In the code example above, at the microarchitectural level, Line 3 involves two 
-operations: load the data (usually into a register), and
-check whether the data access is allowed or not. If the data is already in
-the CPU cache, the first operation will be quite fast, while the second operation may take a
-while. To avoid waiting, the CPU will continue executing Line 4 and subsequent instructions,
-while conducting the access check in parallel. This is out-of-order execution. The results of
-the execution will not be committed before the access check finishes. In our case,
-the check fails, so all the results caused by the out-of-order execution will be discarded like
-it has never happened.  That is why from outside we do not see that Line 4 was executed.  
-Figure~\ref{meltdown:fig:outoforder} illustrates the out-of-order execution 
-caused by Line 3 of the sample code. 
+En el código de ejemplo anterior, y posicionandonos a un nivel de microarquitectura, la Línea 3 implica dos operaciones: Cargar el dato (usualmente dentro de un registro) y chequear cuando el acceso a este dato es permitido o no. SSi el dato está en la caché del CPU, la primera operación será rápida, mientras que la segunda será un poco más lenta. Para evitar la espera, el CPU continuará ejecutando la Línea 4 y el resto de las instrucciones mientras que realiza el chequeo del acceso en paralelo. Esto es la ejecución fuera de orden. Los resultados de la ejecución no serán confirmados antes que termine el chequeo del acceso. En nuestro si el ese chequeo falla, todos los resultados producidos por la ejecución fuera de orden serán descartados como si nunca hubiera sucedido. Es por eso que si estamos por fuera del CPU no vemos la ejecución de la Línea 4.
+La Figura \ref{meltdown:fig:outoforder} ilustra el escenario anteriormente descripto.
 
 
 
 \begin{figure}[htb]
 \centering
 \includegraphics[width=0.75\textwidth]{\meltdownFigs/meltdown.pdf}
-\caption{Out-of-order execution inside CPU}
+\caption{Ejecución Fuera de Orden dentro del CPU}
 \label{meltdown:fig:outoforder}
 \end{figure}
 
+Tanto Intel como otros fabricantes de CPUs cometieron algunos errores graves en el diseño de la técnica de la ejecución fuera de orden (out-of-order execution).
+En el contexto de este diseño, se borrán los efectos de la ejecución fuera de orden tanto en los registros como en la memoria si es que tal ejecución no se supone que deba de ocurrir. Sin embargo, olvidaron algo, los efectos en las caches del CPU.
+Durante la ejecucióon fuera de orden, la memoria a la que se intenta acceder es guardada tanto en en un registro como en la caché. Si la ejecución fuera de orden debe de ser descartada o mejor dicho los efectos de la misma, la caché en donde se guardan estos resultados o efectos, también debería de ser descartados. Desafortunadamente este no es el caso en la mayoría de los CPUs.
+Por lo tanto, esto crea un efecto observable.
+Utilizando la técnica de side channel descrita en las Tareas 1 y 2,
+se puede observar tal efecto. El ataque Meltdown usa de manera inteligente este
+efecto observable para descubrir valores secretos dentro de la memoria del kernel.
 
-Intel and several CPU makers made a severe mistake in the design of the out-of-order execution. 
-They wipe out the effects of the out-of-order execution on registers and memory
-if such an execution is not supposed to happen, so the execution does not lead to 
-any visible effect. However, they forgot one thing, the effect on CPU caches.  
-During the out-of-order execution, the referenced memory is fetched into a register and is 
-also stored in the cache. If the out-of-order execution has to be discarded, 
-the cache caused by such an execution should also be discarded. Unfortunately, this is 
-not the case in most CPUs. Therefore, it creates an observable effect. 
-Using the side-channel technique described in Tasks 1 and 2, we 
-can observe such an effect. The Meltdown attack cleverly uses this 
-observable effect to find out secret values 
-inside the kernel memory. 
-
-
-In this task, we use an experiment to observe the effect caused by 
-an out-of-order execution. The code for this experiment is shown below. 
-In the code, Line \ding{192} will cause an exception, so Line \ding{193} will
-not be executed. However, due to the out-of-order execution, Line \ding{193} is 
-executed by the 
-CPU, but the result will eventually be discarded. However, because of the execution,
-\texttt{array[7 * 4096 + DELTA]} will now be cached by CPU. We use the side-channel code 
-implemented in Tasks 1 and 2 to check whether we can observe the effect. 
-Please download the code from the lab website, run it and describe your observations. 
-In particular, please provide an evidence to show that Line \ding{193} is 
-actually executed. 
+En esta tarea, usaremos un experimento para observar este efecto causado por la ejecución fuera de orden. El código para este experimento es mostrado a continuación. 
+La Línea \ding{192} causará una excepción y esto hará que la Línea \ding{193} no sea ejecutada. Sin em bargo, dada la ejecución fuera de orden, sabemos que la Línea \ding{193} será ejecutada por el CPU pero el resultado será eventualmente descartado, pero dado que la ejecución cachea sus efectos en el CPU se guardará \texttt{array[7 * 4096 + DELTA]}. 
+Para poder observar este efecto usaremos el código side-channel que hemos implementado en las Tareas 1 y 2.
+Por favor descargue el código desde el sitio oficial del laboratorio, ejecútelo y describa sus observaciones, también agregue evidencia que demuestre que la Línea\ding{193} está siendo ejecutada. 
 
 
 \begin{lstlisting}[caption=\texttt{MeltdownExperiment.c}, label=meltdown:list:outoforder]
@@ -463,11 +393,8 @@ int main()
 }
 \end{lstlisting}
 
+Cabe señalar que la dirección en la Línea  \ding{194} debe de ser reemplazada por la dirección que el módulo del kernel le devuelve en el buffer de mensajes del kernel. Compile y ejecute el código (Vea la Sección \ref{sidechannel:sec:compilation} para más instrucciones como compilar el código). Documente y explique sus observaciones.
 
-It should be noted that the address in Line \ding{194} should be replaced by
-the actual address that you found from the kernel module. Compile and 
-run the code (see Section~\ref{sidechannel:sec:compilation} for the instructions
-on the compilation). Document and explain your observations. 
 %What \texttt{"taskset 0x1"} does is basically pinning this program to only
 %one logical core to reduce cache miss, because L1 cache is proprietary to each core and we
 %do not want our program to be cached in a different L1 cache.
@@ -481,38 +408,22 @@ on the compilation). Document and explain your observations.
 % *******************************************
 % SECTION
 % ******************************************* 
-\section{Task 7: The Basic Meltdown Attack}
+\section{Tarea 7: Lo Básico del Ataque Meltdown}
 
-
-The out-of-order execution creates an opportunity for us to read data from 
-the kernel memory, and then use the data to conduct operations that can cause
-observable effects on the CPU cache. How far a CPU can go in 
-the out-of-order execution depends on
-how slow the access check, which is done in parallel, is performed. 
-This is a typical race condition situation. In this task, we will exploit this race condition
-to steal a secret from the kernel. 
+La ejecución fuera de orden nos crea una oportunidad que nos permite leer datos de la memoria del kernel y usar esos datos para realizar operaciones que causan efectos observables en la caché del CPU. Cuan lejos pueda ir la CPU en la ejecución fuera de orden depende de que tan lento se realice la operación de chequeo del acceso, operación que es ejecutada en paralelo junto con otras operaciones. Esta es una situación típica de race condition. En esta tarea, explotaremos esta race condition para robar el dato secreto del kernel.
 
 
 % -------------------------------------------
 % SUBSECTION
 % ------------------------------------------- 
-\subsection{Task 7.1: A Naive Approach}
+\subsection{Tarea 7.1: Una Aproximación Naive}
 
-In the previous task, we can get \texttt{array[7 * 4096 + DELTA]} into the CPU cache.
-Although we can observe that effect, we do not get any useful information about 
-the secret. If instead of using \texttt{array[7 * 4096 + DELTA]}, we 
-access \texttt{array[kernel\_data * 4096 + DELTA]}, which brings it
-into the CPU cache. 
-Using the FLUSH+RELOAD technique, we check the access time of
-\texttt{array[i*4096 + DELTA]} for \texttt{i = 0, $\ldots$, 255}. 
-If we find out that only
-\texttt{array[k*4096 + DELTA]} is in the cache, we can infer that 
-the value of the \texttt{kernel\_data} is \texttt{k}.  
-Please try this approach by modifying \texttt{MeltdownExperiment.c} shown in
-Listing~\ref{meltdown:list:outoforder}. Please describe your observations.
-Even if your attack is not successful, you should note down your observation, and continue on
-to Task 7.2, which is intended to improve the attack. 
-
+En la tarea anterior, hemos hecho que \texttt{array[7 * 4096 + DELTA]} quede en la caché del CPU.
+Aunque podamos observar ese efecto, no podemos obtener información útil sobre el dato secreto. Si en vez de usar \texttt{array[7 * 4096 + DELTA]}, usamos \texttt{array[kernel\_data * 4096 + DELTA]} nos llevará dentro de la caché del CPU.
+Usando la técnica FLUSH+RELOAD, chequeamos el tiempo de acceso de \texttt{array[i*4096 + DELTA]} para \texttt{i = 0, $\ldots$, 255}. 
+Si encontramos que \texttt{array[k*4096 + DELTA]} está en la caché, podemos inferir que el valor de \texttt{kernel\_data} es \texttt{k}.
+Por favor intente esto modificando \texttt{MeltdownExperiment.c} mostrado en el Fragmento~\ref{meltdown:list:outoforder}. Por favor describa sus observaciones.
+Incluso si su ataque no es exitoso, debe de anotar sus observaciones y continuar a la Tarea 7.2, que mejora este ataque.
 
 %Meltdown exploits a race condition, which occurs between memory access and permission checking
 %during instruction processing, as you can see in Figure 4.
@@ -544,38 +455,18 @@ to Task 7.2, which is intended to improve the attack.
 % -------------------------------------------
 % SUBSECTION
 % ------------------------------------------- 
-\subsection{Task 7.2: Improve the Attack by Getting the Secret Data Cached}
+\subsection{Tarea 7.2: Mejorar el Ataque Obteniendo el Dato Secreto Cacheado}
 
+Meltdown es una vulnerabilidad de race condition, que involucra una carrera entre la ejecución fuera de orden y el chequeo de acceso. Mientras más rápida sea la ejecución fuera de orden, más instrucciones se pueden ejecutar y tendremos más chances de crear efectos observables que nos ayuden a obtener el dato secreto. Observemos como podemos hacer que la ejecución fuera de orden sea más rápida.
 
-Meltdown is a race condition vulnerability, which involves the racing between the out-of-order
-execution and the access check. The faster the out-of-order execution is, the more instructions we 
-can execute, and the more likely we can create an observable effect that can help us get the
-secret. Let us look see how we can make the out-of-order execution faster. 
+El primer paso de la ejecución fuera de orden en el contexto de nuestro código consiste en cargar el dato del kernel dentro de un registro. Al mismo tiempo se realiza el chequeo de seguridad del acceso.
+Si el tiempo de carga del dato es más lento que el chequeo de seguridad, es decir cuando termina este chequeo, el dato del kernel todavía está en viaje desde la memoria hacia el registro, la ejecución fuera de orden será inmediatamente interrumpida y descartada, porque falló el chequeo del acceso, por ende nuestro ataque fallará.
 
-The first step of the out-of-order execution in our code involves loading the kernel data into 
-a register. At the same time, the security check on such an access is performed.  
-If the data loading is slower than security check, i.e., when the security check is done, 
-the kernel data is still on its way from the memory to the register, the out-of-order execution
-will be immediately interrupted and discarded, because the access check fails. Our attack will fail
-as well. 
+Si el dato del kernel se encuentra ya cargado en la caché del CPU, la carga de este dato en un registro será mucho más rápida y es posible que podamos llegar a nuestra instrucción crítica que carga carga el arreglo, antes que el chequeo fallido aborte la ejecución fuera de orden. En la práctica si el item del dato del kernel no está cacheado, usar Meltdown para robar este dato será difícil. Sin embargo, como ha sido demostrado, los ataques Meltdown aún pueden ser exitosos, pero requieren de una CPU y una DRAM de alta performance \cite{meltdowdemo}.
 
-If the kernel data is already in the CPU cache, loading the kernel data into a 
-register will be much faster, and we may be able to get to our critical 
-instruction, the one that loads the array, before the failed check 
-aborts our out-of-order execution. In practice, if a kernel data item is not cached, using 
-Meltdown to steal the  data will be difficult. However, as it has been 
-demonstrated, Meltdown attacks can still be successful, but  
-they require high-performance CPU and DRAM~\cite{meltdowdemo}. 
-
-
-In this lab, we will get the kernel secret data cached before launching the attack. 
-In the kernel module shown in Listing~\ref{meltdown:list:kernelmodule}, we let user-level
-program to invoke a function inside the kernel module. This function will access the secret
-data without leaking it to the user-level program. The side effect of this access is that the
-secret data is now in the CPU cache. We can add the  
-code to our attack program used in Task 7.1, before triggering the out-of-order execution.
-Please run your modified attack program and see whether your success rate is improved or not.
-
+En este laboratorio, obtendremos el dato secreto del kernel cacheado antes de lanzar el ataque.
+En el módulo del kernel mostrado en el Fragmento~\ref{meltdown:list:kernelmodule}, hemos dejado que un programa en el espacio de usuario invoque una función dentro de un módulo del kernel. Esta función accederá al dato secreto sin filtrarlo al programa del espacio de usuario. El efecto colateral de este acceso resulta en el cacheo de dato secreto dentro del CPU. Podemos agregar el código a nuestro programa de ataque utilizado en la Tarea 7.1, antes que ocurra la ejecución fuera de orden.
+Por favor ejecute su programa de ataque modificado y vea si su tasa de éxito ha mejorado o no.
 
 \begin{lstlisting}
 // Open the /proc/secret_data virtual file.
@@ -593,21 +484,10 @@ int ret = pread(fd, NULL, 0, 0); // Cause the secret data to be cached.
 % -------------------------------------------
 % SUBSECTION
 % ------------------------------------------- 
-\subsection{Task 7.3: Using Assembly Code to Trigger Meltdown}
+\subsection{Tarea 7.3: Usando Código Ensamblador para Ejecutar el Ataque}
 
-You probably still cannot succeed in the previous task, even with secret data being 
-cached by CPU. Let us do one more improvement by adding a few lines of
-assembly instructions before the kernel memory access. See the code in
-\texttt{meltdown\_asm()} below.  The code 
-basically do a loop for 400 times (see Line \ding{192}); inside the loop,
-it simply add a number \texttt{0x141} to the \texttt{eax} register.  
-This code basically does useless computations, but 
-according to a post discussion, these extra lines of code
-``give the algorithmic units something to chew while
-memory access is being speculated''~\cite{boldin}. 
-This is an important trick to increase the possibility of success. 
-%The reason why this code is written in assembly is that the code only
-%accesses registers not memory. 
+Probablemente todavía no pueda tener éxito en la tarea anterior, incluso el dato secreto almacenado en la caché por la CPU.
+Vamos a hacer algunas mejoras agregando unas pocas líneas de instrucciones de ensamblador antes del acceso a memoria del kernel. Vea el código más abajo en \texttt{meltdown\_asm()}. Básicamente este código realiza un loop 400 veces (Línea   \ding{192}); dentro de ese loop, suma el número \texttt{0x141} al registro \texttt{eax}. Este código realiza operaciones de poca utilidad en términos computacionales, pero esas líneas extras de código ``permiten realizar cierta cantidad de operaciones algorítmicas para que el CPU procese mientras especula sobre el acceso a memoria''~\cite{boldin}
 
 
 \begin{lstlisting}[caption=\texttt{meltdown\_asm()}, label=meltdown:list:meltdown_asm]
@@ -632,11 +512,7 @@ void meltdown_asm(unsigned long kernel_data_addr)
 }
 \end{lstlisting}
 
-
-Please call the \texttt{meltdown\_asm()} function, 
-instead of the original \texttt{meltdown()} 
-function. Describe your observations. Increase and decrease the number of
-loops, and report your results. 
+Por favor llame a la función \texttt{meltdown\_asm()} en vez de la función original  \texttt{meltdown()}. Describa sus observaciones. Incremente o decremente el número de loops y reporte sus resultados.
 
 
 
@@ -644,7 +520,7 @@ loops, and report your results.
 % *******************************************
 % SECTION
 % ******************************************* 
-\section{Task 8: Make the Attack More Practical}
+\section{Tarea 8: Haciendo el Ataque más Práctico}
 
 Even with the optimization in the previous task, we may still not be able 
 get the secret data every time: sometimes, our attack produces the correct 
@@ -677,8 +553,8 @@ void reloadSideChannelImproved()
      time1 = __rdtscp(&junk);
      junk = *addr;
      time2 = __rdtscp(&junk) - time1;
-     if (time2 <= CACHE_HIT_THRESHOLD)
-        scores[i]++; /* if cache hit, add 1 for this value */
+     if (time2 <= caché_HIT_THRESHOLD)
+        scores[i]++; /* if caché hit, add 1 for this value */
   }
 }
 
