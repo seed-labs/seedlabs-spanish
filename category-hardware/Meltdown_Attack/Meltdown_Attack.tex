@@ -522,21 +522,10 @@ Por favor llame a la función \texttt{meltdown\_asm()} en vez de la función ori
 % ******************************************* 
 \section{Tarea 8: Haciendo el Ataque más Práctico}
 
-Even with the optimization in the previous task, we may still not be able 
-get the secret data every time: sometimes, our attack produces the correct 
-secret value, but sometimes, our attack fails to 
-identify any value or identifies a wrong value. 
-To improve the accuracy, we can use a statistical technique.
-The idea is create a score array of size 256, one element for each possible 
-secret value. We then run our attack for multiple times. Each time, if our
-attack program says that \texttt{k} is the secret (this result may be
-false), we add 1 to \texttt{scores[k]}.  After running the attack for many
-times, we use the value \texttt{k} with 
-the highest score as our final estimation of the secret.  This will produce
-a much reliable estimation than the one based on a single run. The revised
-code is shown in the following.
-
-
+Incluso con la optimización de la tarea anterior, es posible que aún no podamos
+obtener el dato secreto: a veces, nuestro ataque obtendrá el dato correcto, pero a veces, nuestro ataque no lo hará y producirá un valor incorrecto.
+Para mejorar la precisión, podemos usar una técnica estadística.
+La idea es crear un arreglo de scores de un tamaño de 256, un elemento por cada posible valor secreto. Una vez hecho se correrá el ataque reiterada veces. Cada vez, si nuestro programa dea taque dice que el dato secreto es \texttt{k} (esto puede ser falso), agregamos 1 en \texttt{scores[k]}. Después de correr el ataque muchas veces, usamos el valor \texttt{k} que tenga el score más alto como nuestra estimación final en lugar de usar el obtenido en una sola corrida. El código de esta técnica es mostrado a continuación:
 
 
 \begin{lstlisting}[caption=\texttt{MeltdownAttack.c}]
@@ -608,11 +597,8 @@ int main()
 }
 \end{lstlisting}
 
-
-Please compile and run the code, and explain your observations. 
-The code above only steals a one-byte secret from the kernel. The actual
-secret placed in the kernel module has 8 bytes. You need to modify the above code
-to get all the 8 bytes of the secret.
+Por favor compile y ejecute el código, explique sus observaciones.
+El código anterior solamente obtiene 1 byte del dato secreto del kernel. El valor secreto actual que se ubica en el kernel tiene 8 bytes. Necesita modificar el código anteriormente mosotrado para obtener los 8 bytes del dato secreto.
 
 
 % *******************************************
