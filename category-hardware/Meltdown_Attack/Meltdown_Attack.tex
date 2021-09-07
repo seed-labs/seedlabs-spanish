@@ -553,8 +553,8 @@ void reloadSideChannelImproved()
      time1 = __rdtscp(&junk);
      junk = *addr;
      time2 = __rdtscp(&junk) - time1;
-     if (time2 <= caché_HIT_THRESHOLD)
-        scores[i]++; /* if caché hit, add 1 for this value */
+     if (time2 <= CACHE_HIT_THRESHOLD)
+        scores[i]++; /* if cache hit, add 1 for this value */
   }
 }
 
