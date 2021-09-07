@@ -487,7 +487,7 @@ int ret = pread(fd, NULL, 0, 0); // Cause the secret data to be cached.
 \subsection{Tarea 7.3: Usando Código Ensamblador para Ejecutar el Ataque}
 
 Probablemente todavía no pueda tener éxito en la tarea anterior, incluso el dato secreto almacenado en la caché por la CPU.
-Vamos a hacer algunas mejoras agregando unas pocas líneas de instrucciones de ensamblador antes del acceso a memoria del kernel. Vea el código más abajo en \texttt{meltdown\_asm()}. Básicamente este código realiza un loop 400 veces (Línea   \ding{192}); dentro de ese loop, suma el número \texttt{0x141} al registro \texttt{eax}. Este código realiza operaciones de poca utilidad en términos computacionales, pero esas líneas extras de código ``permiten realizar cierta cantidad de operaciones algorítmicas para que el CPU procese mientras especula sobre el acceso a memoria''~\cite{boldin}
+Vamos a hacer algunas mejoras agregando unas pocas líneas de instrucciones de ensamblador antes del acceso a memoria del kernel. Vea el código más abajo en \texttt{meltdown\_asm()}. Básicamente este código realiza un loop 400 veces (Línea   \ding{192}); dentro de ese loop, suma el número \texttt{0x141} al registro \texttt{eax}. Este código realiza operaciones de poca utilidad en términos computacionales, pero esas líneas extras de código ``permiten realizar cierta cantidad de operaciones algorítmicas para que las unidades de ejecución del CPU "se entretengan procesando" mientras especula sobre el acceso a memoria''~\cite{boldin}
 
 
 \begin{lstlisting}[caption=\texttt{meltdown\_asm()}, label=meltdown:list:meltdown_asm]
