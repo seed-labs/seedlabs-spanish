@@ -38,21 +38,6 @@
 Descubierta en el 2017 y publicada en Enero del 2018, el ataque Spectre explota una serie de vulnerabilidades críticas que existen en muchos procesadores modernos, incluyendo procesadores Intel, AMD y ARM~\cite{Kocher2018spectre}.
 Estas vulnerabilidades le permiten a un programa romper con la isolación inter y intra proceso, por lo que un programa malicioso puede leer data de un area de memoria que no le pertenece. En un escenario normal tal acceso no es permitido debido a las protecciones de hardware (para la isolación inter-proceso) o protecciones de software (para la isolación intra-proceso), pero esta vulnerabilidad existente a nivel diseño de las CPUs permite evadir este tipo de proteccioness. Dado que esta vulnerabilidad existe a nivel de hardware, es muy difícil resolver el problema de raíz, al menos que se cambie el procesador de la PC. La vulnerabilidad Spectre representa un tipo especial de falla en el diseño de los CPUs, junto con la vulnerabilidad Meltdown, nos proveen una invaluable lección para la educación de la seguridad.
 
-Discovered in 2017 and publicly disclosed in January 2018, the Spectre
-attack exploits critical vulnerabilities existing in many modern
-processors, including those from Intel, AMD, and
-ARM~\cite{Kocher2018spectre}. The vulnerabilities
-allow a program to break inter-process and intra-process isolation, so a
-malicious program can read the data from the area that is not accessible to
-it.  Such an access is not allowed by the hardware protection mechanism
-(for inter-process isolation) or software protection mechanism (for
-intra-process isolation), but a vulnerability exists in the design of CPUs
-that makes it possible to defeat the protections.  Because the flaw exists
-in the hardware, it is very difficult to fundamentally fix the problem,
-unless we change the CPUs in our computers. The Spectre vulnerability
-represents a special genre of vulnerabilities in the design of CPUs. Along
-with the Meltdown vulnerability, they provide an invaluable lesson for
-security education. 
 
 \underline{Objetivos del Aprendizaje} El objetivo de este laboratorio es que los estudiantes puedan aprender y logren experiencia en el Ataque Spectre. El ataque por sí mismo es algo sofisticado, es por eso que para una mejor compresión del mismo y de como atacarlo, lo hemos fragmentado en pequeños pasos. Una vez que los estudiantes entiendan cada uno de los pasos, no debería de resultarles difícil reunir todos los elementos y proceder a realizar el ataque. Los estudiantes usarán el Ataque Meltdown para mostrar en pantalla/obtener e imprimir un dato secreto guardado dentro del kernel.
 
@@ -105,20 +90,14 @@ Hao Zhang y Kuber Kohli, estos estudiantes son estudiantes graduado en el Depart
 % ******************************************* 
 \section{Tarea 3: Ejecución Fuera de Orden y Branch Prediction}
 
-The objective of this task is to understand the out-of-order execution
-in CPUs. We will use an experiment to help students observe
-such kind of execution. 
-
+El objetivo de esta tarea es entender la ejecución fuera de orden en los CPUs. Nos valdremos de un experimento para que los estudiantes puedan entender este tipo de ejecución.
 
 
 \subsection{Ejecución Fuera de Orden} 
 
-The Spectre attack relies on an important feature implemented in most
-CPUs.  To understand this feature, let us see the following code. 
-This code checks whether \texttt{x} is less than \texttt{size}, if so,
-the variable \texttt{data} will be updated. Assume that the value of
-\texttt{size} is 10, so if \texttt{x} equals \texttt{15}, 
-the code in Line 3 will not be executed.  
+El ataque Spectre se basa en una característica importante que está implementada en la mayoría de los CPUs. Para entenderla, veamos el siguiente código.
+Este código chequea que \texttt{x} sea menor que \texttt{size}, si esto es verdadero la variable data será actualizada. Asuma que el valor de \texttt{size} es 10, por lo que si \texttt{x} es igual a \texttt{15}, el código de la Línea 3 no será ejecutado.
+
 
 \begin{lstlisting}
 1  data = 0;
@@ -127,62 +106,30 @@ the code in Line 3 will not be executed.
 4  }
 \end{lstlisting}
  
+La sentencia del código anterior es verdadera cuando se mira desde fuera del CPU. 
+Sin embargo esto no es así si nos metemos dentro del mismo y observamos la secuencia de ejecución a nivel de microarquitectura. Si hacemos esto, descubriremos que la Línea 3 puede ser ejecutada de forma exitosa aunque el valor de \texttt{x} sea mayor a \texttt{size}. Esto se debe a una técnica de optimización implementada en los CPUs modernos, llamada ejecución fuera de orden (out-of-order execution).
 
-The above statement about the code example is true when looking from outside of the CPU.
-However, it is not completely true if we get into the CPU, and look at the execution sequence
-at the microarchitectural level. If we do that, we will find out that
-Line 3 may be successfully executed even though the value of \texttt{x} is 
-larger than \texttt{size}. This is due to an important optimization technique adopted by
-modern CPUs. It is called out-of-order execution.
+La ejecución fuera de orden es una técnica de optimización que le permite a la CPU maximizar la utilización de todas sus unidades de ejecución. En lugar de ejecutar las instrucciones en el orden estricto en que fueron establecidas, los CPUs modernos de alta performance permiten que la ejecución fuera de orden usen todas sus unidades de ejecución para optimizar la performance y manejar de manera eficiente el uso de recursos, de otra forma estaríamos en un escenario donde una instrucción esperaría que termine la ejecución de una instrucción anterior teniendo la posibilidad de poder ser ejecutada en unidades de ejecución en el CPU que están ociosas
 
-
-Out-of-order execution is an optimization technique that allows CPU to maximize the utilization of
-all its execution units. Instead of processing instructions
-strictly in a sequential order, a CPU executes them in parallel
-as soon as all required resources are available.
-While the execution unit of the current operation is occupied, other
-execution units can run ahead.
-
-In the code example above, at the microarchitectural level, Line 2 involves
-two operations: load the value of \texttt{size} from the memory, 
-and compare the value with \texttt{x}. If \texttt{size} is not in the CPU
-caches, it may take hundreds of CPU clock cycles before that value is read.
-Instead of sitting idle, modern CPUs try to predict the outcome 
-of the comparison, and speculatively execute the branches based on
-the estimation. Since such execution starts before the comparison even finishes,
-the execution is called out-of-order execution. 
-Before doing the out-of-order execution,  
-the CPU stores its current state and value of registers. 
-When the value of \texttt{size} finally arrives, 
-the CPU will check the actual outcome. If the prediction is true, the speculatively
-performed execution is committed and there is a significant performance gain. If the prediction
-is wrong, the CPU will revert back to its saved state, 
-so all the results produced by the out-of-order execution will be discarded like
-it has never happened.  That is why from outside we see that Line 3 was
-never executed.
-Figure~\ref{spectre:fig:spectre} illustrates the out-of-order execution
-caused by Line 2 of the sample code.
-
+Si observamos el código de ejemplo anterior, y nos posicionamos a un nivel de microarquitectura, la Línea 2 implica dos operaciones: Cargar el valor de \texttt{size} de la memoria y comparar el valor con \texttt{x}. Si la variable  \texttt{size} no está dentro de la caché del CPU, puede tomar cientos de ciclos de reloj del CPU antes de que este valor sea leído.
+En lugar de esperar ociosamente a que esto suceda, los procesadores modernos tratan de predecir el resultado de esta comparación, y correr de forma especulativa diferentes branches basados en estimaciones. Dado que dicha ejecución comienza antes de que la comparación termine, la ejecución es llamada ejecución fuera de orden, el CPU guarda su estado actual y los valores de los registros.
+Cuando el valor de  \texttt{size} finalmente está disponible, el CPU chequea el resultado actual. Si la predicción es verdadera, el proceso especulativo anteriormente realizado se usado y esto implica una ganancia significativa en la perfomance. Si la predicción es errónea el CPU volverá a su estado inicial, por lo que todos los resultados provocados por la ejecución fuera de orden serán descartados como si esto nunca hubiera pasado. Ese es el porque si miramos desde afuera la Línea 3 del código pareciera que nunca fue ejecutada.
+La Figura \ref{spectre:fig:spectre} ilustra la ejecución fuera de orden causada por la ejecución de la Línea 2.
 
 \begin{figure}[htb]
 \centering
 \includegraphics[width=0.75\textwidth]{\spectreFigs/spectre.pdf}
-\caption{Speculative execution (out-of-order execution)}
+\caption{Ejecución Especulativa (out-of-order execution)}
 \label{spectre:fig:spectre}
 \end{figure}
 
-
-Intel and several CPU makers made a severe mistake in the design of the out-of-order execution.
-They wipe out the effects of the out-of-order execution on registers and memory
-if such an execution is not supposed to happen, so the execution does not lead to
-any visible effect. However, they forgot one thing, the effect on CPU caches.
-During the out-of-order execution, the referenced memory is fetched into a register and is
-also stored in the cache. If the results of the out-of-order execution have to be discarded,
-the caching caused by the execution should also be discarded. Unfortunately, this is
-not the case in most CPUs. Therefore, it creates an observable effect.
-Using the side-channel technique described in Tasks 1 and 2, we
-can observe such an effect. The Spectre attack cleverly uses this
-observable effect to find out protected secret values.
+Tanto Intel como otros fabricantes de CPUs cometieron algunos errores graves en el diseño de la técnica de la ejecución fuera de orden (out-of-order execution).
+En el contexto de este diseño, se borrán los efectos de la ejecución fuera de orden tanto en los registros como en la memoria si es que tal ejecución no se supone que deba de ocurrir. Sin embargo, olvidaron algo, los efectos en las caches del CPU.
+Durante la ejecución fuera de orden, la memoria a la que se intenta acceder es guardada tanto en en un registro como en la caché. Si la ejecución fuera de orden debe de ser descartada o mejor dicho los efectos de la misma, la caché en donde se guardan estos resultados o efectos, también debería de ser descartados. Desafortunadamente este no es el caso en la mayoría de los CPUs.
+Por lo tanto, esto crea un efecto observable.
+Utilizando la técnica de side channel descrita en las Tareas 1 y 2,
+se puede observar tal efecto. El ataque Spectre usa de manera inteligente este
+efecto observable para descubrir valores secretos que se suponen protegidos.
 
 
 
@@ -202,13 +149,10 @@ observable effect to find out protected secret values.
 % -------------------------------------------
 % SUBSECTION
 % ------------------------------------------- 
-\subsection{The Experiment}
+\subsection{El Experimento}
 
-In this task, we use an experiment to observe the effect caused by
-an out-of-order execution. The code used in this experiment is shown below.
-Some of the functions used in the code
-is the same as that in the previous tasks, so they will not be repeated. 
-
+En esta tarea, usaremos un experimento para observar los efectos causados por la ejecución fuera de orden. El código usado en este experimento es mostrado a continuacióon.
+Algunas de las funciones usada en el código son las mimsas que se usaron en tareas anteriores, por lo que no serán repetidos.
 
 \begin{lstlisting}[caption=\texttt{SpectreExperiment.c}, label=spectre:list:outoforder]
 #define CACHE_HIT_THRESHOLD (80)
@@ -249,53 +193,29 @@ int main()
 }
 \end{lstlisting}
 
+Para que las CPUs puedan realizar la ejecución especulativa, deberían de poder predecir el resultado de la condición IF. Las CPUs guardan un registro de los branches que fueron tomados en el pasado y luego usa estoss resultados para predecir que branch debería de ser tomado en una ejecución especulativa.
+Además, si quisieramos que la CPU tome un branch en particular dentro de la ejecución especulativa, deberíamos de entrenar al CPU, por lo que nuestro branch elegido se puede convertir en el resultado de esa predicción. Este entrenamiento es hecho dentro del bloque \texttt{for} que comienza en la Línea \ding{194}. 
+Dentro de este for-loop, invocamos a la función \texttt{victim()} con un argumento cuyo valor es pequeño (este va de 0 a 9).
+Estos valores son menos que el valor de  \texttt{size}, por el branch con el valor true para esta condición en la Línea \ding{192} es siempre el que se elige. Esta es la fase de entrenamiento, que esencialmente entrena a la CPU que espera la 
+condición IF sea verdadera.
 
-For CPUs to perform a speculative execution, they should be able to
-predict the outcome of the if condition.  CPUs keep a record of the branches taken in the past,
-and then use these past results to predict what branch should be taken in a 
-speculative execution. 
-Therefore, if we would like a particular branch to be taken in 
-a speculative execution, we should train the CPU, so our selected branch 
-can become the prediction result. The training is done 
-in the \texttt{for} loop starting from Line \ding{194}. 
-Inside the loop, we invoke \texttt{victim()} with a small argument (from 0 to 9). These values are
-less than the value \texttt{size}, so the true-branch of the if-condition in Line \ding{192} is
-always taken. This is the training phase, which essentially trains the CPU to expect the 
-if-condition to come out to be true. 
-
-
-Once the CPU is trained, we pass a larger value (\texttt{97})
-to the \texttt{victim()} function (Line \ding{196}). This value is larger than \texttt{size},
-so the false-branch of the if-condition inside \texttt{victim()} will be taken in
-the actual execution, not the true-branch. However, we have flushed the variable \texttt{size}
-from the memory, so getting its value from the memory may take a while. This is when the CPU
-will make a prediction, and start speculative execution. 
+Una vez entrenada la CPU, invocamos a la función \texttt{victim()} (Línea \ding{196}) pero esta vez enviamos un parámetro con un valor más grande (\texttt{97}). Este valor es mas grande que \texttt{size}, por lo que se tomará el branch de la condición falsa y no de la condición verdadera. Sin embargo, hemos flusheado de la memoria la variable \texttt{size}, por lo que obtener su valor desde memoria puede llevar un rato. Aquí es donde la CPU hará las predicciones y empezará la ejecución especulativa.
 
 
 
 % -------------------------------------------
 % SUBSECTION
 % -------------------------------------------
-\subsection{Task 3} 
+\subsection{Tarea 3} 
 
+Por favor compile el programa \texttt{SpectreExperiment.c} mostrado en el Fragmento \ref{spectre:list:outoforder}  (Vea la Sección \ref{sidechannel:sec:compilation} para más detalles en como realizar la compilación); ejecute el programa y describa sus observaciones. Puede que haya algo de ruído en el side channel debido al cacheo de datos extras por el CPU, nos encargaremos de reducir este ruído mas adelante, por ahora puede ejecutar la tarea varias veces con el objetivo de observar sus efectos. Por favor observe cuando la Línea \ding{193} es ejecutada y cuando no en el caso que el valor when \texttt{97} sea usado en la función \texttt{victim()}. 
+En conjunto con lo anterior, por favor haga lo siguiente:
 
-Please compile the \texttt{SpectreExperiment.c} program 
-shown in Listing~\ref{spectre:list:outoforder} (see Section~\ref{sidechannel:sec:compilation}
-for the compilation instruction); 
-run the program and describe your observations. 
-There may be some noise in the side channel due to extra things cached by the
-CPU, we will reduce the noise later, but for now you can execute the task multiple times to
-observe the effects. Please observe whether Line \ding{193} is executed 
-or not when \texttt{97} is fed into \texttt{victim()}.  
-Please also do the followings:
 
 \begin{itemize}
-\item Comment out the line marked with \ding{80} and execute again. Explain your
-observation. After you are done with this experiment, 
-uncomment it, so the subsequent tasks are not affected.
+\item Comente la línea marcada con \ding{80} y ejecute todo nuevamente. Explique su observación. Después de terminar con este experimento, descomemente lo que comentó anteriormente, para así no afectar las tareas que vendrán después.
 
-\item Replace Line \ding{195} with \texttt{victim(i + 20)}; run the code again and
-explain your observation. 
+\item Reemplace la Línea \ding{195} con \texttt{victim(i + 20)}; ejecute el código nuevamente y explique su observación.
 %Because \texttt{i + 20} is always larger than the value 
 %of \texttt{size}, the false-branch of the if-condition in Line \ding{192} will always be 
 %executed. Basically, we are training the CPU to go to the false-branch.
@@ -309,7 +229,7 @@ explain your observation.
 % *******************************************
 % SECTION
 % ******************************************* 
-\section{Task 4: The Spectre Attack}
+\section{Tarea 4: El Ataque Spectre}
 
 
 As we have seen from the previous task, we can get CPUs to execute a true-branch of an
@@ -339,7 +259,7 @@ the access check.
 % -------------------------------------------
 % SUBSECTION
 % ------------------------------------------- 
-\subsection{The Setup for the Experiment} 
+\subsection{El Setup para el Experimento} 
 
 
 \begin{figure}[htb]
@@ -388,7 +308,7 @@ when the execution is reverted.
 % -------------------------------------------
 % SUBSECTION
 % ------------------------------------------- 
-\subsection{The Program Used in the Experiment}
+\subsection{El Programa usado por el Experimento}
 
 
 The code for the basic Spectre attack is shown below. In this code, there is a
@@ -486,7 +406,7 @@ you should execute the program multiple times and see whether you can get the se
 % *******************************************
 % SECTION
 % ******************************************* 
-\section{Task 5: Improve the Attack Accuracy}
+\section{Tarea 5: Mejorando la Precisión del Ataque}
 
 
 In the previous tasks, it may be observed that the results do have some noise and the results
@@ -587,7 +507,7 @@ and do the following tasks:
 % *******************************************
 % SECTION
 % ******************************************* 
-\section{Task 6: Steal the Entire Secret String}
+\section{Tarea 6: Steal the Entire Secret String}
 
 In the previous task, we  just read the first character of the \texttt{secret}
 string. In this task, we need to print out the entire string using the 
