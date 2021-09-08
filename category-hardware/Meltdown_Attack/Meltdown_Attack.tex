@@ -327,11 +327,11 @@ Usando el siguiente código como ejemplo, sabemos que la Línea 3 producirá una
 \end{lstlisting}
 
 La declaración anterior sobre el código de ejemplo es cierta si se mirá por fuera del CPU.
-Sin embargo esto no es así si nos metemos dentro del mismo y observacioness la secuencia de ejecución a nivel de microarquitectura. Si hacemos esto, descubriremos que la Línea 3 obtiene el dato desdde el kernel y que la Línea 4 y el resto de las instrucciones son ejecutadas. Esto se debe a una técnica de optimización implementada en los CPUs modernos, llamada ejecución fuera de orden (out-of-order execution).
+Sin embargo esto no es así si nos metemos dentro del mismo y observamos la secuencia de ejecución a nivel de microarquitectura. Si hacemos esto, descubriremos que la Línea 3 obtiene el dato desdde el kernel y que la Línea 4 y el resto de las instrucciones son ejecutadas. Esto se debe a una técnica de optimización implementada en los CPUs modernos, llamada ejecución fuera de orden (out-of-order execution).
 
 En lugar de ejecutar las instrucciones en el orden estricto en que fueron establecidas, los CPUs modernos de alta performance permiten que la ejecución fuera de orden usen todas sus unidades de ejecución para optimizar la performance y manejar de manera eficiente el uso de recursos, de otra forma estaríamos en un escenario donde una instrucción esperaría que termine la ejecución de una instrucción anterior teniendo la posibilidad de poder ser ejecutada en unidades de ejecución en el CPU que están ociosas \cite{wiki:outoforder}. 
 
-En el código de ejemplo anterior, y posicionandonos a un nivel de microarquitectura, la Línea 3 implica dos operaciones: Cargar el dato (usualmente dentro de un registro) y chequear cuando el acceso a este dato es permitido o no. SSi el dato está en la caché del CPU, la primera operación será rápida, mientras que la segunda será un poco más lenta. Para evitar la espera, el CPU continuará ejecutando la Línea 4 y el resto de las instrucciones mientras que realiza el chequeo del acceso en paralelo. Esto es la ejecución fuera de orden. Los resultados de la ejecución no serán confirmados antes que termine el chequeo del acceso. En nuestro si el ese chequeo falla, todos los resultados producidos por la ejecución fuera de orden serán descartados como si nunca hubiera sucedido. Es por eso que si estamos por fuera del CPU no vemos la ejecución de la Línea 4.
+Si observamos el código de ejemplo anterior, y nos posicionamos a un nivel de microarquitectura, la Línea 3 implica dos operaciones: Cargar el dato (usualmente dentro de un registro) y chequear cuando el acceso a este dato es permitido o no. SSi el dato está en la caché del CPU, la primera operación será rápida, mientras que la segunda será un poco más lenta. Para evitar la espera, el CPU continuará ejecutando la Línea 4 y el resto de las instrucciones mientras que realiza el chequeo del acceso en paralelo. Esto es la ejecución fuera de orden. Los resultados de la ejecución no serán confirmados antes que termine el chequeo del acceso. En nuestro si el ese chequeo falla, todos los resultados producidos por la ejecución fuera de orden serán descartados como si nunca hubiera sucedido. Es por eso que si estamos por fuera del CPU no vemos la ejecución de la Línea 4.
 La Figura \ref{meltdown:fig:outoforder} ilustra el escenario anteriormente descripto.
 
 
@@ -486,8 +486,8 @@ int ret = pread(fd, NULL, 0, 0); // Cause the secret data to be cached.
 % ------------------------------------------- 
 \subsection{Tarea 7.3: Usando Código Ensamblador para Ejecutar el Ataque}
 
-Probablemente todavía no pueda tener éxito en la tarea anterior, incluso el dato secreto almacenado en la caché por la CPU.
-Vamos a hacer algunas mejoras agregando unas pocas líneas de instrucciones de ensamblador antes del acceso a memoria del kernel. Vea el código más abajo en \texttt{meltdown\_asm()}. Básicamente este código realiza un loop 400 veces (Línea   \ding{192}); dentro de ese loop, suma el número \texttt{0x141} al registro \texttt{eax}. Este código realiza operaciones de poca utilidad en términos computacionales, pero esas líneas extras de código ``permiten realizar cierta cantidad de operaciones algorítmicas para que las unidades de ejecución del CPU "se entretengan procesando" mientras especula sobre el acceso a memoria''~\cite{boldin}
+Probablemente todavía no pueda tener éxito en la tarea anterior, incluso teniendo el dato secreto almacenado en la caché por la CPU.
+Vamos a hacer algunas mejoras agregando unas pocas líneas de instrucciones de ensamblador antes del acceso a memoria del kernel. Vea el código más abajo en \texttt{meltdown\_asm()}. Básicamente este código realiza un loop que se ejecuta 400 veces (Línea \ding{192}); dentro de ese loop, se suma el número \texttt{0x141} al registro \texttt{eax}. Este código realiza operaciones de poca utilidad en términos computacionales, pero esas líneas extras de código ``permiten realizar cierta cantidad de operaciones algorítmicas para que las unidades de ejecución del CPU "se entretengan procesando" mientras especula sobre el acceso a memoria''~\cite{boldin}
 
 
 \begin{lstlisting}[caption=\texttt{meltdown\_asm()}, label=meltdown:list:meltdown_asm]
@@ -523,7 +523,7 @@ Por favor llame a la función \texttt{meltdown\_asm()} en vez de la función ori
 \section{Tarea 8: Haciendo el Ataque más Práctico}
 
 Incluso con la optimización de la tarea anterior, es posible que aún no podamos
-obtener el dato secreto: a veces, nuestro ataque obtendrá el dato correcto, pero a veces, nuestro ataque no lo hará y producirá un valor incorrecto.
+obtener el dato secreto: puede que por momentos nuestro ataque logrará obtener el dato correcto, pero a veces, nuestro ataque no lo hará y producirá un valor incorrecto.
 Para mejorar la precisión, podemos usar una técnica estadística.
 La idea es crear un arreglo de scores de un tamaño de 256, un elemento por cada posible valor secreto. Una vez hecho se correrá el ataque reiterada veces. Cada vez, si nuestro programa dea taque dice que el dato secreto es \texttt{k} (esto puede ser falso), agregamos 1 en \texttt{scores[k]}. Después de correr el ataque muchas veces, usamos el valor \texttt{k} que tenga el score más alto como nuestra estimación final en lugar de usar el obtenido en una sola corrida. El código de esta técnica es mostrado a continuación:
 
