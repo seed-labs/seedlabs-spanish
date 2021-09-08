@@ -152,7 +152,7 @@ efecto observable para descubrir valores secretos que se suponen protegidos.
 \subsection{El Experimento}
 
 En esta tarea, usaremos un experimento para observar los efectos causados por la ejecución fuera de orden. El código usado en este experimento es mostrado a continuacióon.
-Algunas de las funciones usada en el código son las mimsas que se usaron en tareas anteriores, por lo que no serán repetidos.
+Algunas de las funciones usada en el código son las mismas que se usaron en tareas anteriores, por lo que no serán repetidos.
 
 \begin{lstlisting}[caption=\texttt{SpectreExperiment.c}, label=spectre:list:outoforder]
 #define CACHE_HIT_THRESHOLD (80)
@@ -193,13 +193,13 @@ int main()
 }
 \end{lstlisting}
 
-Para que las CPUs puedan realizar la ejecución especulativa, deberían de poder predecir el resultado de la condición IF. Las CPUs guardan un registro de los branches que fueron tomados en el pasado y luego usa estoss resultados para predecir que branch debería de ser tomado en una ejecución especulativa.
+Para que las CPUs puedan realizar la ejecución especulativa, deberían de poder predecir el resultado de la condición IF. Las CPUs guardan un registro de los branches que fueron tomados en el pasado y luego usa estos resultados para predecir que branch debería de ser tomado en una ejecución especulativa.
 Además, si quisieramos que la CPU tome un branch en particular dentro de la ejecución especulativa, deberíamos de entrenar al CPU, por lo que nuestro branch elegido se puede convertir en el resultado de esa predicción. Este entrenamiento es hecho dentro del bloque \texttt{for} que comienza en la Línea \ding{194}. 
 Dentro de este for-loop, invocamos a la función \texttt{victim()} con un argumento cuyo valor es pequeño (este va de 0 a 9).
-Estos valores son menos que el valor de  \texttt{size}, por el branch con el valor true para esta condición en la Línea \ding{192} es siempre el que se elige. Esta es la fase de entrenamiento, que esencialmente entrena a la CPU que espera la 
+Estos valores son menores que el valor \texttt{size}, por lo que el true-branch para esta condición en la Línea \ding{192} es siempre el que se elige. Esta es la fase de entrenamiento, que esencialmente entrena a la CPU que espera a que la 
 condición IF sea verdadera.
 
-Una vez entrenada la CPU, invocamos a la función \texttt{victim()} (Línea \ding{196}) pero esta vez enviamos un parámetro con un valor más grande (\texttt{97}). Este valor es mas grande que \texttt{size}, por lo que se tomará el branch de la condición falsa y no de la condición verdadera. Sin embargo, hemos flusheado de la memoria la variable \texttt{size}, por lo que obtener su valor desde memoria puede llevar un rato. Aquí es donde la CPU hará las predicciones y empezará la ejecución especulativa.
+Una vez entrenada la CPU, invocamos a la función \texttt{victim()} (Línea \ding{196}) pero esta vez enviamos un parámetro con un valor más grande (\texttt{97}). Este valor es mas grande que \texttt{size}, por lo que se tomará el false-branch y no el true-branch. Sin embargo, hemos flusheado de la memoria la variable \texttt{size}, por lo que obtener su valor desde memoria puede llevar un rato. Aquí es donde la CPU hará las predicciones y empezará la ejecución especulativa.
 
 
 
@@ -231,29 +231,16 @@ En conjunto con lo anterior, por favor haga lo siguiente:
 % ******************************************* 
 \section{Tarea 4: El Ataque Spectre}
 
+Como hemos visto en las tareas anteriores, podemos hacer las CPUs ejecuten el true-branch de un IF, aunque la condición sea falsa. Si la ejecución fuera de orden no produce un efecto visible, este no es un problema, dado que la mayoría de las CPUs que utilizan este mecanismo no limpian su caché, esto hace que se dejen rastros en esta caché de los resultados producidos por esta ejecución fuera de orden. El ataque Spectre usa estos rastros para robar datos secretos.
 
-As we have seen from the previous task, we can get CPUs to execute a true-branch of an
-if statement, even though the condition is false. If such an out-of-order execution does not
-cause any visible effect, it is not a problem. However, most CPUs with this feature do not
-clean the cache, so some traces of the out-of-order execution is left behind. The 
-Spectre attack uses these traces to steal protected secrets. 
+Estos datos pueden ser datos de un proceso en ejecución que no es el que está siendo ejecutado o del proceso que está siendo ejecutado. Si los datos son de otro proceso, el mecanismo de isolación del mismo se realiza a nivel hardware, en cambio si los datos son del mismo proceso, la isolación se da a nivel de software, como puede ser un mecanismo de sandbox.
+El ataque de Spectre puede ser usado para atacar ambos mecanismos de isolación.
+Sin embargo obtener los datos de un proceso que usa la isolación por hardware es mucho más difícil que aquel proceso que usa la isolación por software. 
+Para hacer esto más sencillo, este laboratorio se centrará solamente en obtener los datos pertenecientes al proceso en ejecución.
 
-
-These secrets can be data in another process or data in the same process. 
-If the secret data is in another process, the process isolation at the hardware level prevents 
-a process from stealing data from another process. If the data is in the same process, 
-the protection is usually done via software, such as sandbox mechanisms.  
-The Spectre attack can be launched against both types of secret. However, 
-stealing data from another process is much harder than stealing data from the same process. For
-the sake of simplicity, this lab only focuses on stealing data from the same process. 
-
-When web pages from different servers are opened inside a browser, they are often opened in the
-same process. The sandbox implemented inside the browser will provide an isolated environment
-for these pages, so one page will not be able to access another page's data. 
-Most software protections rely on condition checks to decide whether an access should be
-granted or not. With the Spectre attack, we can get CPUs to execute (out-of-order) 
-a protected code branch even if the condition checks fails, essentially defeating
-the access check.
+Cuando en un navegador se visitan diferentes páginas webs en servidores remotos comúnmente se usa el mismo proceso para abrirlas. El mecanismo de sandbox implementado dentro del navegador provee un entorno isolado para estas páginas, por lo que una página no podrá acceder a los datos de otra página.
+La mayoría de estas protecciones de software se basan en chequear ciertas condiciones para determinar si un determinado acceso es permitido o no. 
+Podemos evadir este tipo de chequeo de acceso usando el ataque Spectre, valiéndonos de la ejecución fuera de orden del CPU sobre el branch del código que se intenta proteger incluso cuando esa condición sea falsa.
 
 
 % -------------------------------------------
