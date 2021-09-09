@@ -1,19 +1,13 @@
 
 %\paragraph{Removing the Host VM from \texttt{192.168.60.0/24} network.}
-When Docker creates a network, it automatically attach the
-host machine (i.e., the VM) to the network. In this
-case, the host machine is attached to both
-networks, and is given the IP address \texttt{10.9.0.1} and
-\texttt{192.168.60.1}.
-This may create undesirable situations,
-so let's remove it.
 
-In our setup, we only want the VM to be connected to
-\texttt{10.9.0.0/24}, not to both.
-We need to detach the VM from the other network. We cannot simply power down
-the interface, because that will affects all the containers on that network.
-Our solution is to remove the IP address
-of the interface, and then set the routing accordingly. 
+Cuando Docker crea una red, este automáticamente hace un attach de la máquina host (es decir la Máquina Virtual) hacía la red. En este caso, la máquina host es atachada en ambas redes, por lo que tendrá la IPs \texttt{10.9.0.1} y
+\texttt{192.168.60.1}.
+Estoo puede crear comportamientos no deseados, procederemos a remover este tipo de configuración.
+
+En nuestro setup, solamente queremos que la Máquina Virtual este conectada a la red \texttt{10.9.0.0/24}.
+Para esto necesitamos detachar la Máquina Virtual del resto de las redes, pero no podemos desactivar la interfaz de red dado que esto afectará a todos los contenedores que se encuentren en esa red.
+La solución es borrar la dirección IP de la interfaz y reconfigurar el ruteo de la misma.
 
 
 \begin{lstlisting}

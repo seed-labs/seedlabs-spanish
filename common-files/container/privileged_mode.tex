@@ -1,7 +1,5 @@
-To be able to modify kernel parameters at runtime (using \texttt{sysctl}),
-such as enabling IP forwarding, a container needs to be privileged.
-This is achieved by including the following entry
-in the Docker Compose file for the container.
+Para poder modificar parámetros del kernel en tiempo de ejecución (usando  \texttt{sysctl}), tal como IP forwarding, el contenedor debe de ser privilegiado.
+Esto se consigue incluyendo la siguiente entrada dentro del archivo Docker compose del contenedor.
 
 \begin{lstlisting}
 privileged: true
