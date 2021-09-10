@@ -12,7 +12,7 @@
 \input{\commonfolder/copyright}
 
 
-\lhead{\bfseries SEED Labs -- Laboratorio de ARP Cache Poisoning}
+\lhead{\bfseries SEED Labs -- Laboratorio de ARP Caché Poisoning}
 \newcommand{\arpFigs}{./Figs}
 
 
@@ -21,11 +21,10 @@
 
 
 \begin{center}
-{\LARGE Laboratorio de ARP Cache Poisoning}
+{\LARGE Laboratorio de ARP Caché Poisoning}
 \end{center}
 
 \seedlabcopyright{2019}
-
 
 
 % *******************************************
@@ -37,7 +36,7 @@ El Address Resolution Protocol o Protocolo de Resolución de Direcciones (ARP) e
 El ARP poisoning cache es un ataque bastante común que se ejecuta en contra de este protocolo.
 Con un ataque de este tipo, los atacantes pueden engañar a la víctima para que acepte mapeos falsificados de IP-to-MAC. Esto puede hacer que los paquetes de la víctima sean redirigidos a la computadora con la dirección MAC falsificada, lo que lleva a posibles ataques man-in-the-middle.
 
-El objetivo de este laboratorio es que los estudiantes ganen experiencia en el ataque de ARP Cache Poisoning y aprendan los daños causado por dicho ataque.
+El objetivo de este laboratorio es que los estudiantes ganen experiencia en el ataque de ARP Caché Poisoning y aprendan los daños causado por dicho ataque.
 En particular los estudiantes usarán este ataque para ejecutar ataques de man-in-the-middle, donde un atacante puede interceptar y modificar los paquetes entre una víctima A y otra víctima B.
 El otro objetivo del laboratorio es que los estudiantes practiquen el sniffing y el spoofing de paquetes, dado que son aptitudes esenciales en la seguridad de redes y sirven como base para construir diferentes tipos de ataques de red como así para defenderlas.
 Para dicho objetivo los estudiantes usarán Scapy en las tareas del laboratorio.
@@ -46,7 +45,7 @@ Este laboratorio cubre los siguientes tópicos:
 
 \begin{itemize}[noitemsep]
 \item El Protocolo ARP
-\item Ataque de ARP Cache Poisoning
+\item Ataque de ARP Caché Poisoning
 \item Ataque de Man-in-the-middle 
 \item Programación con Scapy
 \end{itemize}
@@ -69,22 +68,16 @@ Para una cobertura más detallada sobre el protocolo ARP y sus ataques puede con
 % *******************************************
 % SECTION
 % *******************************************
-\section{Environment Setup using Container}
+\section{Configuración del entorno usando Contenedores}
 
-In this lab, we need three machines. We use 
-containers to set up the lab environment, which is depicted 
-in Figure~\ref{arp:fig:labsetup}.
-In this setup, we have an attacker machine (Host M),
-which is used to launch attacks against the other two machines, Host A and
-Host B.  These three machines must be on the same LAN,
-because the ARP cache poisoning attack is limited to LAN. We use 
-containers to set up the lab environment.
+Para este laboratorio necesitaremos tres máquinas. Usaremos contenedores para configurar el entorno del laboratorio. La ilustración \ref{arp:fig:labsetup} describe la configuración de nuestro laboratorio.
+En esta configuración tenemos una máquina de ataque (Host M), que es la que usaremos para lanzar los ataque en contra de las dos máquinas, Host A y Host B. Estas tres máquinas deben de estar en la misma LAN, dado que el ataque de ARP caché poisoning se limita a una sola LAN.
 
 \begin{figure}[htb]
 \begin{center}
 \includegraphics[width=0.8\textwidth]{\commonfolder/Figs/ARP_onelan.pdf}
 \end{center}
-\caption{Lab environment setup}
+\caption{Configuración del entorno}
 \label{arp:fig:labsetup}
 \end{figure}
  
@@ -92,7 +85,7 @@ containers to set up the lab environment.
 % -------------------------------------------
 % SUBSECTION
 % -------------------------------------------
-\subsection{Container Setup and Commands}
+\subsection{Setup del Contenedor y sus Comandos}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \input{\commonfolder/container/setup}
@@ -102,22 +95,18 @@ containers to set up the lab environment.
 % -------------------------------------------
 % SUBSECTION
 % -------------------------------------------
-\subsection{About the Attacker Container}
+\subsection{El contenedor de Ataque}
 
-In this lab, we can either use the VM or the attacker container
-as the attacker machine. If you look at the Docker Compose file, you will
-see that the attacker container is configured differently from the other
-containers. Here are the differences:
+Para este laboratorio podemos usar tanto una Máquina Virtual como un contenedor como máquina de ataque. Si observa el archivo Docker Compose, verá que el contenedor de ataque está configurado de forma diferente al resto de los contenedores. Las diferencias son las siguientes:
 
 \begin{itemize}
-\item \textit{Shared folder.} When we use the attacker container
-to launch attacks, we need to put the attacking code inside
-the container.
+\item \textit{Directorio Compartido.} Cuando usemos el contenedor del atacante para realizar los ataques, necesitamos poner el código de ataque dentro del contenedor.
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \input{\commonfolder/container/volumes}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\item \textit{Privileged mode.}
+\item \textit{Modo Privilegiado.}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \input{\commonfolder/container/privileged_mode}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -128,7 +117,7 @@ the container.
 % -------------------------------------------
 % SUBSECTION
 % -------------------------------------------
-\subsection{Packet Sniffing} 
+\subsection{Sniffing de Paquetes} 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \input{\commonfolder/container/sniffing}
@@ -139,20 +128,13 @@ the container.
 % *******************************************
 % SECTION
 % ******************************************* 
-\section{Task 1: ARP Cache Poisoning}
+\section{Tarea 1: ARP Caché Poisoning}
 
+El objetivo de esta tarea es poder hacer spoofing de paquetes para lanzar un ataque de ARP caché poisoning sobre una máquina, de tal forma que cuando dos máquinas víctimas A y B se traten de comunicar entre ellas, sus paquetes serán interceptados por el ataque, quién podra realizar cambios sobre los mismos y ser un man in the middle entre A y B. Este tipo de ataque es llamado Man-In-The-Middle (MITM).
+En este laboratorio usaremos ARP caché poisoning para conducir un ataque MITM.
 
-The objective of this task is to use packet spoofing to launch an ARP cache poisoning attack on
-a target, such that when two victim machines A and B try to communicate with each other, their
-packets will be intercepted by the attacker, who can make changes to the packets, and can thus
-become the man in the middle between A and B. This is called Man-In-The-Middle (MITM) attack.
-In this lab, we use ARP cache poisoning to conduct an MITM attack. 
-
-
-
-The following code skeleton shows how to construct an ARP packet using Scapy. 
-Please replace the interface name \texttt{br-05f0c56e8085} with the one in your 
-own setup (see the previous section). 
+El siguiente código base muestra como construir un paquete ARP usando Scapy.
+Por favor reemplace el nombre de la interfaz \texttt{br-05f0c56e8085} con la obtenida en su propia máquina (vea la sección anterior).
 
 \begin{lstlisting}
 #!/usr/bin/env python3
@@ -165,10 +147,8 @@ pkt = E/A
 sendp(pkt, iface='br-05f0c56e8085')
 \end{lstlisting}
 
-The above program constructs and sends an ARP packet. Please set necessary attribute
-names/values to define your own ARP packet. We can use \texttt{ls(ARP)} to see the attribute
-names of the ARP class. If a field is not set, a default value will be used (see the third
-column of the output):
+El programa anterior construye y envía un paquete ARP. Por favor complete con los valores necesarios para definir los atributos de su propio paquete ARP. Podemos usar \texttt{ls(ARP)} para ver los nombres de los atributos que posee la clase ARP. Si un campo no tiene valor, un valor por defecto será usado (vea la tercera columna del output):
+
 
 \begin{lstlisting}
 $ python3
@@ -185,12 +165,8 @@ hwdst      : MACField                            = ('00:00:00:00:00:00')
 pdst       : IPField                             = ('0.0.0.0')
 \end{lstlisting}
 
-In this task, we have three machines (containers), A, B, and M. 
-We would like to attack A's ARP cache, such that
-B's IP address is mapped to M's MAC address. We can check
-a computer's ARP cache using the following command. If you 
-want to look at the ARP cache associated with a specific
-interface, you can use the \texttt{-i} option. 
+En esta tarea, tenemos tres máquinas (contenedores), A, B y M.
+Queremos atacar la caché ARP de A, de tal manera que la IP de B sea mapeada en la dirección MAC de M. Podemos chequear la cache ARP de una máquina usando el siguiente comandop. Si quiere chequear la cache ARP asociada a una interfaz específica, puede usar el parámetro \texttt{-i}.
 
 \begin{lstlisting}
 $ arp -n
@@ -199,39 +175,30 @@ Address     HWtype  HWaddress           Flags Mask  Iface
 10.0.2.3    ether   08:00:27:48:f4:0b   C           enp0s3
 \end{lstlisting}
 
-There are many ways to conduct ARP cache poisoning attack. Students need to try the following
-three methods, and report whether each method works or not. 
+Existen muchas formas de conducir un ataque de ARP caché poisoning. Los estudiantes deberán de intentar los siguientes métodos y reportar cuales funcionan y cuales no.
 
 \begin{itemize}
-\item \textbf{Task 1.A (using ARP request).} On host M, construct an ARP request packet and send
-to host A. Check A's ARP cache, and see whether M's MAC address is mapped to B's IP address.
-    
-\item \textbf{Task 1.B (using ARP reply).} On host M, construct an ARP reply packet and send to
-host A. Check A's ARP cache, and see whether M's MAC address is mapped to B's IP address.
-Try the attack for two different scenarios: 
-  
+\item \textbf{Tarea 1.A (Usando ARP Request).} En el Host M, construya un paquete ARP Request y envíelo al Host A. Vea la caché ARP del Host A y si la dirección MAC de M es mapeada en la dirección IP de B.
+
+\item \textbf{Tarea 1.B (Usando ARP Reply).} En el Host M, construya un paquete ARP Reply y envíelo al Host A. Vea la caché ARP del Host A y si la dirección MAC de M es mapeada en la dirección IP de B.
+Intente este ataque para los siguientes dos escenarios:
+
     \begin{itemize}
-      \item Scenario 1: B's IP is already in A's cache.
-      \item Scenario 2: B's IP is not in A's cache.
+      \item Escenario 1: La dirección IP de B existe en la caché de A.
+      \item Escenario 2: La dirección IP de B no existe en la caché de A.
     \end{itemize}
      
     
-\item \textbf{Task 1C (using ARP gratuitous message).} On host M, construct an ARP gratuitous
-packets, and use it to map M's MAC address to B's IP address. Please launch the attack
-under the same two scenarios as those described in Task 1.B. 
+\item \textbf{Tarea 1C (Usando ARP gratuitous message).} En el Host M, construya un paquete ARP gratuitous message y envíelo al Host A. Vea la caché ARP del Host A y si la dirección MAC de M es mapeada en la dirección IP de B.  Por favor ejecute el ataque usando los dos escenarios que son decriptos en la Tarea 1.B.
 
-ARP gratuitous packet is a special ARP request packet. It is used when a host machine
-needs to update outdated information on all the other machine's ARP cache. The gratuitous ARP
-packet has the following characteristics:
+ARP gratuitous es un tipo de paquete especial ARP Request. Este se usa cuando una máquina host necesita actualizar información que quedo desactualizada dentro de la caché ARP del resto de las máquinas. El paquete ARP gratuitous tiene las siguientes características:
 
 \begin{itemize}
-\item The source and destination IP addresses are the same, and they are the IP address of the
-host issuing the gratuitous ARP.
+\item La dirección IP de origen y destino son las mismas, y pertenecen a la máquina que está emitindo el paquete ARP gratuitous.
 
-\item The destination MAC addresses in both ARP header and Ethernet header are the broadcast
-MAC address ({\tt ff:ff:ff:ff:ff:ff}).
+\item Tanto en la cabecera ARP como en la cabecera Ethernet, la dirección MAC de destino es la dirección MAC de broadcast ({\tt ff:ff:ff:ff:ff:ff}).
 
-\item No reply is expected.
+\item No se espera respuesta.
 \end{itemize}
 \end{itemize}
 
@@ -240,7 +207,7 @@ MAC address ({\tt ff:ff:ff:ff:ff:ff}).
 % *******************************************
 % SECTION
 % ******************************************* 
-\section{Task 2: MITM Attack on Telnet using ARP Cache Poisoning}
+\section{Tarea 2: Ataque MITM en Telnet Usando ARP Caché Poisoning}
 
 Hosts A and B are communicating using Telnet, and Host M wants to intercept their
 communication, so it can make changes to the data sent between A and B. The setup is depicted
@@ -251,12 +218,12 @@ telnet into this account.
 \begin{figure}
     \centering
     \includegraphics[width=0.8\textwidth]{\arpFigs/telnet_mitm.pdf}
-    \caption{Man-In-The-Middle Attack against telnet}
+    \caption{Ataque Man-In-The-Middle Attack contra telnet}
     \label{arp:fig:telnet_mitm}
 \end{figure}
 
 
-\paragraph{Step 1 (Launch the ARP cache poisoning attack).} First, Host M conducts an ARP cache
+\paragraph{Paso 1 (Launch the ARP cache poisoning attack).} First, Host M conducts an ARP cache
 poisoning attack on both A and B, such that in A's ARP cache, B's IP address maps to M's MAC
 address, and in B's ARP cache, A's IP address also maps to M's MAC address. After this step,
 packets sent between A and B will all be sent to M. We will use the ARP cache poisoning attack
@@ -266,7 +233,7 @@ the real ones.
 
 
 
-\paragraph{Step 2 (Testing).} After the attack is successful, please try to ping each other
+\paragraph{Paso 2 (Testing).} After the attack is successful, please try to ping each other
 between Hosts A and B, and report your observation. Please show Wireshark results in your
 report. Before doing this step, please make sure that the IP forwarding on Host M is turned
 off. You can do that with the following command:
@@ -275,7 +242,7 @@ off. You can do that with the following command:
 # sysctl net.ipv4.ip_forward=0
 \end{lstlisting}
 
-\paragraph{Step 3 (Turn on IP forwarding).} Now we turn on the IP forwarding on Host M, so it
+\paragraph{Paso 3 (Turn on IP forwarding).} Now we turn on the IP forwarding on Host M, so it
 will forward the packets between A and B. Please run the following command and repeat Step 2.
 Please describe your observation. 
 
@@ -283,7 +250,7 @@ Please describe your observation.
 # sysctl net.ipv4.ip_forward=1
 \end{lstlisting}
 
-\paragraph{Step 4 (Launch the MITM attack).} We are ready to make changes to the Telnet data
+\paragraph{Paso 4 (Launch the MITM attack).} We are ready to make changes to the Telnet data
 between A and B. Assume that A is the Telnet client and B is the Telnet server. After A has
 connected to the Telnet server on B, for every key stroke typed in A's Telnet window, a TCP
 packet is generated and sent to B. We would like to intercept the TCP packet, and replace each
@@ -396,7 +363,7 @@ that is not what you have typed.
 % *******************************************
 % SECTION
 % ******************************************* 
-\section{Task 3: MITM Attack on Netcat using ARP Cache Poisoning}
+\section{Tarea 3: Ataque MITM en Netcat Usando ARP Caché Poisoning}
 
 This task is similar to Task 2, except that
 Hosts A and B are communicating using \texttt{netcat}, instead of \texttt{telnet}.
@@ -429,12 +396,20 @@ first name, so we know the work is done by you.
 % *******************************************
 % SECTION
 % ******************************************* 
-\section{Submission}
+\section{Informe del Laboratorio}
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \input{\commonfolder/submission}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+% *******************************************
+% SECTION
+% *******************************************
+\section*{Agradecimientos}
+
+\input{\commonfolder/acknowledgments}
 
 
 \end{document}
