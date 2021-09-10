@@ -130,7 +130,7 @@ Para este laboratorio podemos usar tanto una Máquina Virtual como un contenedor
 % ******************************************* 
 \section{Tarea 1: ARP Cache Poisoning}
 
-El objetivo de esta tarea es poder hacer spoofing de paquetes para lanzar un ataque de ARP cache poisoning sobre una máquina, de tal forma que cuando dos máquinas víctimas A y B se traten de comunicar entre ellas, sus paquetes serán interceptados por el ataque, quién podra realizar cambios sobre los mismos y ser un man in the middle entre A y B. Este tipo de ataque es llamado Man-In-The-Middle (MITM).
+El objetivo de esta tarea es poder hacer spoofing de paquetes para lanzar un ataque de ARP cache poisoning sobre una máquina, de tal forma que cuando dos máquinas víctimas A y B se traten de comunicar entre ellas, sus paquetes serán interceptados por el atacante, quién podra realizar cambios sobre los mismos y ser un man in the middle entre A y B. Este tipo de ataque es llamado Man-In-The-Middle (MITM).
 En este laboratorio usaremos ARP cache poisoning para conducir un ataque MITM.
 
 El siguiente código base muestra como construir un paquete ARP usando Scapy.
@@ -221,7 +221,7 @@ Hemos creado una cuenta dentro del contenedor llamada \texttt{"seed"}, su passwo
 \end{figure}
 
 
-\paragraph{Paso 1 (Lanzar el Ataque ARP cache poisoning).} Primero será el Host M quien conducirá el ataque entre las máquinas Ay B, de tal forma que en la caché ARP de la máquina A, este mapeada la dirección IP de B que tendrá la dirección MAC de M y en la caché ARP de B, la dirección IP de A también tendrá mapeada la dirección MAC dde M. Después de esto, los paquetes traficados entre A y B serán enviados a M. Usaremos el ataque de ARP cache poisoning de la Tarea 1 para lograrlo. Es mejor que envié paquetes spoofeados constantemente (cada 5 segundos); de otra forma las entradas falsas pueden ser reemplazadas por las originales.
+\paragraph{Paso 1 (Lanzar el Ataque ARP cache poisoning).} Primero será el Host M quien conducirá el ataque entre las máquinas A y B, de tal forma que en la caché ARP de la máquina A, este mapeada la dirección IP de B que tendrá la dirección MAC de M y en la caché ARP de B, la dirección IP de A también tendrá mapeada la dirección MAC de M. Después de esto, los paquetes traficados entre A y B serán enviados a M. Usaremos el ataque de ARP cache poisoning de la Tarea 1 para lograrlo. Es mejor que envié paquetes spoofeados constantemente (cada 5 segundos); de otra forma las entradas falsas pueden ser reemplazadas por las originales.
 
 
 \paragraph{Paso 2 (Probando).} Después de que el ataque sea exitoso, haga un ping entre los Hosts A y B, reporte sus observacioness. Por favor use los resultados de Wireshark en su reporte. Antes de realizar este pase, asegúrese que el IP Forwarding en el Host M esté desactivado. Para hacerlo debe ejecutar el siguiente comando:
@@ -237,10 +237,10 @@ Por favor describa su observación.
 # sysctl net.ipv4.ip_forward=1
 \end{lstlisting}
 
-\paragraph{Paso 4 (Lanzar el Ataque MITM).} Estamos listos para hacer cambios en los datos de Telnet que se trafican entre A y B. Asuma que A es el cliente telnet y B el servidor telnet. Después de que A se conecta al servidor telnet en B, por cada tecla tipeada en la ventana de telnet de A, se genera un paquete TCP y es enviado a B. Vamos a interceptar este paquete TCP y reemplazar cada caracter tipeado con un caracter fijado (digamos Z). De esta forma, no importa lo que el usuario escriba en A, telnet siempre mostrará Z.
+\paragraph{Paso 4 (Lanzar el Ataque MITM).} Estamos listos para hacer cambios en los datos de Telnet que se trafican entre A y B. Asuma que A es el cliente telnet y B el servidor telnet. Después de que A se conecta al servidor telnet en B, por cada tecla tipeada en la ventana de telnet de A, se genera un paquete TCP y es enviado a B. Vamos a interceptar este paquete TCP y reemplazar cada caracter tipeado con un caracter fijo (digamos Z). De esta forma, no importa lo que el usuario escriba en A, telnet siempre mostrará Z.
 
 En los pasos anteriores, nos encargamos de redireccionar los paquetes TCP hacia el Host M, pero en vez de redireccionarlos, deberíamos de reemplazarlos con paquetes spoofeados. Escribiremos un programa de sniff-and-spoof para lograr este objetivo. 
-En particular nuestro que hacer sería el siguiente:
+Los pasos a hacer serían los siguientes:
 
 
 \begin{itemize}
@@ -315,10 +315,10 @@ Cabe señalar que el código anterior, captura todo los paquetes TCP, incluído 
 
 \paragraph{Comportamiento de Telnet.}
 Típicamente todo caracter tipeado en una ventana de Telnet dispara un paquete TCP, pero si ud. escribe muy rápido, algunos caracteres pueden ser enviados de manera conjunta en el mismo paquete.
-Es por eso que el payload de un paquete típico de telnet desde un cliente hacia un servidor contiene solamente un caracter. El caracter enviado al servidor serán repetidos por el servidor y el cliente lo mostrará en su ventana. 
+Es por eso que el payload de un paquete típico de telnet desde un cliente hacia un servidor contiene solamente un caracter. El caracter enviado será repetido por el servidor y el cliente lo mostrará en su ventana. 
 Lo que vemos en la ventana del cliente no es el resultado directo de lo que se está escribiendo; lo que sea que se escriba en la ventana del cliente realiza un recorrido de ida y vuelta antes de ser mostrado.
-Si la red está desconectada, lo oque se escriba en la ventana del cliente no será mostrado hasta que la red vuelva a estar disponible nuevamente. 
-Del mismo modo, si los atacantes cambian el caracter a Z durante el ida y vuelta, Z se mostrará en la ventana del cliente Telnet, aunque eso no haya sido lo que se ha escrito.
+Si la red está desconectada, lo que se escriba en la ventana del cliente no será mostrado hasta que la red vuelva a estar disponible. 
+Del mismo modo, si los atacantes cambian el caracter a Z durante el ida y vuelta, Z se mostrará en la ventana del cliente Telnet, aunque eso no haya sido lo que se escribió.
 
 
 % *******************************************
