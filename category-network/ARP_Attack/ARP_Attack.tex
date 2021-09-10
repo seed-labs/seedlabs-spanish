@@ -12,7 +12,7 @@
 \input{\commonfolder/copyright}
 
 
-\lhead{\bfseries SEED Labs -- Laboratorio de ARP Caché Poisoning}
+\lhead{\bfseries SEED Labs -- Laboratorio de ARP Cache Poisoning}
 \newcommand{\arpFigs}{./Figs}
 
 
@@ -21,7 +21,7 @@
 
 
 \begin{center}
-{\LARGE Laboratorio de ARP Caché Poisoning}
+{\LARGE Laboratorio de ARP Cache Poisoning}
 \end{center}
 
 \seedlabcopyright{2019}
@@ -45,7 +45,7 @@ Este laboratorio cubre los siguientes tópicos:
 
 \begin{itemize}[noitemsep]
 \item El Protocolo ARP
-\item Ataque de ARP Caché Poisoning
+\item Ataque de ARP Cache Poisoning
 \item Ataque de Man-in-the-middle 
 \item Programación con Scapy
 \end{itemize}
@@ -71,7 +71,7 @@ Para una cobertura más detallada sobre el protocolo ARP y sus ataques puede con
 \section{Configuración del entorno usando Contenedores}
 
 Para este laboratorio necesitaremos tres máquinas. Usaremos contenedores para configurar el entorno del laboratorio. La ilustración \ref{arp:fig:labsetup} describe la configuración de nuestro laboratorio.
-En esta configuración tenemos una máquina de ataque (Host M), que es la que usaremos para lanzar los ataque en contra de las dos máquinas, Host A y Host B. Estas tres máquinas deben de estar en la misma LAN, dado que el ataque de ARP caché poisoning se limita a una sola LAN.
+En esta configuración tenemos una máquina de ataque (Host M), que es la que usaremos para lanzar los ataque en contra de las dos máquinas, Host A y Host B. Estas tres máquinas deben de estar en la misma LAN, dado que el ataque de ARP cache poisoning se limita a una sola LAN.
 
 \begin{figure}[htb]
 \begin{center}
@@ -128,10 +128,10 @@ Para este laboratorio podemos usar tanto una Máquina Virtual como un contenedor
 % *******************************************
 % SECTION
 % ******************************************* 
-\section{Tarea 1: ARP Caché Poisoning}
+\section{Tarea 1: ARP Cache Poisoning}
 
-El objetivo de esta tarea es poder hacer spoofing de paquetes para lanzar un ataque de ARP caché poisoning sobre una máquina, de tal forma que cuando dos máquinas víctimas A y B se traten de comunicar entre ellas, sus paquetes serán interceptados por el ataque, quién podra realizar cambios sobre los mismos y ser un man in the middle entre A y B. Este tipo de ataque es llamado Man-In-The-Middle (MITM).
-En este laboratorio usaremos ARP caché poisoning para conducir un ataque MITM.
+El objetivo de esta tarea es poder hacer spoofing de paquetes para lanzar un ataque de ARP cache poisoning sobre una máquina, de tal forma que cuando dos máquinas víctimas A y B se traten de comunicar entre ellas, sus paquetes serán interceptados por el ataque, quién podra realizar cambios sobre los mismos y ser un man in the middle entre A y B. Este tipo de ataque es llamado Man-In-The-Middle (MITM).
+En este laboratorio usaremos ARP cache poisoning para conducir un ataque MITM.
 
 El siguiente código base muestra como construir un paquete ARP usando Scapy.
 Por favor reemplace el nombre de la interfaz \texttt{br-05f0c56e8085} con la obtenida en su propia máquina (vea la sección anterior).
@@ -175,7 +175,7 @@ Address     HWtype  HWaddress           Flags Mask  Iface
 10.0.2.3    ether   08:00:27:48:f4:0b   C           enp0s3
 \end{lstlisting}
 
-Existen muchas formas de conducir un ataque de ARP caché poisoning. Los estudiantes deberán de intentar los siguientes métodos y reportar cuales funcionan y cuales no.
+Existen muchas formas de conducir un ataque de ARP cache poisoning. Los estudiantes deberán de intentar los siguientes métodos y reportar cuales funcionan y cuales no.
 
 \begin{itemize}
 \item \textbf{Tarea 1.A (Usando ARP Request).} En el Host M, construya un paquete ARP Request y envíelo al Host A. Vea la caché ARP del Host A y si la dirección MAC de M es mapeada en la dirección IP de B.
@@ -207,13 +207,11 @@ ARP gratuitous es un tipo de paquete especial ARP Request. Este se usa cuando un
 % *******************************************
 % SECTION
 % ******************************************* 
-\section{Tarea 2: Ataque MITM en Telnet Usando ARP Caché Poisoning}
+\section{Tarea 2: Ataque MITM en Telnet Usando ARP Cache Poisoning}
 
-Hosts A and B are communicating using Telnet, and Host M wants to intercept their
-communication, so it can make changes to the data sent between A and B. The setup is depicted
-in Figure~\ref{arp:fig:telnet_mitm}. We have already created an account called
-\texttt{"seed"} inside the container, the password is \texttt{"dees"}. You can 
-telnet into this account. 
+Los Hosts A y B se comunican usando Telnet, el Host M quiere interceptar sus comunicaciones, para poder realizar cambios en los datos enviados entre A y B. Figura \ref{arp:fig:telnet_mitm}
+Hemos creado una cuenta dentro del contenedor llamada \texttt{"seed"}, su password es \texttt{"dees"}. Puede usar esta cuenta para telnet.
+
 
 \begin{figure}
     \centering
@@ -223,66 +221,42 @@ telnet into this account.
 \end{figure}
 
 
-\paragraph{Paso 1 (Launch the ARP cache poisoning attack).} First, Host M conducts an ARP cache
-poisoning attack on both A and B, such that in A's ARP cache, B's IP address maps to M's MAC
-address, and in B's ARP cache, A's IP address also maps to M's MAC address. After this step,
-packets sent between A and B will all be sent to M. We will use the ARP cache poisoning attack
-from Task 1 to achieve this goal. It is better that you send out the spoofed packets
-constantly (e.g. every 5 seconds); otherwise, the fake entries may be replaced by 
-the real ones. 
+\paragraph{Paso 1 (Lanzar el Ataque ARP cache poisoning).} Primero será el Host M quien conducirá el ataque entre las máquinas Ay B, de tal forma que en la caché ARP de la máquina A, este mapeada la dirección IP de B que tendrá la dirección MAC de M y en la caché ARP de B, la dirección IP de A también tendrá mapeada la dirección MAC dde M. Después de esto, los paquetes traficados entre A y B serán enviados a M. Usaremos el ataque de ARP cache poisoning de la Tarea 1 para lograrlo. Es mejor que envié paquetes spoofeados constantemente (cada 5 segundos); de otra forma las entradas falsas pueden ser reemplazadas por las originales.
 
 
-
-\paragraph{Paso 2 (Testing).} After the attack is successful, please try to ping each other
-between Hosts A and B, and report your observation. Please show Wireshark results in your
-report. Before doing this step, please make sure that the IP forwarding on Host M is turned
-off. You can do that with the following command:
+\paragraph{Paso 2 (Probando).} Después de que el ataque sea exitoso, haga un ping entre los Hosts A y B, reporte sus observacioness. Por favor use los resultados de Wireshark en su reporte. Antes de realizar este pase, asegúrese que el IP Forwarding en el Host M esté desactivado. Para hacerlo debe ejecutar el siguiente comando:
 
 \begin{lstlisting}
 # sysctl net.ipv4.ip_forward=0
 \end{lstlisting}
 
-\paragraph{Paso 3 (Turn on IP forwarding).} Now we turn on the IP forwarding on Host M, so it
-will forward the packets between A and B. Please run the following command and repeat Step 2.
-Please describe your observation. 
+\paragraph{Paso 3 (Active IP Forwarding).} Después del Paso 2, activaremos nuevamente el IP Forwarding en el Host, lo que permitirá que se forwardeen los paquetes entre A y B nuevamente. Para hacerlo debe ejecutar el siguiente comando y repita el Paso 2.
+Por favor describa su observación.
 
 \begin{lstlisting}
 # sysctl net.ipv4.ip_forward=1
 \end{lstlisting}
 
-\paragraph{Paso 4 (Launch the MITM attack).} We are ready to make changes to the Telnet data
-between A and B. Assume that A is the Telnet client and B is the Telnet server. After A has
-connected to the Telnet server on B, for every key stroke typed in A's Telnet window, a TCP
-packet is generated and sent to B. We would like to intercept the TCP packet, and replace each
-typed character with a fixed character (say Z). This way, it does not matter what the user
-types on A, Telnet will always display Z.
+\paragraph{Paso 4 (Lanzar el Ataque MITM).} Estamos listos para hacer cambios en los datos de Telnet que se trafican entre A y B. Asuma que A es el cliente telnet y B el servidor telnet. Después de que A se conecta al servidor telnet en B, por cada tecla tipeada en la ventana de telnet de A, se genera un paquete TCP y es enviado a B. Vamos a interceptar este paquete TCP y reemplazar cada caracter tipeado con un caracter fijado (digamos Z). De esta forma, no importa lo que el usuario escriba en A, telnet siempre mostrará Z.
 
-From the previous steps, we are able to redirect the TCP packets to Host M, but instead of
-forwarding them, we would like to replace them with a spoofed packet. We will write a
-sniff-and-spoof program to accomplish this goal. In particular, we would like to do the
-following: 
+En los pasos anteriores, nos encargamos de redireccionar los paquetes TCP hacia el Host M, pero en vez de redireccionarlos, deberíamos de reemplazarlos con paquetes spoofeados. Escribiremos un programa de sniff-and-spoof para lograr este objetivo. 
+En particular nuestro que hacer sería el siguiente:
+
 
 \begin{itemize}
 
-\item We first keep the IP forwarding on, so we can successfully create a Telnet connection
-between A to B. Once the connection is established, we turn off the IP forwarding using the
-following command. Please type something on A's Telnet window, and report your observation: 
+\item Primero dejaremos la opción de IP Forwarding activada, por lo que podremos crear una conexión telnet entre A y B. Una vez establecida esta conexión, desactivaremos IP Forward usando el siguiente coando. Por favor escriba algo en la ventana telnet de A y reporte su observación.
 
 \begin{lstlisting}
 # sysctl net.ipv4.ip_forward=0
 \end{lstlisting}
 
-\item We run our sniff-and-spoof program on Host M, such that for the captured packets sent
-from A to B,  we spoof a packet but with TCP different data. For packets from B to A (Telnet
-response), we do not make any change, so the spoofed packet is exactly the same as the original
-one. 
+\item Ejecutamos nuestro programa de sniff-and-spoof en el Host M, para capturar los paquetes que van desde A hacia B, spoofeamos un paquete pero los datos en este paquete TCP serán diferentes. Para los paquetes que van desde B hacia A (la respuesta telnet), no haremos nada, así se conservará el paquete original que será igual al paquete spoofeado.
+
 \end{itemize} 
 
-To help students get started, we provide a skeleton sniff-and-spoof
-program in the following. The program capture all the TCP packets, and 
-then for packets from A to B, it makes some changes (the modification
-part is not included, because that is part of the task). For packets from
-B to A, the program does not make any change.  
+Para ayudar a los estudiantes, hemos hecho un código base de nuestro  programa de sniff-and-spoof. El programa captura todos los paquetes TCP, y realiza algunos cambios en los paquetes que viajan de A hacia B (la parte que realiza esta modificación no está incluída en el código, ya que es parte de la tarea). Para los paquetes que viajan de B hacia A, el programa no realiza ninguna modificación.
+
 
 \begin{lstlisting}
 #!/usr/bin/env python3
@@ -335,42 +309,26 @@ pkt = sniff(iface='eth0', filter=f, prn=spoof_pkt)
 \end{lstlisting}
 
 
-It should be noted that the code above captures all the TCP 
-packets, including the one generated by the program itself. That is 
-undesirable, as it will affect
-the performance. Students needs to change the filter, so it does not capture 
-its own packets. 
+Cabe señalar que el código anterior, captura todo los paquetes TCP, incluído el que es generado por el mismo programa. Eso no es conveniente, y afectará a la performance. Los estudiantes necesitan cambiar el filtro para que el programa no capture sus propios paquetes.
 
 
-\paragraph{Behavior of Telnet.}
-In Telnet, typically, every character we type in the Telnet window triggers
-an individual TCP packet, but if you type very fast, some characters may be 
-sent together in the same packet. 
-That is why in a typical Telnet packet from client to server, 
-the payload only contains one character.  The
-character sent to the server will be echoed back by the server, 
-and the client will then display the
-character in its window. Therefore, what we see in the client window is not the direct result
-of the typing; whatever we type in the client window takes a round trip before it is displayed.
-If the network is disconnected, whatever we typed on the client window will not displayed,
-until the network is recovered. Similarly, if attackers change the character to Z during the
-round trip, Z will be displayed at the Telnet client window, even though
-that is not what you have typed.
 
-
+\paragraph{Comportamiento de Telnet.}
+Típicamente todo caracter tipeado en una ventana de Telnet dispara un paquete TCP, pero si ud. escribe muy rápido, algunos caracteres pueden ser enviados de manera conjunta en el mismo paquete.
+Es por eso que el payload de un paquete típico de telnet desde un cliente hacia un servidor contiene solamente un caracter. El caracter enviado al servidor serán repetidos por el servidor y el cliente lo mostrará en su ventana. 
+Lo que vemos en la ventana del cliente no es el resultado directo de lo que se está escribiendo; lo que sea que se escriba en la ventana del cliente realiza un recorrido de ida y vuelta antes de ser mostrado.
+Si la red está desconectada, lo oque se escriba en la ventana del cliente no será mostrado hasta que la red vuelva a estar disponible nuevamente. 
+Del mismo modo, si los atacantes cambian el caracter a Z durante el ida y vuelta, Z se mostrará en la ventana del cliente Telnet, aunque eso no haya sido lo que se ha escrito.
 
 
 % *******************************************
 % SECTION
 % ******************************************* 
-\section{Tarea 3: Ataque MITM en Netcat Usando ARP Caché Poisoning}
+\section{Tarea 3: Ataque MITM en Netcat Usando ARP Cache Poisoning}
 
-This task is similar to Task 2, except that
-Hosts A and B are communicating using \texttt{netcat}, instead of \texttt{telnet}.
-Host M wants to intercept their
-communication, so it can make changes to the data sent between A and B.
-You can use the following commands to establish a \texttt{netcat} TCP
-connection between A and B:
+Esta tarea es similar a la Tarea 2, con la exepción que los Hosts A y B se comunican usando \texttt{netcat}, en lugar de \texttt{telnet}.
+El Host M quiere interceptar sus comunicaciones el Host M quiere interceptar sus comunicaciones, para poder realizar cambios en los datos enviados entre A y B.
+Puede utilizar los siguientes comandos para establecer una conexión \texttt{netcat} TCP entre A y B:
 
 
 \begin{lstlisting}
@@ -381,16 +339,9 @@ On Host A (client), run the following:
 # nc 10.9.0.6 9090
 \end{lstlisting}
  
-
-Once the connection is made, you can type messages on A.
-Each line of messages will be put into a TCP packet sent 
-to B, which simply displays the message.  
-Your task is to replace every occurrence of your first name in the 
-message with a sequence of A's. The length of the sequence should be the 
-same as that of your first name, or you will mess up the TCP sequence
-number, and hence the entire TCP connection. You need to use your real
-first name, so we know the work is done by you.  
-
+Una vez que la conexión está hecha, puede tipear mensajes en A.
+Cada linea de mensajes será colocada en un paquete TCP que será enviado a B, quién mostrará el mensaje.
+Su tarea es reemplazar cada ocurrencia de su nombre dentro del mensaje con una secuencia de letras A. La longitud de la secuencia debería de ser la misma que la longitud de su nombre de lo contrario el número de secuencia TCP se verá corrompido y por ende toda la conexión TCP. Necesita usar su nombre real, de esta forma sabremos que el trabajo fue hecho por ud.
 
 
 % *******************************************
