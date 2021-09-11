@@ -135,7 +135,7 @@ En esta tarea, los estudiantes van a comparar los resultados de un paquete benig
 
 El ataque Heartbleed está basado en el request Heartbeat. Este request envía datos al servidor y el servidor copia estos datos en su paquete de respuesta por lo que todos los datos son devueltos. 
 En un escenario normal, suponiendo que el request tenga 3 bytes de datos "ABC", el campo de longitud tiene un valor de 3. El servidor pondrá estos datos en memoria y copiará 3 bytes desde el comienzo de los datos hasta su paquete de respuesta.
-En un escenario de ataque, el request puede tener 3 bytes de datos pero el campo de longitud puede decir 1003. Cuando el servidor construye su paquete de respuesta, copia desde el comienzo de los datos (es decir ``ABC''), pero copia 1003 bytes en vez de 3.
+En un escenario de ataque, el request puede tener 3 bytes de datos pero el campo de longitud puede tener un valor de 1003. Cuando el servidor construye su paquete de respuesta, copia desde el comienzo de los datos (es decir ``ABC''), pero copia 1003 bytes en vez de 3.
 Esos 1000 bytes extras que se copian obviamente no provienen del paquete de request; provienen de la memoria privada del servidor y pueden contener datos secretos.
 
 
@@ -146,7 +146,7 @@ Esos 1000 bytes extras que se copian obviamente no provienen del paquete de requ
 \label{fig:benign_packet}
 \end{figure}
 
-En esta tarea, jugaremoos con el campo de longitud del request.
+En esta tarea, jugaremos con el campo de longitud del request.
 Primero vamos entender como se construye un paquete de respuesta Heartbeat, Figura \ref{fig:benign_packet}. Cuando llega un paquete request Heartbeat, el servidor parseará ese paquete, obtendrá el payload y el valor del \texttt{Payload\_length} (que está remarcado en la Figura \texttt{Payload\_length}). Aquí, este payload es una cadena de 3 bytes \texttt{"ABC"} y el valor de su \texttt{Payload\_length} es 3. El programa del servidor confiará ciegamente en este valor de longitud que proviene del paquete de request. Construirá el paquete de respuesta apuntando a la porción de memoria que contiene \texttt{"ABC"} y copiará los bytes del \texttt{Payload\_length} en el payload de su respuesta, de esta forma el paquete de respuesta tendrá una cadena de 3 bytes  \texttt{"ABC"}.
 
 \begin{figure}[!htb]
@@ -156,7 +156,7 @@ Primero vamos entender como se construye un paquete de respuesta Heartbeat, Figu
 \label{fig:mal_packet}
 \end{figure}
 
-Podemos lanzar el ataque Heartbleed como es mostrado en la Figura\ref{fig:mal_packet}. Usaremos el mismo payload (3 bytes) pero pondremos el valor del campo \texttt{Payload\_length} en 1003. El servidor nuevamente confiará ciegamente en el valor de \texttt{Payload\_length} al momento de construir el paquete de respuesta. Esta vez, el programa del servidor apuntara a la cadena \texttt{"ABC"} y además copiará 1003 bytes desde la memoria hacia el payload del  paquete de respuesta. Es decir ademas de copiar la cadena "ABC", se agregan en el paquete de respuesta 1000 bytes extra, que pueden contener cualquier tipo de dato que este siendo albergado en memoria en ese preciso instante, como podría ser una llave secreta, password, información de logueo, etc.
+Podemos lanzar el ataque Heartbleed como es mostrado en la Figura  \ref{fig:mal_packet}. Usaremos el mismo payload (3 bytes) pero pondremos el valor del campo \texttt{Payload\_length} en 1003. El servidor nuevamente confiará ciegamente en el valor de \texttt{Payload\_length} al momento de construir el paquete de respuesta. Esta vez, el programa del servidor apuntara a la cadena \texttt{"ABC"} y además copiará 1003 bytes desde la memoria hacia el payload del  paquete de respuesta. Es decir ademas de copiar la cadena "ABC", se agregan en el paquete de respuesta 1000 bytes extra, que pueden contener cualquier tipo de datos que esten siendo albergados en memoria en ese preciso instante, como podría ser una llave secreta, password, información de logueo, etc.
 
 Nuestro código de ataque nos permite jugar con diferentes valores para el campo \texttt{Payload\_length}. Por defecto, el valor de este campo es un poco grande (\texttt{0x4000}), pero puede reducir su tamaño usando el parámetro  \texttt{"-l"}  (la letra L) o \texttt{"--length"}, a continuación se muestra un ejemplo:
 
@@ -169,7 +169,7 @@ Su tarea es jugar con el programa de ataque y usar diferentes longitudes de payl
 
 
 \begin{itemize}
-  \item {\bf Pregunta 2.1:} A medida que la longitud disminuye, ¿Que diferencia puede observar?
+  \item {\bf Pregunta 2.1:} A medida que la longitud disminuye, ¿Qué diferencia puede observar?
   
   \item {\bf Pregunta 2.2:} A medida que la variable de longitud disminuye, existe un valor límite para la variable de la longitud de entrada. Por encima o por debajo de ese límite la consulta de Heartbeat recibirá un paquete de respuesta sin adjuntar ningún dato adicional (lo que significa que el request es benigno). Por favor encuentre cual es esa longitud límite. Puede que necesite intentar con varias longitudes diferentes hasta que el servidor web envíe la respuesta sin datos adicionales. Para ayudarlo con esto, cuando el número de bytes devueltos es menor que la longitud esperada, el programa imprimirá \texttt{"Server processed malformed Heartbeat, but did not return any extra data."}
 \end{itemize}
@@ -183,7 +183,7 @@ Su tarea es jugar con el programa de ataque y usar diferentes longitudes de payl
 \subsection{Tarea 3: Protección y Arreglo del Bug}
 
 Para arreglar la vulnerabilidad de Heartbleed, la mejor forma de hacerlo es actualizar la librería de OpenSSL a su versión más reciente. Esto se puede hacer usando los siguientes comandos.
-Cabe señalar que una vez actualizada. Es difícil volver a una versión vulnerable de la librería. Asegurése de haber terminado todas las tareas previas hasta este punto antes de hacer el update. Puede realizar un snapshot de su Máquina Virtual antes de hacer el update.
+Cabe señalar que una vez actualizada, es difícil volver a una versión vulnerable de la librería. Asegurése de haber terminado todas las tareas previas hasta este punto antes de hacer el update. Puede realizar un snapshot de su Máquina Virtual antes de hacer el update.
 
 \begin{lstlisting}
 $ sudo apt-get update
@@ -194,8 +194,7 @@ $ sudo apt-get upgrade
 \paragraph{Tarea 3.1} Intente lanzar el ataque una vez que haya actualizado la versión de la librería OpenSSL. Por favor describa sus observaciones.
 
 
-
-\paragraph{Tarea 3.2} El objetivo de esta tarea es descubrir como arreglar el bug de Heartbleed en el código fuente. La siguiente estructura escrita en C (no es exactamente igual a la usada en el código) quiere mostrar el format de un paquete de request/response de Hearbeat.
+\paragraph{Tarea 3.2} El objetivo de esta tarea es descubrir como arreglar el bug de Heartbleed en el código fuente. La siguiente estructura escrita en C (no es exactamente igual a la usada en el código) tiene la intención de mostrar el formato de un paquete de request/response de Hearbeat.
 
 
 \begin{lstlisting}
