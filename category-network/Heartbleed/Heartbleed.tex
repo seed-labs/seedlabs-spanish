@@ -31,9 +31,9 @@
 % ******************************************* 
 \section{Descripción}
 
-El bug de Heartbleed (CVE-2014-0160) es un fallo crítico de implementación dentro de la librería OpenSSL, este fallo permite que los atacantes roben datos de la memoria de un servidor vulnerable. El contenido de los datos robados depende de lo que haya en la memoria del servidor. Potencialmente pueden ser llaves privadas, llaves de sesión TLS, usuarios, contraseñas, tarjetas de crédito, etc. Esta vulnerabilidad está dentro de la implementación del protocolo Heartbleed, que es usado por SSL/TLS para mantener las conexiones activas.
+El bug de Heartbleed (CVE-2014-0160) es un fallo crítico de implementación dentro de la librería OpenSSL, este fallo permite que los atacantes roben datos de la memoria de un servidor vulnerable. El contenido de los datos robados depende de lo que haya en la memoria del servidor. Potencialmente pueden ser llaves privadas, llaves de sesión TLS, usuarios, contraseñas, tarjetas de crédito, etc. Esta vulnerabilidad se encuentra en la implementación del protocolo Heartbeat, que es usado por SSL/TLS para mantener las conexiones activas.
 
-El objetivo de este laboratorio es que los estudiantes entiendan la gravedad de esta vulnerabilidad, como funciona el ataque y como solucionar el problema. El rango de versiones afectadas de OpenSSL va desde la versión {\tt 1.0.1} hasta la versión {\tt 1.0.1f}. La versión que corre nuestra Máquina Virtual SEED con Ubuntu 12.04 es la {\tt 1.0.1}. 
+El objetivo de este laboratorio es que los estudiantes entiendan la gravedad de esta vulnerabilidad, como funciona el ataque a la misma y como solucionar el problema. El rango de versiones afectadas por esta vulnerabilidad de la librería OpenSSL va desde la versión {\tt 1.0.1} hasta la versión {\tt 1.0.1f}. La versión que corre nuestra Máquina Virtual SEED con Ubuntu 12.04 es la {\tt 1.0.1}. 
 
 
 \paragraph{Lecturas y Videos.}
@@ -56,7 +56,7 @@ Puede descargar la Máquina Virtual de SEED con Ubuntu 12.04 desde el sitio ofic
 % ******************************************* 
 \section{Entorno de Laboratorio}
 
-En este laboratorio, necesitamos configurar dos Máquina Virtuales: Una llamada la máquina atacante y la otra llamada el servidor víctima.
+En este laboratorio, necesitamos configurar dos Máquina Virtuales: Una llamada la máquina atacante y la otra llamada el servidor vulnerable.
 Usaremos \texttt{SEEDUbuntu12.04} como Máquina Virtual. Las Máquinas Virtuales necesitan usar el adaptador \texttt{NAT-Network} en sus configuraciones de red. Esto se puede hacer a través de las Settings de la Máquina Virtual, dentro de la sección Network/Red y clickeando en la etiqueta Adaptor/Adaptador y cambiar el adaptador a \texttt{NAT-Network}. Asegúrese que ambas Máquinas estén en la misma NAT-Network.
 
 El sitio usado en este ataque puede ser cualquier sitio HTTPS que use SSL/TLS.
@@ -102,10 +102,10 @@ Necesitamos interactuar con el servidor web como usuarios legítimos. Vamos a ha
   \item Envié un mensaje privado a Boby.
   \end{itemize} 
 	    
-Después de haber interactuado lo suficiente como un usuario legítimo, puede lanzar el ataque y observar que tipo de informacióon puede obtener del servidor vulnerable.
-Escribir un programa desde cero para lanzar el ataque de Heartbleed no es fácil, porque requiere conocimientos de bajo nivel del protocolo heartbeat. Afortunadamente el código de ataque ha sido escrito por otras personas. Usaremos el código existente para obtener conocimiento y experiencia en el ataque Heartbleed.
+Después de haber interactuado lo suficiente como un usuario legítimo, puede lanzar el ataque y observar que tipo de información puede obtener del servidor vulnerable.
+Escribir un programa desde cero para lanzar el ataque de Heartbleed no es fácil, porque requiere conocimientos de bajo nivel del protocolo heartbeat. Afortunadamente el código de ataque ha sido escrito por terceros.
 El código que usaremos se llama \texttt{attack.py}, y fue escrito originalmente por Jared Stafford.
-Hemos realizado en el código algunas modificaciones menores con fines educacionales.
+Hemos realizado en el código algunas modificaciones menores con fines educativos.
 Puede descargar el código en el sitio oficial del laboratorio, cambie los permisos del archivo y hágalo ejecutable. Una vez hecho eso, puede correr el ataque de la siguiente manera:
 
 \begin{lstlisting}
@@ -113,7 +113,7 @@ $ ./attack.py  www.heartbleedlabelgg.com
 \end{lstlisting}
 
 Puede que necesite correr el ataque varias veces para obtener información útil.
-Trate este ataque y observe cuando puede obtener la siguiente información del servidor vulnerable.
+Ejecute este ataque varias veces y observe cuando puede obtener la siguiente información del servidor vulnerable.
  
 
 \begin{itemize} 
