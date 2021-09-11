@@ -31,57 +31,46 @@
 % ******************************************* 
 \section{Descripción}
 
-An ICMP redirect is an error message sent by a router to the sender of an
-IP packet. Redirects are used when a router believes a packet is being
-routed incorrectly, and it would like to inform the sender that it should
-use a different router for the subsequent packets sent to that same
-destination. ICMP redirect can be used by attackers to change
-a victim's routing.
+Una ICMP Redirect es un mensaje de error enviado por un router a quien envía un paquete IP. Las redirecciones son usadas por un router cuando este cree que un paquete está siendo ruteado de forma errónea y le quire informar a quien lo está enviando que debería de usar un router diferente para los paquetes que se envién de ahora en más al destino que se está usando. Un ICMP Redirect puede ser usado por atacantes para cambiar el enrutamiento de una determinada víctima.
 
-The objective of this task is to launch an ICMP redirect attack on the victim,
-such that when the victim sends packets to \texttt{192.168.60.5},
-it will use the malicious router container (\texttt{10.9.0.111})
-as its router.
-Since the malicious router is controlled by the attacker, the attacker can
-intercept the packets, make changes, and then send
-the modified packets out. This is a form of the Man-In-The-Middle (MITM) attack.
-This lab covers the following topics:
+El objetivo de este laboratorio es lanzar un ataque de ICMP Redirect sobre un una víctima, tal que los paquetes enviados por la víctima hacia \texttt{192.168.60.5}, sea usado por un contenedor router (\texttt{10.9.0.111}) malicioso.
+Dado que el router malicioso es controlado por el atacante, el atacante puede interceptar paquetes, cambiarlos y enviarlos modificados. Este es una forma de ataque Man-In-The-Middle (MITM).
+
+Este laboratorio cubre los siguientes tópicos:
+
 
 \begin{itemize}[noitemsep]
-\item The IP and ICMP protocols
-\item ICMP redirect attack
+\item Protocolos IP y ICMP
+\item Ataque ICMP Redirect
 \item Routing 
 \end{itemize}
 
 
 \paragraph{Videos.}
-Detailed coverage of the IP protocol and the attacks at the IP layer can be found 
-in the following:
+Para una cobertura más detallada sobre el protocolo IP y ataques en la capa IP puede consultar:
 
 \begin{itemize}
-\item Section 4 of the SEED Lecture, \seedisvideo
+\item Sección 4 del curso de SEED en Udemy, \seedisvideo
 \end{itemize}
 
 
-\paragraph{Lab environment.} \seedenvironmentC
+\paragraph{Entorno de Laboratorio.} \seedenvironmentC
 
 
 
 % *******************************************
 % SECTION
 % *******************************************
-\section{Environment Setup using Container}
+\section{Configuración del entorno usando Contenedores}
 
-In this lab, we need several machines. The lab
-environment setup is depicted in Figure~\ref{ip:fig:labsetup}.
-We use containers to set up this environment.
-
+En este laboratorio usaremos varias máquinas. La configuración del entorno del laboratorio se ilustra en la Figura \ref{ip:fig:labsetup}.
+Para este laboratorio usaremos contenedores.
 
 \begin{figure}[htb]
 \begin{center}
 \includegraphics[width=0.8\textwidth]{./Figs/TwoLANs_ICMP.pdf}
 \end{center}
-\caption{Lab environment setup}
+\caption{Configuración del entorno}
 \label{ip:fig:labsetup}
 \end{figure}
 
@@ -90,7 +79,7 @@ We use containers to set up this environment.
 % -------------------------------------------
 % SUBSECTION
 % -------------------------------------------
-\subsection{Container Setup and Commands}
+\subsection{Setup del Contenedor y sus Comandos}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \input{\commonfolder/container/setup}
@@ -100,22 +89,17 @@ We use containers to set up this environment.
 % -------------------------------------------
 % SUBSECTION
 % -------------------------------------------
-\subsection{About the Attacker Container}
+\subsection{Sobre el Contenedor de Ataque}
 
-In this lab, we can either use the VM or the attacker container
-as the attacker machine. If you look at the Docker Compose file, you will
-see that the attacker container is configured differently from the other
-containers. Here are the differences:
+Para este laboratorio podemos usar tanto una Máquina Virtual como un contenedor como máquina de ataque. Si observa el archivo Docker Compose, verá que el contenedor de ataque está configurado de forma diferente al resto de los contenedores. Las diferencias son las siguientes:
 
 \begin{itemize}
-\item \textit{Shared folder.} When we use the attacker container
-to launch attacks, we need to put the attacking code inside
-the attacker container.
+\item \textit{Directorio Compartido.} Cuando usemos el contenedor del atacante para realizar los ataques, necesitamos poner el código de ataque dentro del contenedor.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \input{\commonfolder/container/volumes}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\item \textit{Privileged mode.}
+\item \textit{Modo Privilegiado.}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \input{\commonfolder/container/privileged_mode}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -126,13 +110,9 @@ the attacker container.
 % *******************************************
 % SECTION
 % ******************************************* 
-\section{Task 1: Launching ICMP Redirect Attack}
+\section{Tarea 1: Lanzando el Ataque ICMP Redirect}
 
-In the Ubuntu operating system, 
-there is a countermeasure against the ICMP redirect attack. In the 
-Compose file, we have already 
-turned off the countermeasure by configuring the victim container
-to accept ICMP redirect messages. 
+En los sistemas operativos Ubuntu, existe una protección contra ataques ICMP Redirect. En el archivo Compose, hemos desactivado esta protección, haciendo que el contenedor de la víctima acepte mensajes ICMP Redirect.
 
 \begin{lstlisting}
 // In docker-compose.yml
@@ -143,13 +123,7 @@ sysctls:
 # sysctl net.ipv4.conf.all.accept_redirects=0
 \end{lstlisting}
 
-
-For this task, we will attack the victim container from 
-the attacker container. In the current setup, 
-the victim will use the router container (\texttt{192.168.60.11}) as
-the router to get to the \texttt{192.168.60.0/24} network. If
-we run \texttt{ip route} on the victim container, we will
-see the following
+Para esta tarea, atacaremos el contenedor víctima desde nuestro contenedor de ataque. En la configuración actual la víctima usara el contenedor router (\texttt{192.168.60.11}) como router de la red \texttt{192.168.60.0/24}. Al ejecutar \texttt{ip route} dentro del contenedor de la víctima, observaremos algo como esto:
 
 \begin{lstlisting}
 # ip route
@@ -159,9 +133,7 @@ default via 10.9.0.1 dev eth0
 \end{lstlisting}
  
 
-\paragraph{Code skeleton.} A code skeleton is provided in the following, with
-some of the essential parameters left out. Students should fill in the proper 
-values in the places marked by \texttt{@@@@}.  
+\paragraph{Código Base.} Se ha provisto un código base que se muestra a continuación con los paramétros esenciales que deberán de ser completados. Los estudiantes deberán de llenarlos con los valores apropiados, estos valores a completar son demarcados por \texttt{@@@@}. 
 
 
 \begin{lstlisting}[language=python]
@@ -180,11 +152,8 @@ send(ip/icmp/ip2/ICMP());
 \end{lstlisting}
  
 
-\paragraph{Verification.}
-ICMP redirect messages will not affect the routing table; instead, it 
-affects the routing cache. Entries in the routing cache overwrite 
-those in the routing table, until the entries expire. To display 
-and clean the cache contents, we can use the following commands: 
+\paragraph{Verificación.}
+Los mensajes ICMP Redirect no afectan la tabla de routing; afectan a la caché del routing. Las entradas en la caché de routing sobreescriben aquellas que se encuentran en la tabla de routing hasta que cada una de estas expire. Para mostrar y limpiar el contenido de esta caché, podemos usar los siguientes comandos:
 
 \begin{lstlisting}
 // Display the routing cache 
@@ -196,62 +165,35 @@ and clean the cache contents, we can use the following commands:
 # ip route flush cache
 \end{lstlisting}
 
-
-Please do a traceroute on the victim machine, and see whether the packet
-is rerouted or not. 
+Por favor haga un traceroute de la máquina víctima y vea si los paquetes son re-enrutados o no.
 
 \begin{lstlisting}
 # mtr -n 192.168.60.5
 \end{lstlisting}
- 
 
 
+\paragraph{Un hecho extraño.} Mientras se fue desarrollando este laboratorio, hemos observado un hecho extraño en los entornos de los contenedores. Este hecho no se presenta si la víctima es la Máquina Virtual, en lugar del contenedor.
+Si spoofeamos los paquetes que se redireccionan pero la máquina víctima no está enviando paquetes ICMP durante el ataque, el ataque no será exitoso.
+Más aún, la \texttt{ip} dentro de un paquete de redirección debe de coincidir con el tipo y la dirección ip destino de los paquetes que la víctima está enviando (ICMP para ICMP, UDP para UDP, etc.).
 
-\paragraph{A strange issue.} While developing this lab, we have observed
-a strange issue in the container environment. The issue does not exist
-if the victim is a VM, instead of a container. 
-If we spoof the redirect packets, but the victim machine is not 
-sending out ICMP packets during the attack, the attack will never be successful. 
-This is not the case for the VM setting. 
-Moreover, the \texttt{ip2} inside the redirect packet must match with the
-type and the destination IP address of the packets 
-that the victim is currently sending (ICMP for ICMP,
-UDP for UDP, etc.). 
+Pareciera ser que el kernel del sistema operativo implementa algún tipo de chequeo de seguridad antes de aceptar paquetes ICMP Redirect.
+No se ha podido determinar con exactitud la causa de esto y porque la Máquina Virtual no tiene estas restricciones.
+Esta situación es algo que hasta la fecha SEED labs no ha podido solucionar, se alienta a los estudiantes a que nos ayuden a resolver esta cuestión. Recomendamos a los instructores otorgar puntos extras a aquellos estudiantes que hayan podido solucionar este inconveniente.
+
+Antes de encontrar una manera de desactivar este chequeo preventivo y lanzar el ataque, deberíamos de hacer un \texttt{ping} al host \texttt{192.168.60.5} en la máquina víctima.
 
 
-It seems that the OS kernel conducts some kind of 
-sanity check before accepting an ICMP redirect packets. 
-We have not figured out what exactly caused this, 
-and why the VM does not have these restrictions. 
-This is an open issue for the SEED labs, and we encourage 
-students to help us resolve this issue. We recommend instructors
-to give students bonus points if they have indeed resolved this issue. 
-
-
-Before we find a way to disable this checking mechanism, 
-when we launch the attack,
-we should should \texttt{ping} the \texttt{192.168.60.5} host on the 
-victim machine. 
-
-
-\paragraph{Questions.} After you have succeeded in the attack, please 
-conduct the following experiments, and see whether your attack can 
-still succeed. Please explain your observations:
+\paragraph{Preguntas.} Después de que el ataque haya sido exitoso, por favor realice los siguientes experimentos y vea si su ataque sigue funcionando. Por favor explique sus observaciones:
 
 \begin{itemize}
-\item Question 1: Can you use ICMP redirect attacks to redirect to a remote machine? Namely,
-the IP address assigned to \texttt{icmp.gw} is a computer not on the local LAN. 
-Please show your experiment result, and explain your observation.  
+\item Pregunta 1: ¿Puede usar ataques ICMP Redirect para redireccionar en una máquina remota? A saber, la dirección IP asignada en \texttt{icmp.gw} es una computadora que no está en la LAN local. Muestre el resultado de su experimento y explique su observación.
 
-\item Question 2: Can you use ICMP redirect attacks to redirect to a non-existing machine on
-the same network? Namely, the IP address assigned to \texttt{icmp.gw} is a local computer that
-is either offline or non-existing. 
-Please show your experiment result, and explain your observation.  
 
-\item Question 3: If you look at the \texttt{docker-compose.yml} file, you will find the 
-following entries for the malicious router container. What are the purposes
-of these entries? Please change their value to \texttt{1}, and launch the attack again. 
-Please describe and explain your observation. 
+\item Pregunta 2:  ¿Puede usar ataques ICMP Redirect para redireccionar en una máquina que no existe en la misma red? A saber, la dirección IP asignada en \texttt{icmp.gw} es una computadora que puede estar offline o puede no existir. Muestre el resultado de su experimento y explique su observación.
+
+
+\item Pregunta 3: Si observa en el archivo \texttt{docker-compose.yml}, encontrará las siguientes entradas para el contenedor router malicioso. ¿Cual es el propósito de estas entradas? Por favor modifique los valores a \texttt{1}, realize el ataque nuevamente.
+Por favor describa y explique su observación.
 
 \begin{lstlisting}
 sysctls:
@@ -264,22 +206,15 @@ sysctls:
 
 
 
-
-
 % *******************************************
 % SECTION
 % *******************************************
-\section{Task 2: Launching the MITM Attack} 
+\section{Tarea 2: Lanzando el Ataque MITM} 
 
-Using the ICMP redirect attack, we can get the victim to use 
-our malicious router (\texttt{10.9.0.111}) as the router for the destination
-\texttt{192.168.60.5}. Therefore, all packets from the victim machine 
-to this destination will be routed through the malicious router.
-We would like to modify the victim's packets. 
+Usando el ataque de ICMP Redirect, podemos lograr que la víctima use nuestro router malicioso (\texttt{10.9.0.111}) como el router para el destino \texttt{192.168.60.5}. Todos los paquetes de la máquina de la víctima hacia este destino serán ruteados por nuestro router malicioso.
+Queremos modificar los paquetes de la víctima.
 
-
-Before launching the MITM attack, we start a TCP client and server program
-using \texttt{netcat}. See the following commands.  
+Antes de ejecutar el ataque MITM, debeos de ejecutar un cliente y un servidor TCP usando \texttt{netcat}. Vea los siguientes comandos:
 
 \begin{lstlisting}
 On the destination container 192.168.60.5, start the netcat server:
@@ -290,42 +225,24 @@ On the victim container, connect to the server:
 \end{lstlisting}
 
 
-Once the connection is made, you can type messages on the victim machine.
-Each line of messages will be put into a TCP packet sent
-to the destination, which simply displays the message.
-Your task is to replace every occurrence of your first name in the
-message with a sequence of A's. The length of the sequence should be the
-same as that of your first name, or you will mess up the TCP sequence
-number, and hence the entire TCP connection. You need to use your real
-first name, so we know the work is done by you.
+Una vez que se establece la conexión, puede escribir mensajes en la máquina víctima. 
+Cada linea de mensajes será colocada en un paquete TCP que será enviado al destino, quién mostrará el mensaje.
+Su tarea es reemplazar cada ocurrencia de su nombre dentro del mensaje con una secuencia de letras A. La longitud de la secuencia debería de ser la misma que la longitud de su nombre de lo contrario el número de secuencia TCP se verá corrompido y por ende toda la conexión TCP. Necesita usar su nombre real, de esta forma sabremos que el trabajo fue hecho por ud.
 
 
-
-\paragraph{Disabling IP Forwarding.}
-In the setup, the malicious router's IP forwarding is enabled, so it does 
-function like a router and forward packets for others. When we launch 
-the MITM attack, we have to stop forwarding IP packets; instead,
-we will intercept the packet, make a change, and send out a new packet. 
-To do that, we just need to disable the IP forwarding on the malicious 
-router. 
+\paragraph{Desactivando IP Forwarding.}
+En la configuración que se usa, el IP Forwarding para el router está activado, lo que le permite funcionar como un router y forwardear paquetes. Cuando lanzamos un ataque MITM, debemos de detener el forwardeo de paquetes IP; en vez de esto, interceptaremos el paquete, lo modificaremos y enviaremos un nuevo paquete.
+Para hacer esto, necesitamos desactivar el IP Forwarding en el router malicioso.
 
 \begin{lstlisting}
 # sysctl net.ipv4.ip_forward=0
 \end{lstlisting}
 
 
-\paragraph{MITM code.}
-Once the IP forwarding is disabled, our program needs to take over
-the role of packet forwarding from the victim to the target, of course
-after making changes to the packets. Since the packet's destination 
-is not for us, the kernel will not give the packet to us; it will simply
-drops the packet. However, if our program is a sniffer program,
-we will get the packet from the kernel. Therefore, we will use 
-the sniff-and-spoof technique to implement this MITM attack.
-In the following, we provide a sample sniff-and-spoof
-program, which captures TCP packets,
-makes some changes, before sending them out.  
-You can find the code from the lab setup files.
+\paragraph{Código MITM.}
+Una vez desactivado el IP Forwarding, nuestro programa necesita ser capaz de hacer el forwardeo de los paquetes desde la víctima hacia el objetivo, desde ya todo esto se hace después de modificar los paquetes. Dado que el destino de un paquete no somos nosotros, el kernel no nos lo entregará; simplemente descartará el paquete. Sin embarg, si nuestro programa es un sniffer, podemos obtener el paquete del kernel. Para implementar este ataque MITM usaremos la técnica de sniff-and-spoof.
+A continuación brindamos un ejemplo de un programa de sniff-and-spoof que captura paquetes TCP, modifica algunos de sus valores antes de que sean enviados.
+Puede encontrar el código dentro de los archivos del laboratorio.
 
 \begin{lstlisting}[language=python, caption={Sample code: \texttt{mitm\_sample.py}}]
 #!/usr/bin/env python3
@@ -352,28 +269,14 @@ f = 'tcp'
 pkt = sniff(iface='eth0', filter=f, prn=spoof_pkt)
 \end{lstlisting}
 
-It should be noted that the code above captures all the TCP
-packets, including the one generated by the program itself. That is
-undesirable, as it will affect
-the performance. Students needs to change the filter, so it does not capture
-its own packets.
+Cabe señalar que el código anterior, captura todo los paquetes TCP, incluído el que es generado por el mismo programa. Eso no es conveniente, y afectará a la performance. Los estudiantes necesitan cambiar el filtro para que el programa no capture sus propios paquetes.
 
-\paragraph{Questions.} After you have succeeded in the attack, please 
-answer the following questions: 
+\paragraph{Preguntas.} Después de lograr un ataque exitoso, por favor conteste las siguientes preguntas:
 
 \begin{itemize}
-  \item Question 4: In your MITM program, you only need to capture 
-    the traffics in one direction. Please indicate which direction, 
-    and explain why.
+  \item Pregunta 4: En el programa de MITM, ud. sólo necesita captura el tráfico en una sola dirección. Por favor indique cual es esta dirección y explique el porque.
 
-  \item Question 5: In the MITM program, when you capture the 
-    \texttt{nc} traffics from A (\texttt{10.9.0.5}), 
-    you can use A's IP address or MAC address in the filter. 
-    One of the choices is not good and is going to create issues, 
-    even though both choices may work. 
-    Please try both, and use your experiment results to 
-    show which choice is the correct one, and please
-    explain your conclusion.
+  \item Pregunta 5: En el programa de MITM, cuando ud. captura el tráfico de\texttt{nc} desde A (\texttt{10.9.0.5}), puede usar la dirección IP de A o la dirección MAC en el filtro. Una de estas dos opciones no es la correcta y va a crear un inconveniente, aunque ambas pueden funcionar. Por favor intente ambas y use los resultados de su experimentos para demostrar cual de estas dos opciones en la correcta y explique su conclusión.
 \end{itemize}
  
 
