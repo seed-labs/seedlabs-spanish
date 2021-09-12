@@ -10,58 +10,36 @@
 % -------------------------------------------
 % SUBSECTION
 % ------------------------------------------- 
-\subsection{Summary of the DNS Configuration} 
+\subsection{Resumen de la Configuración del DNS} 
 
-All the containers are already configured for this lab. 
-We provide a summary here, so students are aware of 
-these configurations. Detailed explanation
-of the configuration can be found from the manual.
+Todos los contenedores han sido configurados para este laboratorio.
+Por lo que haremos un resumen de ellos, de esta manera los estudiantes estarán al tanto de estas configuraciones. Para explicaciones más detalladas sobre las configuraciones puede consultar el manual.
 
 
 
-\paragraph{Local DNS Server.} 
-We run the BIND 9 DNS server program on the local DNS server. 
-BIND 9 gets its configuration from a file called \path{/etc/bind/named.conf}. This file
-is the primary configuration file, and it usually contains several \texttt{"include"}
-entries, i.e., the actual configurations are stored in those included files. One of the
-included files is called \path{/etc/bind/named.conf.options}. 
-This is where the actual configuration is set. 
+\paragraph{Servidor de DNS local.} 
+Como servidor de DNS local usaremos el software BIND 9.
+BIND 9 carga su configuración de un archivo llamado \path{/etc/bind/named.conf}. Este es el principal archivo de configuración y usualmente contiene varias entradas de \texttt{"include"}, por medio de este include puede cargar las configuraciones de diferentes archivos. Uno de los archivos usado por ese include es llamado \path{/etc/bind/named.conf.options}. Es en este archivo donde se establece la configuración actual.
 
 
 \begin{itemize}
-\item \textit{Simplification.}
-DNS servers now randomize
-the source port number in their DNS queries; this makes the attacks much more
-difficult. Unfortunately, many DNS servers still use predictable source
-port number.  For the sake of simplicity in this lab, we fix the
-source port number to  {\tt 33333} in the 
-configuration file. 
+\item \textit{Simplificación.}
+Los servidores DNS hoy en día randomizan el número de puerto de origen en sus consultas DNS; esto hace que los ataques sean mucho más difíciles. Desafortunadamente, muchos servidores DNS siguen usando número de puertos de origen predecibles. Para simplificar este laboratorioo, hemos fijado el número de puerto de origen a {\tt 33333} dentro del archivo de configuración.
 
-\item \textit{Turning off DNSSEC.} 
-DNSSEC is introduced to protect against spoofing attacks on DNS servers.
-To show how attacks work
-without this protection mechanism, we have turned off the protection 
-in the configuration file. 
+\item \textit{Desactivando DNSSEC.} 
+DNSSEC fue introducido como mecanismo de protección en contra de ataques de spoofing en los servidores DNS. Para mostrar como funciona este ataque, hemos desactivado esta protección en el archivo de configuración.
 
-
-\item \textit{DNS cache.}
-During the attack, we need to inspect the DNS cache on the local DNS server.
-The following two commands are related to DNS cache.
-The first command dumps the content of the cache to the file 
-\path{/var/cache/bind/dump.db}, 
-and the second command clears the cache.
+\item \textit{DNS caché.}
+Durante el ataque, necesitaremos inspeccionar la caché DNS en el servidor de DNS local. Los siguientes dos comando sirven para este propósito.
+El primer comando hace un dump del contenido de la caché en el archivo \path{/var/cache/bind/dump.db}, y el segundo comando limpia la caché.
 
 \begin{lstlisting}
 # rndc dumpdb -cache    // Dump the cache to the specified file
 # rndc flush            // Flush the DNS cache
 \end{lstlisting}
 
-\item \textit{Forwarding the \texttt{attacker32.com} zone.}
-A forward zone is added to the local DNS server,
-so if anybody queries the \texttt{attacker32.com} domain, 
-the query will be forwarded to this domain's nameserver, which
-is hosted in the attacker container. The zone entry
-is put inside the \texttt{named.conf} file. 
+\item \textit{Forwardeo de la zona \texttt{attacker32.com}.}
+Una zona de forwardeo es agregada en el servidor de DNS local, por lo que si alguien quiere consultar el dominio \texttt{attacker32.com}, la consulta será forwardeada al nameserver de este dominio, que será hosteado en el contenedor del atacante. La entrada para esta zona se ubcica dentro del archivo \texttt{named.conf}.
 
 \begin{lstlisting}
 zone "attacker32.com" {
@@ -75,20 +53,13 @@ zone "attacker32.com" {
 
 
 
-\paragraph{User machine.}
-The user container {\tt 10.9.0.5} is already 
-configured to use {\tt 10.9.0.53} as its local DNS server.
-This is achieved by changing
-the resolver configuration file~(\texttt{/etc/resolv.conf}) of the user machine,
-so the server \texttt{10.9.0.53} is added as the first \texttt{nameserver} entry in the file, i.e.,
-this server will be used as the primary DNS server.
+\paragraph{Máquina del Usuario.}
+El contenedor del usuario cuya dirección IP es {\tt 10.9.0.5} está configurada para usar la dirección IP {\tt 10.9.0.53} como su servidor DNS local.
+Esto se logra cambiando la configuración del archivo de resolución de la máquina del usuario (\texttt{/etc/resolv.conf}), se agrega el servidor \texttt{10.9.0.53}  como \texttt{nameserver} en la primera línea del archivo, de esta forma la máquina entenderá que este será el servidor DNS primario usado por defecto.
 
 
-\paragraph{Attacker's Nameserver.}
-On the attacker's nameserver, we host two zones. One is 
-the attacker's legitimate zone \texttt{attacker32.com}, and the other 
-is the fake \texttt{example.com} zone. The zones are 
-configured in \path{/etc/bind/named.conf}:
+\paragraph{Nameserver del Atacante.}
+Dentro de la máquina del atacante, se hostean dos zonas. La primera es la zona legítima del atacante \texttt{attacker32.com}, y la segunda es la zona falsa del dominio \texttt{example.com}. Las zonas son configuradas en el archivo \path{/etc/bind/named.conf}:
 
 \begin{lstlisting}
 zone "attacker32.com" {
