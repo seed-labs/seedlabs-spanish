@@ -159,8 +159,8 @@ El principal objetivo de los ataques DNS sobre un usuario es poder redireccionar
 \end{figure}
 
 Cuando un usuario escribe el nombre de un sitio web (un hostname tal como {\tt
-www.example.com}) en un navegador, la computadora del usuario enviará un request DNS hacia el servidor de DNS local para hacer la resolución de la dirección IP del hostname.
-Los atacantes pueden sniffear el mensaje de request DNS, y pueden crear una respuesta DNS falsificada y enviarla de retorno a la máquina del usuario. Si la respuesta falsificada llega antes que la original, esta será aceptada por la máquina del usuario.
+www.example.com}) en un navegador, la computadora del usuario enviará una consulta DNS hacia el servidor de DNS local para hacer la resolución de la dirección IP del hostname.
+Los atacantes pueden sniffear el mensaje de la consulta DNS, y pueden crear una respuesta DNS falsificada y enviarla de retorno a la máquina del usuario. Si la respuesta falsificada llega antes que la original, esta será aceptada por la máquina del usuario.
 Vea la Figura \ref{dns:fig:local_attack}). 
 
 Por favor ecriba un programa para lanzar un ataque de este tipo. Se ofrece un código base más abajo. En la Sección \ref{sec:guideline} se muestra un ejemplo de como crear un paquete DNS que incluye varios tipos de registros. En el libro de SEED se ofrece una guía detallada.
@@ -190,17 +190,17 @@ pkt=sniff(iface='(*@\textbf{br-43d947d991eb}@*)', filter=myFilter, prn=spoof_dns
 
 Cabe señalar que en el ejemplo anterior, el valor (remarcado) para el argumento \texttt{iface} debe de ser reemplazada con el valor actual del nombre de la interfaz para la red \texttt{10.9.0.0/24}.
 
-Mientras el ataque corra en la máquina de usuario, puede usar el comando \texttt{dig} en nombre del usuario.
-Este comando hará que la máquina del usuario envie una consulta DNS hacia el servidor de DNS local, quien eventualmente enviará una consulta DNS hacia los nameserver autoritativos del dominio \texttt{example.com} (si la caché no contiene la respuesta).
+Mientras el ataque este corriendo en la máquina de usuario, puede usar el comando \texttt{dig} en nombre del usuario que esta ejecutando el ataque.
+Este comando hará que la máquina del usuario envie una consulta DNS hacia el servidor de DNS local, quien eventualmente enviará una consulta DNS hacia los nameserver autoritativos del dominio \texttt{example.com} (si la caché no contiene cacheada la respuesta).
 Si su ataque es exitoso, debería de poder ver la información spoofeada en la respuesta. Compare los resultados obtenidos antes y después del ataque.
  
 Antes de lanzar el ataque, asegúrese que la caché en el servidor de DNS local sea borrada. Si la caché tiene la respuesta, la respuesta proveniente del servidor de DNS local será más rápida que la spoofeada y su ataque no será exitoso.
 
 
-\paragraph{Un problema potencial.} Al moomento de hacer este laboratorio usando contenedores, hemos visto una situación extraña que no ocurre siempre. El snifeo y spoofeo dentro de los contenedores es uy lento y nuestro paquetes spoofeados llegan mucho más tarde que aquellos legítimos que provienen de Internet, aunque seamos locales. En el pasado, cuando usamos Máquinas Virtual para este laboratorio, no tuvimos este problema. Hasta el momento no hemos podido encontrar la causa de este problema (si ud. tiene alguna idea, háganos saber).
+\paragraph{Un problema potencial.} Al moomento de hacer este laboratorio se usaron contenedores, hemos observado una situación extraña que no ocurre siempre. El sniffeo y spoofeo dentro de los contenedores es muy lento y nuestro paquetes spoofeados llegan mucho más tarde que aquellos legítimos que provienen de Internet. En el pasado, cuando usamos Máquinas Virtuales para este laboratorio, no tuvimos este inconveniente. Hasta el momento no hemos podido encontrar la causa de este problema (si ud. tiene alguna idea, no dude en hacérnosla saber).
 
-Si ud. se encuentra en esta situación extraña, podemos trabajar sobre ella. Hemos enlentencido el trafico saliente de manera intencional, por lo que las respuestas legítimas no llegarán tan rápido. Esto se puede hacer usando el comando \texttt{tc} en el router y agregar algo de retraso en el tráfico saliente de red.
-El router tiene dos interfaces \texttt{eth0} y  \texttt{eth1}, asegúrese de estar usando la interfaz que está conectada a la red externa \texttt{10.8.0.0/24}.
+Si ud. se encuentra en esta situación extraña, existe una solución para la misma. Hemos enlentencido el tráfico saliente de manera intencional, por lo que las respuestas legítimas no llegarán tan rápido. Esto se puede hacer usando el comando \texttt{tc} para agregar algo de retraso en el tráfico saliente de red.
+El router tiene dos interfaces \texttt{eth0} y \texttt{eth1}, asegúrese de estar usando la interfaz que está conectada a la red externa \texttt{10.8.0.0/24}.
 
 
 \begin{lstlisting}
@@ -222,15 +222,14 @@ Dado que todas las tareas de este laboratorio enfrenterán una situación simila
 % ------------------------------------------- 
 \subsection{Tarea 2: El Ataque de DNS Cache Poisoning -- Spoofing de Respuestas}
 
-El ataque anterior tiene como objetivo la máquina del usuario. Para lograr un efecto de  larga duración, cada vez que la máquina del usuario envía una consulta DNS para \url{www.example.com},l a máquina del atacante debe enviar una respuesta DNS falsificada.
+El ataque anterior tiene como objetivo a la máquina del usuario. Para lograr un efecto de larga duración, cada vez que la máquina del usuario envía una consulta DNS para \url{www.example.com}, la máquina del atacante debe enviar una respuesta DNS falsificada.
 Puede que esto no sea tan eficaz; hay una forma mucho más eficiente para realizar ataques que apunten al servidor DNS, en lugar de la máquina del usuario.
 
-
-Cuando el servidor de DNS local recibe una consulta, primero mirá si la respuesta se encuentra en su caché; si la respuesta está en la caché, el servidor DNS responderá con la información de la caché.
+Cuando el servidor de DNS local recibe una consulta, primero mirá si la respuesta se encuentra en su caché; si la respuesta está en la caché, el servidor DNS responderá con la información de su caché.
 Si la respuesta no está en la caché, el servidor DNS tratará de obtener la respuesta de otros servidores DNS. Cuando este obtiene la respuesta, este la guardará en su caché, por lo que la próxima vez no tendrá que preguntar en servidores DNS externos. Vea la Figura \ref{dns:fig:local_attack}. 
 
-El servidor de DNS local guardará la respuesta spoofeada en su caché por un período limitado de tiempo. La próxima vez que la máquina del usuario quiera resolver el mismo hostname, este tendrá como respuesta la guardada en la caché.
-De esta forma, los atacantes sólo necesitan spoofear una sola vez y el impacto de este spoofeado durará hasta que expire la caché en el servidor DNS.
+El servidor de DNS local guardará la respuesta spoofeada en su caché por un período limitado de tiempo. La próxima vez que la máquina del usuario quiera resolver el mismo hostname, este tendrá como respuesta la que se guardó en la caché.
+De esta forma, los atacantes sólo necesitan spoofear una sola vez y el impacto de este proceso de spoofeado durará hasta que expire la caché en el servidor DNS.
 Este ataque es llamado {\em DNS cache poisoning}.
 
 Por favor modifique el programa usado en la tarea anterior para este ataque.
@@ -256,11 +255,11 @@ Puede revisar la caché en el servidor de DNS local para ver si está "envenenad
 \subsection{Tarea 3: Spoofeando los Registros NS}
 
 En la tarea anterior, nuestro ataque de envenenamiento de caché de DNS solo afecta
-un hostname es decir, \url{www.example.com}. Si los usuarios intentan obtener la dirección IP de otro hostname, como \url{mail.example.com}, será necesario lanzar el ataque nuevamente. Esto sería más eficiente si se lanzará un ataque que pueda afectar a todo el dominio \texttt{example.com}.
+un hostname es decir a \url{www.example.com}. Si los usuarios intentan obtener la dirección IP de otro hostname, como por ejemplo \url{mail.example.com}, será necesario lanzar el ataque nuevamente. Esto sería más eficiente si se lanzará un ataque que pueda afectar a todo el dominio \texttt{example.com} por completo.
 
 La idea es usar la sección Authority en las respuestas DNS.
 Básicamente, cuando spoofeamos una respuesta, además de falsificar la misma (en la sección Answer), agregamos la sección Authority.
-Cuando esta entrada es cacheada por el servidor de DNS local, \url{ns.attacker32.com} será usado como el nameserver para las consultas futuras que se hagan sobre cualquier hostname dentro del dominio \texttt{example.com}. Dado que \url{ns.attacker32.com} es controlada por los atacantes, puede proporcionar una respuesta falsa para cualquier consulta. La dirección IP de esta máquina es \texttt{10.9.0.153}.
+Cuando esta entrada es cacheada por el servidor de DNS local, \url{ns.attacker32.com} será usado como el nameserver para consultas futuras que se hagan sobre cualquier hostname dentro del dominio \texttt{example.com}. Dado que \url{ns.attacker32.com} es controlada por los atacantes, puede proporcionar una respuesta falsa para cualquier consulta. La dirección IP de esta máquina es \texttt{10.9.0.153}.
 
 \begin{lstlisting}
 ;; AUTHORITY SECTION:
@@ -268,9 +267,9 @@ example.com.            259200  IN      NS       ns.attacker32.com.
 \end{lstlisting}
  
 Por favor agregue el registro NS falsificado en su código de ataque y proceda a ejecutar el ataque. La sección \ref{sec:guideline} muestra un ejemplo de como incluír un registro NS en un paquete de respuesta DNS.
-Para una cobertura más detallada consulte el libro de SEED.
+Para una cobertura más detallada sobre esto consulte el libro de SEED.
 Antes de hacer el ataque, recuerde primero limpiar la caché en su servidor de DNS local.
-Si su ataque es exitoso, cuando ejecute el comando \texttt{dig} en la máquina de usuario sobre cualquier hostname en el dominio \url{example.com}, verá la dirección IP falsificada provista por \texttt{ns.attacker32.com}. Por favor chequee la caché en el servidor local DNS y vea si el registro NS falsificado se encuentra en ella o no.
+Si su ataque es exitoso, cuando ejecute el comando \texttt{dig} en la máquina de usuario sobre cualquier hostname dentro del dominio \url{example.com}, verá la dirección IP falsificada provista por \texttt{ns.attacker32.com}. Por favor revise la caché en el servidor de DNS local y vea si el registro NS falsificado se encuentra en ella o no.
 
 
 
@@ -279,7 +278,7 @@ Si su ataque es exitoso, cuando ejecute el comando \texttt{dig} en la máquina d
 % ------------------------------------------- 
 \subsection{Tarea 4: Spoofeando los Registros NS para otro Dominio} 
 
-En el ataque anterior, "envenenamos" con éxito la caché del servidor de DNS local, por lo que \texttt{ns.attacker32.com} se convierte en el servidor de nombres para el nombre de dominio \texttt{example.com}. Inspirados por este éxito, nos gustaría extender su impacto a otros dominios. A saber, en la respuesta falsificada 	que se desencadena por la consulta a \url{www.example.com}, nos gustaría agregar una entrada adicional en la sección Authority (ver lo siguiente), por lo que \url{ns.attacker32.com} también se será usado como servidor de nombres para \texttt{google.com}.
+En el ataque anterior, "envenenamos" con éxito la caché del servidor de DNS local, por lo que \texttt{ns.attacker32.com} se convierte en el servidor de nombres para el nombre de dominio \texttt{example.com}. Inspirados por este éxito, nos gustaría extender su impacto a otros dominios. A saber, en la respuesta falsificada que se desencadena por la consulta a \url{www.example.com}, nos gustaría agregar una entrada adicional en la sección Authority (ver más abajo), por lo que \url{ns.attacker32.com} también será usado como servidor de nombres para \texttt{google.com}.
 
 
 \begin{lstlisting}
@@ -297,7 +296,7 @@ Por favor describa y explique su observación. Debe de notar que la consulta que
 % ------------------------------------------- 
 \subsection{Tarea 5: Spoofeando Registros en la Sección Adicional}
 
-Las respuestas DNS contienen una sección llamada la sección Additional, que es usada para proveer informacióon adicional. En la práctica, se usa para para proveer la dirección IP de algunos hostnames, en especial aquellos que aparecen en la sección de Authority. El objetivo de esta tarea es falsificar algunas entradas en esta sección y ver si pueden ser cacheadas de forma exitosa por el servidor de DNS local. En particular, al responder la consulta para \texttt{www.example.com}, agregamos las siguientes entradas en la respuesta falsificada, además de las entradas en la sección Answer:
+Las respuestas DNS contienen una sección llamada la sección Additional, que es usada para proveer información adicional. En la práctica, se usa para para proveer la dirección IP de algunos hostnames, en especial aquellos que aparecen en la sección de Authority. El objetivo de esta tarea es falsificar algunas entradas en esta sección y ver si pueden ser cacheadas de forma exitosa por el servidor de DNS local. En particular, al responder la consulta para \texttt{www.example.com}, agregamos las siguientes entradas en la respuesta falsificada, además de las entradas en la sección Answer:
 
 \begin{lstlisting}
 ;; AUTHORITY SECTION:
@@ -310,7 +309,7 @@ ns.example.net.         259200  IN   A    5.6.7.8   (*@\ding{193}@*)
 www.facebook.com.       259200  IN   A    3.4.5.6   (*@\ding{194}@*)
 \end{lstlisting}
 
-Las entradas en  \ding{192} y \ding{193} pertenecen a los hostnames de la sección Authority. La entrada en  \ding{194} es irrelevante para cualquier entrada en la respuesta. pero proporciona una ayuda `` amable '' para usuarios, por lo que no necesitan buscar la dirección IP de Facebook. Utilice Scapy para falsificar dicha respuesta de DNS. Tu trabajo es para informar qué entradas se almacenarán en caché correctamente y qué entradas no lo harán; por favor explique por qué.
+Las entradas en  \ding{192} y \ding{193} pertenecen a los hostnames de la sección Authority. La entrada en \ding{194} es irrelevante para cualquier entrada en la respuesta. pero proporciona una ayuda ``amable'' para usuarios, por lo que no necesitan buscar la dirección IP de Facebook. Utilice Scapy para falsificar dicha respuesta de DNS. Su trabajo es informar qué entradas se almacenarán en caché correctamente y qué entradas no lo harán; por favor explique el por qué.
 
 
 % -------------------------------------------
@@ -319,7 +318,7 @@ Las entradas en  \ding{192} y \ding{193} pertenecen a los hostnames de la secci�
 \subsection{Lo que sigue}
 
 En el ataque de DNS cache poisoning que se hizo en este laboratorio, hemos asumido que el atacante y el servidor DNS se encuentran en la misma LAN, es decir, el atacante puede observar las consultas realizadas por el servidor DNS.
-Cuando un atacante y un servidor DNS no se encuentra en la misma LAN, este tipo de ataque es más difícil de hacer. Si esta interesado en saber como hacerlo, puede consultar nuestro laboratorio ``Remote DNS Attack Lab o Ataque Remoto DNS''.
+Cuando un atacante y un servidor DNS no se encuentra en la misma LAN, este tipo de ataque es más difícil de hacer. Si esta interesado en saber como hacerlo, puede consultar nuestro laboratorio ``Remote DNS Attack Lab o Ataque de DNS Remoto''.
 
 
 % *******************************************
