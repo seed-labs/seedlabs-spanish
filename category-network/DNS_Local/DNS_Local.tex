@@ -38,73 +38,53 @@
 % ******************************************* 
 \section{Descripción del Laboratorio}
 
-DNS (Domain Name System) is the Internet's phone book; it  
-translates hostnames to IP addresses (and vice versa).
-This translation is through DNS resolution, which happens behind
-the scene. DNS attacks manipulate this resolution process
-in various ways, with an intent to misdirect users to
-alternative destinations, which are often malicious. 
-The objective of this lab is to understand how such attacks work.
-Students will first set up and configure a DNS server, and then they 
-will try various DNS attacks on the target that is also within
-the lab environment.
+DNS (Domain Name System o Sistema de nombre de Dominios) es la guía de teléfono de la Internet; se encarga de traducir los hostnames a direcciones IP (y visce versa). Esta traducción se hace a través de la resolución DNS, esta ocurre detrás de escena. Los ataques DNS manipulan este proceso de resolucion en varias maneras, con la intención de desviar a los usuarios a destinos alternativos, que a menudo son maliciosos.
+El objetivo de este laboratorio es entender como funcionan estos ataques.
+Los estudiantes harán el setup y la configuración de un servidor DNS y probarán varios ataques DNS en un target que está dentro del entorno del laboratorio.
 
+Las dificultades en atacar víctimas locales contra víctimas remotas en lo que se refiere a los servidores DNS son bastante diferentes. Hemos desarrollado dos laboratorios, uno centrado en ataques locales DNS y el otro enfocado en ataques remotos de DNS. Este laboratorio se centra en los ataques locales.
 
-The difficulties of attacking local victims versus remote DNS servers are
-quite different. Therefore, we have developed two labs, one focusing on
-local DNS attacks, and the other on remote DNS attack. This lab focuses on
-local attacks.
-This lab covers the following topics:
+Este laboratorio cubre los siguientes tópicos:
+
 
 \begin{itemize}[noitemsep]
-\item DNS and how it works
-\item DNS server setup
-\item DNS cache poisoning attack
-\item Spoofing DNS responses
-\item Packet sniffing and spoofing
-\item The Scapy tool
+\item DNS y su funcionamiento
+\item Setup de un servidor DNS
+\item Ataque de DNS cache poisoning
+\item Spoofing de respuestas DNS
+\item Sniffing y Spoofing de paquetes
+\item Scapy
 \end{itemize}
 
 
-\paragraph{Readings and videos.}
-Detailed coverage of the DNS protocol and attacks can be found in the following:
+\paragraph{Lecturas y Videos.}
+Para una cobertura más detallada sobre el protocolo DNS y sus ataques puede consultar:
 
 \begin{itemize}
-\item Chapter 18 of the SEED Book, \seedbook
-\item Section 7 of the SEED Lecture, \seedisvideo
+\item Capítulo 18 del libro de SEED, \seedbook
+\item Sección 7 del curso de SEED en Udemy, \seedisvideo
 \end{itemize}
 
 
-
-\paragraph{Lab environment.} \seedenvironmentC
-
-
-
+\paragraph{Entorno de Laboratorio.} \seedenvironmentC
 
 
 % *******************************************
 % SECTION
 % *******************************************
-\section{Lab Environment Setup Task}
+\section{Setup del Entorno de Laboratorio}
 \label{sec:environment}
 
-
-The main target for DNS cache poisoning attacks is
-local DNS server.  Obviously, it
-is illegal to attack a real server, so we need to set up our own DNS
-server to  conduct the attack experiments. The lab
-environment needs four separate machines:
-one for the victim, one for the local DNS server, and two for the attacker.
-The lab environment setup is illustrated in Figure~\ref{dns:fig:environment}.
-This lab focuses on the local attack, so we put all these machines on 
-the same LAN.
-
+El principal objetivo para un ataque de DNS cache poisoning es el servidor local de DNS. Obviamente es ilegal atacar un servidor real, poor lo que necesitaremos crear y configurar nuestro propio servidor DNS para conducir los ataques en nuestros experimentos. El entorno de laboratorio necesita cuatro máquinas por separado:
+una va a ser la máquina víctima, la segunda será el servidor DNS local y las dos restante serán las máquinas de los atacantes.
+El setup del entorno del laboratorio se ilustra en la Figura \ref{dns:fig:environment}.
+Este laboratorio se centra en el ataque local, por lo que pondremos todas las máquinas en la misma LAN.
 
 
 \begin{figure}[htb]
 \centering
 \includegraphics[width=0.8\textwidth]{\commonfolder/Figs/DNS_2lans.pdf}
-\caption{Lab environment setup}
+\caption{Setup del Entorno de Laboratorio}
 \label{dns:fig:environment}
 \end{figure}
 
@@ -113,7 +93,7 @@ the same LAN.
 % -------------------------------------------
 % SUBSECTION
 % -------------------------------------------
-\subsection{Container Setup and Commands}
+\subsection{Setup del Contenedor y sus Comandos}
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -127,16 +107,11 @@ the same LAN.
 % -------------------------------------------
 \subsection{About the Attacker Container} 
 
-In this lab, we can either use the VM or the attacker container 
-as the attacker machine. If you look at the Docker Compose file, you will
-see that the attacker container is configured differently from the other 
-containers. 
+Para este laboratorio podemos usar tanto una Máquina Virtual como un contenedor como máquina de ataque. Si observa el archivo Docker Compose, verá que el contenedor de ataque está configurado de forma diferente al resto de los contenedores.
 
 
 \begin{itemize}
-\item \textit{Shared folder.} When we use the attacker container 
-to launch attacks, we need to put the attacking code inside
-the attacker container. 
+\item \textit{Directorio Compartido.} Cuando usemos el contenedor del atacante para realizar los ataques, necesitamos poner el código de ataque dentro del contenedor.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \input{\commonfolder/container/volumes}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -163,25 +138,16 @@ the attacker container.
 % *******************************************
 % SECTION
 % ******************************************* 
-\section{The Attack Tasks}
+\section{Las tareas de ataque}
 
-
-The main objective of DNS attacks on a user is to redirect the user
-to another machine $B$ when the user tries to get to machine $A$ using
-$A$'s host name. For example, when the user tries to access the online banking,
-if the adversaries can redirect the user 
-to a malicious web site that looks very much like the main web site 
-of bank, the user might be fooled and give away password
-of his/her online banking account.
-
-
+El principal objetivo de los ataques DNS sobre un usuario es poder redireccionar al usuario hacia otra máquina $B$ cuando el usuario intente acceder a la máquina $A$ ussando el hostname de $A$. Por ejemplo, cuando un usuario trata de acceder al online banking, los atacantes pueden redireccionarlo a un sitio web malicioso que luce casi igual al sitio oficial del banco, en consecuencia el usuario puede ser engañado y así los atacantes pueden obtener sus credenciales bancarias.
 
 
 
 % -------------------------------------------
 % SUBSECTION
 % ------------------------------------------- 
-\subsection{Task 1: Directly Spoofing Response to User}
+\subsection{Tarea 1: Spoofing directo a la Respuesta del Usuarioo}
 
 
 
@@ -192,21 +158,12 @@ of his/her online banking account.
 \label{dns:fig:local_attack}
 \end{figure}
 
+Cuando un usuario escribe el nombre de un sitio web (un hostname tal como {\tt
+www.example.com}) en un navegador, la computadora del usuario enviará un request DNS hacia el servidor de DNS local para hacer la resolución de la dirección IP del hostname.
+Los atacantes pueden sniffear el mensaje de request DNS, y pueden crear una respuesta DNS falsificada y enviarla de retorno a la máquina del usuario. Si la respuesta falsificada llega antes que la original, esta será aceptada por la máquina del usuario.
+Vea la Figura \ref{dns:fig:local_attack}). 
 
-When a user types the name of a web site (a host name, such as {\tt
-www.example.com}) in a web browser, the user's computer will send a DNS 
-request to the local DNS server to resolve the IP address of the host name.  
-Attackers can sniff the DNS request message,
-they can then immediately create a fake DNS response, 
-and send back to the user machine. If the fake reply arrives
-earlier than the real reply, it will be accepted by the user machine.
-See Figure~\ref{dns:fig:local_attack}). 
-
-Please write a program to launch such an attack. A code 
-skeleton is provided in the following. Section~\ref{sec:guideline}
-has an example showing how to create a DNS packet that includes 
-various types of records. Detailed guidelines are 
-provided in the SEED book. 
+Por favor ecriba un programa para lanzar un ataque de este tipo. Se ofrece un código base más abajo. En la Sección \ref{sec:guideline} se muestra un ejemplo de como crear un paquete DNS que incluye varios tipos de registros. En el libro de SEED se ofrece una guía detallada.
 
 
 \begin{lstlisting}
@@ -292,7 +249,7 @@ all the tasks will face a similar situation.
 % -------------------------------------------
 % SUBSECTION
 % ------------------------------------------- 
-\subsection{Task 2: DNS Cache Poisoning Attack -- Spoofing Answers}
+\subsection{Tarea 2: El Ataque de DNS Cache Poisoning -- Spoofing de Respuestas}
 
 The above attack targets the user's machine. In order to achieve long-lasting
 effect, every time the user's machine sends out a DNS query for
@@ -548,11 +505,19 @@ of the DNS payload is explained in the following:
 % *******************************************
 % SECTION
 % ******************************************* 
-\section{Submission}
+\section{Informe del Laboratorio}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \input{\commonfolder/submission}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+% *******************************************
+% SECTION
+% *******************************************
+\section*{Agradecimientos}
+
+\input{\commonfolder/acknowledgments}
 
 
 \end{document}
