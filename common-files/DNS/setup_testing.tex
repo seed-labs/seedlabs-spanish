@@ -17,7 +17,7 @@ Desde el contenedor del usuario, ejecutaremos una serie de comandos para asegura
 
 \paragraph{Obtener la dirección IP de \texttt{ns.attacker32.com}.}
 Cuando ejecutamos el comando \texttt{dig}, el servidor de DNS local forwardeará la consulta hacia el nameserver del atacante, esto se debe a que en el archivo de configuración del servidor DNS del atacante se agregó el \texttt{forward} para la entrada de esta zona. Además, la respuesta debería de venir del archivo de zona (\texttt{attacker32.com.zone}) que se configuró en nameserver del atacante.
-Si esto no es lo que ud. obtiene, la configuración que se hizo sido errónea. Por favor describa su observación en el informe del laboratorio.
+Si esto no es lo que ud. obtiene, la configuración que se hizo ha sido errónea. Por favor describa su observación en el informe del laboratorio.
 
 \begin{lstlisting}
 $ dig ns.attacker32.com

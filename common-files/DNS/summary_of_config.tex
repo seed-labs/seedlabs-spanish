@@ -24,7 +24,7 @@ BIND 9 carga su configuración de un archivo llamado \path{/etc/bind/named.conf}
 
 \begin{itemize}
 \item \textit{Simplificación.}
-Los servidores DNS hoy en día randomizan el número de puerto de origen en sus consultas DNS; esto hace que los ataques sean mucho más difíciles. Desafortunadamente, muchos servidores DNS siguen usando número de puertos de origen predecibles. Para simplificar este laboratorioo, hemos fijado el número de puerto de origen a {\tt 33333} dentro del archivo de configuración.
+Los servidores DNS hoy en día randomizan el número de puerto de origen en sus consultas DNS; esto hace que los ataques sean mucho más difíciles. Desafortunadamente, muchos servidores DNS siguen usando número de puertos de origen predecibles. Para simplificar este laboratorio, hemos fijado el número de puerto de origen a {\tt 33333} dentro del archivo de configuración.
 
 \item \textit{Desactivando DNSSEC.} 
 DNSSEC fue introducido como mecanismo de protección en contra de ataques de spoofing en los servidores DNS. Para mostrar como funciona este ataque, hemos desactivado esta protección en el archivo de configuración.
