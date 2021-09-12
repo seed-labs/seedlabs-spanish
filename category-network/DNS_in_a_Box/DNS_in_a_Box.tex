@@ -112,24 +112,20 @@ Usaremos contenedores para correr estos nameservers.
 % -------------------------------------------
 \subsection{El archivo Docker Compose} 
 
-Our DNS system includes the four nameservers. 
-The purpose of these four nameservers are summarized in the following:
+Nuestro sistema DNS se compone de cuatro nameservers.
+El propósito de estos cuatro nameservers se resumen a continuación:
 
 \begin{itemize}[nosep]
-\item Local DNS server: conduct the DNS resolution process for other computers.
-\item Root server: a nameserver serving the root zone.
-\item \texttt{edu} server: nameserver serving the \texttt{edu} zone, a Top Level Domain (TLD).  
-\item \texttt{example.edu} server: nameserver serving the \texttt{example.edu} zone. 
+\item Servidor DNS local: realiza la resolución de nombres de otras máquinas.
+\item Servidor Raíz: nameserver que sirve de zona raíz.
+\item Servidor \texttt{edu}: nameserver para la zona \texttt{edu}, Top Level Domain (TLD)
+\item Servidor \texttt{example.edu}: nameserver que sirve la zona \texttt{example.edu}. 
 \end{itemize}
 
+Usamos un contenedor para cada uno de los nameservers mencionadoos anteriormente.
+La mecánica de generación y ejecución de estos contenedores se encuentra en el archivo \texttt{docker-compose.yml}, que se incluye en el archivo de setup del laboratorio. Dentro de este archivo, hemoos creado una red \texttt{10.9.0.0/24} y cuatro contenedores: cada entrada en la seccióon de \texttt{services} representa un contenedor. Hemos asignado una dirección IP a cada uno de los contenedores.
+Observe el siguiente fragmento:
 
-We use a container for each of the nameservers above. 
-How these containers are built and run is described in 
-the \texttt{docker-compose.yml} file, which is included in
-the lab setup file. Inside this file, we create a network \texttt{10.9.0.0/24}
-and four containers: each entry in the \texttt{services} section represents
-a container. We also assign IP addresses to those containers. 
-See the following snippet:
 
 \begin{lstlisting}
 services:
@@ -159,27 +155,17 @@ services:
         ipv4_address: 10.9.0.53
 \end{lstlisting}
 
-Line \ding{80} specifies a base image, which basically builds an 
-image based on the \path{handsonsecurity/seed-server:bind} image 
-we placed on Docker Hub (see \texttt{Dockerfile} in the \texttt{base\_image} folder). 
-Although all the nameservers can directly build their containers using
-this base image from the Docker Hub, to reduce
-the number of access to the Docker Hub (the company
-puts a limit on how many accesses one can make
-during a six-hour time window), we first build a
-local base image using the one from Docker Hub, and then
-use the local base image to build the rest of the
-container images in this lab.
-
+En la Línea \ding{80} se especifíca la imagen base, a partir de la cual se construye la imagen basada usando imagen de \path{handsonsecurity/seed-server:bind}.
+Esta imagen ha sido ubicada en el Docker Hub (vea el archivo \texttt{Dockerfile} en el directorio \texttt{base\_image}).
+Aunque todos los nameservers pueden ser generar sus contenedores basados en la imagen de Docker Hub, hemos reducido el número de accesos usados para consultar el Docker Hub (la compania establece un límite en cuanto a la cantidad de accesos que un usuario en particular puede hacer durante un período de 6 horas), primero construimos una imagen local base usando la imagen de Docker Hub y después usamos esa imagen base local para construir el resto de los contenedores del laboratorio.
 
 % -------------------------------------------
 % SUBSECTION
 % -------------------------------------------
 \subsection{Las Imagenes Docker} 
 
-Except for the local DNS server, all the nameservers use the same 
-folder (\texttt{nameserver}) to build Docker images. The 
-\texttt{Dockerfile} is shown in the following:  
+Exeptuando el servidor de DNS local, todos los nameservers usan el mismo directorio (\texttt{nameserver}) para construir sus imagenes. En el archivo \texttt{Dockerfile} se muestra lo siguiente:
+
 
 \begin{lstlisting}
 FROM seed-base-image-bind                         (*@\ding{202}@*)
@@ -194,29 +180,18 @@ COPY ${BIND_CONF_DIR}     /etc/bind/              (*@\ding{204}@*)
 CMD service named start  && tail -f /dev/null
 \end{lstlisting}
 
-Line \ding{202} indicates this is local image (the base image).
-Line \ding{203} copies the BIND 9's configuration files to
-the \texttt{/etc/bind} folder inside the container. These two files
-are the same for all the nameservers, but each nameserver's 
-does have its own zone files. That is why we use 
-the \texttt{BIND\_CONF\_DIR} argument (Line \ding{204}) to 
-indicate which configuration folder should be used (there is 
-a folder for each nameserver). The value of \texttt{BIND\_CONF\_DIR} 
-is set in the Compose file. 
+La Línea \ding{202} indicate que es una imagen local (que usa la imagen base).
+La Línea \ding{203} copia los archivos de configuración de BIND 9 en el directorio  \texttt{/etc/bind} del contenedor. Estos archivos son los mismos para todos los nameservers, pero cada nameserver tiene su propios archivos de zona. Es por eso que se usa el argumento \texttt{BIND\_CONF\_DIR} (Línea \ding{204}) para indicar que directorio usar como el directorio defecto de los archivos de configuración. El valor de \texttt{BIND\_CONF\_DIR}  se setea en el archivo Compose.
 
 
-\paragraph{Local DNS server.}
-The container image for the local DNS server is quite similar to
-that in the nameservers. We will explain the difference later, 
-as building the image is one of the tasks. 
-
-
+\paragraph{Servidor de DNS local.}
+La imagen del contenedor que usa el servidor de DNS local es similar a las que usan los contenedores de nameserver. Explicaremos sus diferencias más adelante, dado que la construcción de esta imagen es una de las tareas.
 
 
 % *******************************************
 % SECTION
 % *******************************************
-\section{Task l: Building the nameserver for \texttt{example.edu}}
+\section{Tarea l: Creando el nameserver para \texttt{example.edu}}
 
 In this task, we will build a nameserver for a domain 
 called \texttt{example.edu}. The container files are 
@@ -302,7 +277,7 @@ www.example.edu.    259200   IN  A   (*@\textbf{1.2.3.5}@*)
 % *******************************************
 % SECTION
 % *******************************************
-\section{Task 2: Building the \texttt{edu} TLD server}
+\section{Tarea 2: Creando el servidor TLD \texttt{edu}}
 
 
 In this task, we will build a nameserver for a TLD domain, 
@@ -380,7 +355,7 @@ try some domains (ended with \texttt{edu}) that are not included in your zone fi
 % *******************************************
 % SECTION
 % *******************************************
-\section{Task 4: Building root server}
+\section{Tarea 4: Creando el servidor raíz}
 
 
 In this task, we will build a nameserver for the 
@@ -437,7 +412,7 @@ is working as expected.
 % *******************************************
 % SECTION
 % *******************************************
-\section{Task 5: Building the Local DNS Server} 
+\section{Tarea 5: Creando el servidor de DNS loocal} 
 
 When a computer needs to resolve the IP address from a hostname (or vice versa),
 it sends a request to its helper, which is called local DNS server (it
@@ -512,7 +487,7 @@ $ dig @10.9.0.53 www.xyz.<TLD not registered with your root server>
 % *******************************************
 % SECTION
 % *******************************************
-\section{Task 6: Configure our VM to use this local DNS server} 
+\section{Tarea 6: Configurar nuestra Máquina Virtual para usar el servidor de DNS local} 
 
 So far, we need to use \texttt{@<ip>} in our \texttt{dig} command
 to indicate what DNS server the \texttt{dig} command should talk to. While this 
@@ -580,7 +555,7 @@ as I often forgot to remove the entry.
 % *******************************************
 % SECTION
 % ******************************************* 
-\section{Task 7: Making It More Realistic}
+\section{Tarea 7: Haciéndolo más Real}
 
 
 In this task, we will make our miniature DNS system
