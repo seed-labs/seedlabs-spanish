@@ -379,18 +379,18 @@ La Línea \ding{81} construye el payload DNS, incluyendo el encabezado DNS y sus
 
  
 \begin{itemize}[noitemsep]
-\item \texttt{id}: Transaction ID; should be the same as that in the request.
-\item \texttt{qd}: Query Domain; should be the same as that in the Request.
-\item \texttt{aa}: Authoritative answer (1 means that the answer contains Authoritative answer).
-\item \texttt{rd}: Recursion Desired (0 means to disable Recursive queries).
-\item \texttt{qr}: Query Response bit (1 means Response).
-\item \texttt{qdcount}: number of query domains. 
-\item \texttt{ancount}: number of records in the Answer section.
-\item \texttt{nscount}: number of records in the Authority section. 
-\item \texttt{arcount}: number of records in the Additional section. 
-\item \texttt{an}: Answer section 
-\item \texttt{ns}: Authority section
-\item \texttt{ar}: Additional section
+\item \texttt{id}: Transaction ID; debe ser el mismo que se encuentra en la consulta.
+\item \texttt{qd}: Query Domain; debe ser el mismo que se encuentra en la consulta.
+\item \texttt{aa}: Authoritative answer (1 significa que la consulta contiene Authoritative answe).
+\item \texttt{rd}: Recursion Desired (0 significa desactivar consultas recursivas).
+\item \texttt{qr}: Query Response bit (1 significa Response).
+\item \texttt{qdcount}: número de consultas por dominio.
+\item \texttt{ancount}: número de registros en la sección Answer.
+\item \texttt{nscount}: número de registros en la sección Authority. 
+\item \texttt{arcount}: número de registros en la sección Additional. 
+\item \texttt{an}: Sección Answer 
+\item \texttt{ns}: Sección Authority
+\item \texttt{ar}: Sección Additional
 \end{itemize}
   
 
