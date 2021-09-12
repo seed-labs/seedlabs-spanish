@@ -75,8 +75,8 @@ Para una cobertura más detallada sobre el protocolo DNS y sus ataques puede con
 \section{Setup del Entorno de Laboratorio}
 \label{sec:environment}
 
-El principal objetivo para un ataque de DNS cache poisoning es el servidor local de DNS. Obviamente es ilegal atacar un servidor real, poor lo que necesitaremos crear y configurar nuestro propio servidor DNS para conducir los ataques en nuestros experimentos. El entorno de laboratorio necesita cuatro máquinas por separado:
-una va a ser la máquina víctima, la segunda será el servidor DNS local y las dos restante serán las máquinas de los atacantes.
+El principal objetivo para un ataque de DNS cache poisoning es el servidor de DNS  local. Obviamente es ilegal atacar un servidor real, poor lo que necesitaremos crear y configurar nuestro propio servidor DNS para conducir los ataques en nuestros experimentos. El entorno de laboratorio necesita cuatro máquinas por separado:
+una va a ser la máquina víctima, la segunda será el servidor de DNS local y las dos restantes serán las máquinas de los atacantes.
 El setup del entorno del laboratorio se ilustra en la Figura \ref{dns:fig:environment}.
 Este laboratorio se centra en el ataque local, por lo que pondremos todas las máquinas en la misma LAN.
 
@@ -154,7 +154,7 @@ El principal objetivo de los ataques DNS sobre un usuario es poder redireccionar
 \begin{figure}[htb]
 \centering
 \includegraphics[width=1.0\textwidth]{\dnsFigs/attack_server_local.pdf}
-\caption{Local DNS Poisoning Attack}
+\caption{Ataque Local de DNS Cache Poisoning}
 \label{dns:fig:local_attack}
 \end{figure}
 
@@ -188,47 +188,20 @@ myFilter = "..."    # Set the filter
 pkt=sniff(iface='(*@\textbf{br-43d947d991eb}@*)', filter=myFilter, prn=spoof_dns)
 \end{lstlisting}
 
-It should be noted that in the code above, the value (highlighted) for the 
-\texttt{iface} argument should be replaced with the actual interface 
-name for the \texttt{10.9.0.0/24} network.  
+Cabe señalar que en el ejemplo anterior, el valor (remarcado) para el argumento \texttt{iface} debe de ser reemplazada con el valor actual del nombre de la interfaz para la red \texttt{10.9.0.0/24}.
+
+Mientras el ataque corra en la máquina de usuario, puede usar el comando \texttt{dig} en nombre del usuario.
+Este comando hará que la máquina del usuario envie una consulta DNS hacia el servidor de DNS local, quien eventualmente enviará una consulta DNS hacia los nameserver autoritativos del dominio \texttt{example.com} (si la caché no contiene la respuesta).
+Si su ataque es exitoso, debería de poder ver la información spoofeada en la respuesta. Compare los resultados obtenidos antes y después del ataque.
  
-While the attack program is running, on the user machine, you can
-run \texttt{dig} command on behalf of the user.
-This command triggers the user
-machine to send out a DNS query to the local DNS server, which will
-eventually send out a DNS query to the authoritative nameserver of the
-\texttt{example.com} domain (if the cache does not contain the answer).
-If your attack is successful, you should be able to see
-your spoofed information in the reply. Compare your results obtained before
-and after the attack. 
-
-Before launching the attack, make sure that the cache in the local DNS
-server is cleaned. If the cache has the answer, the reply from the 
-local DNS server will be faster than the one you spoofed, and your 
-attack will not be able to succeed. 
+Antes de lanzar el ataque, asegúrese que la caché en el servidor de DNS local sea borrada. Si la caché tiene la respuesta, la respuesta proveniente del servidor de DNS local será más rápida que la spoofeada y su ataque no será exitoso.
 
 
+\paragraph{Un problema potencial.} Al moomento de hacer este laboratorio usando contenedores, hemos visto una situación extraña que no ocurre siempre. El snifeo y spoofeo dentro de los contenedores es uy lento y nuestro paquetes spoofeados llegan mucho más tarde que aquellos legítimos que provienen de Internet, aunque seamos locales. En el pasado, cuando usamos Máquinas Virtual para este laboratorio, no tuvimos este problema. Hasta el momento no hemos podido encontrar la causa de este problema (si ud. tiene alguna idea, háganos saber).
 
+Si ud. se encuentra en esta situación extraña, podemos trabajar sobre ella. Hemos enlentencido el trafico saliente de manera intencional, por lo que las respuestas legítimas no llegarán tan rápido. Esto se puede hacer usando el comando \texttt{tc} en el router y agregar algo de retraso en el tráfico saliente de red.
+El router tiene dos interfaces \texttt{eth0} y  \texttt{eth1}, asegúrese de estar usando la interfaz que está conectada a la red externa \texttt{10.8.0.0/24}.
 
-
-\paragraph{A potential issue.} When we do this lab using containers, 
-sometimes (not always) we saw a very strange situation. The sniffing and spoofing 
-inside containers is very slow, and our spoofed packets even arrive 
-later than the legitimate one from the Internet, even though 
-we are local. In the past, when we use VMs for this lab, we never 
-had this issue. We have not figured out the cause of this 
-performance issue yet (if you have any insight on this issue, please 
-let us know). 
-
-If you do encouter this strange situation, we can get 
-around it. We intentionally slow down the 
-traffic going to the outside, so the authentic replies will not 
-come that fast. This can be done using the 
-following \texttt{tc} command on the router to add some 
-delay to the outgoing network traffic. 
-The router has two interfaces, \texttt{eth0} and 
-\texttt{eth1}, make sure use the one connected 
-to the external network \texttt{10.8.0.0/24}.
 
 \begin{lstlisting}
 // Delay the network traffic by 100ms
@@ -241,9 +214,7 @@ to the external network \texttt{10.8.0.0/24}.
 # tc qdisc show dev eth0
 \end{lstlisting}
  
-
-You can keep the \texttt{tc} entry on for this entire lab, because 
-all the tasks will face a similar situation. 
+Dado que todas las tareas de este laboratorio enfrenterán una situación similar, puede dejar guardada la entrada creada por el comando \texttt{tc}.
 
 
 % -------------------------------------------
@@ -251,45 +222,26 @@ all the tasks will face a similar situation.
 % ------------------------------------------- 
 \subsection{Tarea 2: El Ataque de DNS Cache Poisoning -- Spoofing de Respuestas}
 
-The above attack targets the user's machine. In order to achieve long-lasting
-effect, every time the user's machine sends out a DNS query for
-\url{www.example.com}
-the attacker's machine must send out a spoofed DNS response. 
-This might not be so efficient; there is a much better way to conduct attacks 
-by targeting the DNS server, instead of the user's machine.
+El ataque anterior tiene como objetivo la máquina del usuario. Para lograr un efecto de  larga duración, cada vez que la máquina del usuario envía una consulta DNS para \url{www.example.com},l a máquina del atacante debe enviar una respuesta DNS falsificada.
+Puede que esto no sea tan eficaz; hay una forma mucho más eficiente para realizar ataques que apunten al servidor DNS, en lugar de la máquina del usuario.
 
 
-When a local DNS server receives a query, 
-it first looks 
-for the answer from its own cache; if the answer is there, 
-the DNS server will simply reply with the information from its cache. 
-If the answer is not in the cache, the DNS server will 
-try to get the answer from other DNS servers. When it gets the 
-answer, it will store the answer in the cache, so next time, 
-there is no need to ask other DNS servers. See Figure~\ref{dns:fig:local_attack}. 
+Cuando el servidor de DNS local recibe una consulta, primero mirá si la respuesta se encuentra en su caché; si la respuesta está en la caché, el servidor DNS responderá con la información de la caché.
+Si la respuesta no está en la caché, el servidor DNS tratará de obtener la respuesta de otros servidores DNS. Cuando este obtiene la respuesta, este la guardará en su caché, por lo que la próxima vez no tendrá que preguntar en servidores DNS externos. Vea la Figura \ref{dns:fig:local_attack}. 
 
-Therefore, if attackers can spoof the response from other DNS 
-servers, the local DNS server will keep the spoofed response in its cache for 
-certain period of time. Next time, when a user's machine wants to resolve the 
-same host name, it will get the spoofed response from the cache. 
-This way, attackers only need to spoof once, and 
-the impact will last until the cached information expires. 
-This attack is called {\em DNS cache poisoning}.  
+El servidor de DNS local guardará la respuesta spoofeada en su caché por un período limitado de tiempo. La próxima vez que la máquina del usuario quiera resolver el mismo hostname, este tendrá como respuesta la guardada en la caché.
+De esta forma, los atacantes sólo necesitan spoofear una sola vez y el impacto de este spoofeado durará hasta que expire la caché en el servidor DNS.
+Este ataque es llamado {\em DNS cache poisoning}.
 
-
-Please modify the program used in the previous task for this attack. 
-Before attacking, 
-make sure that the DNS Server's cache is empty. 
-You can flush the cache using the following command:
+Por favor modifique el programa usado en la tarea anterior para este ataque.
+Antes de realizar el ataque, asegúrese que la caché del servidor DNS esté vacía.
+Puede flushear la caché usando el siguiente comando:
 
 \begin{lstlisting}
 # rndc flush
 \end{lstlisting}
 
-You can inspect the cache on the local DNS server to
-see whether it is poisoned or not. The following commands
-first dump the cache into a file, and then
-display the content of the cache file. 
+Puede revisar la caché en el servidor de DNS local para ver si está "envenenada" o no. En los comandos que se muestran a continuación primero se hace un dump de esta caché hacia un archivo y luego se muestra el contenido de la caché que está almacenada en este archivo.
 
 \begin{lstlisting}
 # rndc dumpdb -cache
@@ -301,58 +253,33 @@ display the content of the cache file.
 % -------------------------------------------
 % SUBSECTION
 % ------------------------------------------- 
-\subsection{Task 3: Spoofing NS Records}
+\subsection{Tarea 3: Spoofeando los Registros NS}
 
-In the previous task, our DNS cache poisoning attack only affects 
-one hostname, i.e., \url{www.example.com}. If users try to get the IP
-address of another hostname, such as \url{mail.example.com}, we 
-need to launch the attack again. It will be more efficient if we launch one
-attack that can affect the entire \texttt{example.com} domain.  
+En la tarea anterior, nuestro ataque de envenenamiento de caché de DNS solo afecta
+un hostname es decir, \url{www.example.com}. Si los usuarios intentan obtener la dirección IP de otro hostname, como \url{mail.example.com}, será necesario lanzar el ataque nuevamente. Esto sería más eficiente si se lanzará un ataque que pueda afectar a todo el dominio \texttt{example.com}.
 
-The idea is to use the Authority section in DNS replies. 
-Basically, when we spoofed a reply, in addition to spoofing the answer (in
-the Answer section), we add the following in the Authority section.
-When this entry is cached by the local DNS server, \url{ns.attacker32.com}
-will be used as the nameserver for future queries of 
-any hostname in the \texttt{example.com} domain.  Since 
-\url{ns.attacker32.com} is controlled by attackers, it can
-provide a forged answer for any query. The IP address 
-of this machine is \texttt{10.9.0.153} in our setup. 
+La idea es usar la sección Authority en las respuestas DNS.
+Básicamente, cuando spoofeamos una respuesta, además de falsificar la misma (en la sección Answer), agregamos la sección Authority.
+Cuando esta entrada es cacheada por el servidor de DNS local, \url{ns.attacker32.com} será usado como el nameserver para las consultas futuras que se hagan sobre cualquier hostname dentro del dominio \texttt{example.com}. Dado que \url{ns.attacker32.com} es controlada por los atacantes, puede proporcionar una respuesta falsa para cualquier consulta. La dirección IP de esta máquina es \texttt{10.9.0.153}.
 
 \begin{lstlisting}
 ;; AUTHORITY SECTION:
 example.com.            259200  IN      NS       ns.attacker32.com.
 \end{lstlisting}
  
-
-Please add a spoofed NS record in your attack code, and launch the 
-attack. Section~\ref{sec:guideline} has an example showing how to
-include an NS record in a DNS response packet. 
-Detailed guidelines are provided in the SEED book.
-Before doing the attack, please remember to clear the cache on 
-the local DNS server first.
-If your attack is successful, when you run the \texttt{dig} command 
-on the user machine for any hostname in the \url{example.com} domain, you will
-get the fake IP address provided by \texttt{ns.attacker32.com}. Please also
-check the cache on the local DNS server and see whether the spoofed 
-NS record is in the cache or not.
+Por favor agregue el registro NS falsificado en su código de ataque y proceda a ejecutar el ataque. La sección \ref{sec:guideline} muestra un ejemplo de como incluír un registro NS en un paquete de respuesta DNS.
+Para una cobertura más detallada consulte el libro de SEED.
+Antes de hacer el ataque, recuerde primero limpiar la caché en su servidor de DNS local.
+Si su ataque es exitoso, cuando ejecute el comando \texttt{dig} en la máquina de usuario sobre cualquier hostname en el dominio \url{example.com}, verá la dirección IP falsificada provista por \texttt{ns.attacker32.com}. Por favor chequee la caché en el servidor local DNS y vea si el registro NS falsificado se encuentra en ella o no.
 
 
 
 % -------------------------------------------
 % SUBSECTION
 % ------------------------------------------- 
-\subsection{Task 4: Spoofing NS Records for Another Domain} 
+\subsection{Tarea 4: Spoofeando los Registros NS para otro Dominio} 
 
-In the previous attack, we successfully poison the cache of the local DNS
-server, so \texttt{ns.attacker32.com} becomes the nameserver for the 
-\texttt{example.com} domain. Inspired by this success, we would like to 
-extend its impact to other domain. Namely, 
-in the spoofed response triggered by a query for
-\url{www.example.com}, we would like to add additional entry
-in the Authority section (see the following), so
-\url{ns.attacker32.com} is also used as the nameserver for 
-\texttt{google.com}.  
+En el ataque anterior, "envenenamos" con éxito la caché del servidor de DNS local, por lo que \texttt{ns.attacker32.com} se convierte en el servidor de nombres para el nombre de dominio \texttt{example.com}. Inspirados por este éxito, nos gustaría extender su impacto a otros dominios. A saber, en la respuesta falsificada 	que se desencadena por la consulta a \url{www.example.com}, nos gustaría agregar una entrada adicional en la sección Authority (ver lo siguiente), por lo que \url{ns.attacker32.com} también se será usado como servidor de nombres para \texttt{google.com}.
 
 
 \begin{lstlisting}
@@ -361,28 +288,16 @@ example.com.            259200  IN      NS   ns.attacker32.com.
 google.com.             259200  IN      NS   ns.attacker32.com.
 \end{lstlisting}
 
-Please modify your attack code slightly to launch 
-the above attack on your local DNS server. After the 
-attack, check the DNS cache and see which record is cached.
-Please describe and explain your observation. It should be noted that the query
-that we are attacking is still the query to \texttt{example.com}, not one
-to \texttt{google.com}.  
+Por favor modifique el código de ataque levemente y realize el ataque mencionado anteriormente, revise la caché DNS y vea que registro está cacheado.
+Por favor describa y explique su observación. Debe de notar que la consulta que estamos atacando sigue siendo la consulta a \texttt{example.com} y no a \texttt{google.com}.  
 
 
 % -------------------------------------------
 % SUBSECTION
 % ------------------------------------------- 
-\subsection{Task 5: Spoofing Records in the Additional Section}
+\subsection{Tarea 5: Spoofeando Registros en la Sección Adicional}
 
-In DNS replies, there is section called Additional Section, which is used
-to provide additional information. In practice, it is mainly used to
-provide IP addresses for some hostnames, especially for those appearing in the
-Authority section. The goal of this task is to spoof some entries 
-in this section and see whether they will be successfully cached by the
-target local DNS server. In particular, when responding to 
-the query for \texttt{www.example.com}, we add the following entries 
-in the spoofed reply, in addition to the entries in the Answer section:
-
+Las respuestas DNS contienen una sección llamada la sección Additional, que es usada para proveer informacióon adicional. En la práctica, se usa para para proveer la dirección IP de algunos hostnames, en especial aquellos que aparecen en la sección de Authority. El objetivo de esta tarea es falsificar algunas entradas en esta sección y ver si pueden ser cacheadas de forma exitosa por el servidor de DNS local. En particular, al responder la consulta para \texttt{www.example.com}, agregamos las siguientes entradas en la respuesta falsificada, además de las entradas en la sección Answer:
 
 \begin{lstlisting}
 ;; AUTHORITY SECTION:
@@ -395,44 +310,25 @@ ns.example.net.         259200  IN   A    5.6.7.8   (*@\ding{193}@*)
 www.facebook.com.       259200  IN   A    3.4.5.6   (*@\ding{194}@*)
 \end{lstlisting}
 
-Entries \ding{192} and \ding{193} are related to the hostnames in
-the Authority section. Entry \ding{194} is completely irrelevant to
-any entry in the reply, but it provides a ``gracious'' help to
-users, so they do not need to look up for the IP address
-of Facebook. Please use Scapy to spoof such a DNS reply. Your job is
-to report what entries will be successfully cached, and what entries will
-not be cached; please explain why. 
- 
+Las entradas en  \ding{192} y \ding{193} pertenecen a los hostnames de la sección Authority. La entrada en  \ding{194} es irrelevante para cualquier entrada en la respuesta. pero proporciona una ayuda `` amable '' para usuarios, por lo que no necesitan buscar la dirección IP de Facebook. Utilice Scapy para falsificar dicha respuesta de DNS. Tu trabajo es para informar qué entradas se almacenarán en caché correctamente y qué entradas no lo harán; por favor explique por qué.
+
 
 % -------------------------------------------
 % SUBSECTION
 % ------------------------------------------- 
-\subsection{What's Next}
+\subsection{Lo que sigue}
 
-
-In the DNS cache poisoning attack of this lab, 
-we assume that the attacker and the DNS server are on
-the same LAN, i.e., the attacker can observe the DNS query message.
-When the attacker and the DNS server are not on the same LAN,
-the cache poisoning attack becomes much more challenging. If you
-are interested in taking on such a challenge, you can 
-try our ``Remote DNS Attack Lab''.
-
-
+En el ataque de DNS cache poisoning que se hizo en este laboratorio, hemos asumido que el atacante y el servidor DNS se encuentran en la misma LAN, es decir, el atacante puede observar las consultas realizadas por el servidor DNS.
+Cuando un atacante y un servidor DNS no se encuentra en la misma LAN, este tipo de ataque es más difícil de hacer. Si esta interesado en saber como hacerlo, puede consultar nuestro laboratorio ``Remote DNS Attack Lab o Ataque Remoto DNS''.
 
 
 % *******************************************
 % SECTION
 % ******************************************* 
-\section{Guideline}
+\section{Guías}
 \label{sec:guideline}
 
-
-You need to use Scapy for several tasks in this lab. The following sample code shows how to
-sniff a DNS query and then spoof a DNS reply, which contains 
-a record in the Answer section, two records in the Authority section and two
-records in the Additional section. The code is already included 
-in the \texttt{Labsetup.zip} file (inside the \texttt{volumes} folder).  
+Dado que necesita usar Scapy para varias tareas del laboratorio. El siguiente código de ejemplo muestra como sniffear una consulta DNS y spoofear una respuesta DNS que contiene un registro A en la sección Answer, dos registros en la sección Authority y dos registros en la sección Additional. El código está incluído dentro del archivo \texttt{Labsetup.zip} (dentro de la carpeta \texttt{volumes}).
 
 
 \begin{lstlisting}[caption={Sample code: \texttt{dns\_sniff\_spoof.py}}]
@@ -478,10 +374,8 @@ f = 'udp and dst port 53'
 pkt = sniff(iface='br-43d947d991eb', filter=f, prn=spoof_dns)       (*@\ding{73}@*)    
 \end{lstlisting}
  
-Please make sure replace the interface name in Line~\ding{73} with
-the one in your system.
-Line~\ding{81} constructs the DNS payload, including DNS header and data. Each field 
-of the DNS payload is explained in the following:
+Asegurése de reemplazar el nombre de la interfaz en la Línea \ding{73} con la que corresponde en su sistema.
+La Línea \ding{81} construye el payload DNS, incluyendo el encabezado DNS y sus datos. Cada campo del payload del DNS se explican a continuación:
 
  
 \begin{itemize}[noitemsep]
