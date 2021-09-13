@@ -43,9 +43,9 @@
 
 DNS (Domain Name System o Sistema de nombre de Dominios) es la guía de teléfono de la Internet; se encarga de traducir los hostnames a direcciones IP (y visce versa). Esta traducción se hace a través de la resolución DNS, esta ocurre detrás de escena. El proceso de resolución involucra muchos nameservers, incluyendo los nameservers raíz, servidores TLD y los servidores de dominio finales. Estos nameservers pertenecientes al sistema global DNS, es una parte fundamental de la infraestructura de la Internet.
 
-Par ayudar a que los estudiantes entiendan como estos nameservers funcionan de manera conjunta para así forma la infraestructura, crearemos un sistema DNS en miniatura llamado \textit{DNS in a Box}. Como sugiere su nombre, se correrá un sistema DNS que contará con múltiples nameservers dentro de una sóla máquina. Esto se logrará usando la tecnología de los contenedores.
+Para ayudar a que los estudiantes entiendan como estos nameservers funcionan de manera conjunta para así conformar toda esta infraestructura, crearemos un sistema DNS en miniatura llamado \textit{DNS in a Box}. Como sugiere su nombre, se correrá un sistema DNS que contará con múltiples nameservers dentro de una sóla máquina. Esto se logrará usando la tecnología de los contenedores.
 
-Aunque este sistema es pequeño, contiene todos los elementos esencial de una infraestructura real DNS. Construyendo tal sistema, los estudiantes tendrán un conocimiento más en profundidad sobre como funciona el protocolo DNS.
+Aunque este sistema es pequeño, contiene todos los elementos esenciales de una infraestructura real de DNS. Construyendo tal sistema, los estudiantes tendrán un conocimiento más en profundidad sobre como funciona el protocolo DNS.
 Aunque este laboratorio no se trata de la seguridad, contiene la bases para otros laboratorios de SEED.
 
 Este laboratorio cubre los siguientes tópicos:
@@ -116,14 +116,14 @@ Nuestro sistema DNS se compone de cuatro nameservers.
 El propósito de estos cuatro nameservers se resumen a continuación:
 
 \begin{itemize}[nosep]
-\item Servidor DNS local: realiza la resolución de nombres de otras máquinas.
+\item Servidor de DNS local: realiza la resolución de nombres de otras máquinas.
 \item Servidor Raíz: nameserver que sirve de zona raíz.
 \item Servidor \texttt{edu}: nameserver para la zona \texttt{edu}, Top Level Domain (TLD)
 \item Servidor \texttt{example.edu}: nameserver que sirve la zona \texttt{example.edu}. 
 \end{itemize}
 
-Usamos un contenedor para cada uno de los nameservers mencionadoos anteriormente.
-La mecánica de generación y ejecución de estos contenedores se encuentra en el archivo \texttt{docker-compose.yml}, que se incluye en el archivo de setup del laboratorio. Dentro de este archivo, hemoos creado una red \texttt{10.9.0.0/24} y cuatro contenedores: cada entrada en la seccióon de \texttt{services} representa un contenedor. Hemos asignado una dirección IP a cada uno de los contenedores.
+Usaremos un contenedor para cada uno de los nameservers mencionados anteriormente.
+La mecánica de creación y ejecución de estos contenedores se encuentra en el archivo \texttt{docker-compose.yml}, que se incluye en el archivo de setup del laboratorio. Dentro de este archivo, hemos creado una red \texttt{10.9.0.0/24} y cuatro contenedores: cada entrada en la sección de \texttt{services} representa un contenedor. Hemos asignado una dirección IP a cada uno de los contenedores.
 Observe el siguiente fragmento:
 
 
@@ -155,16 +155,16 @@ services:
         ipv4_address: 10.9.0.53
 \end{lstlisting}
 
-En la Línea \ding{80} se especifíca la imagen base, a partir de la cual se construye la imagen basada usando imagen de \path{handsonsecurity/seed-server:bind}.
+En la Línea \ding{80} se especifíca la imagen base, a partir de la cual se construye la imagen base usando imagen de \path{handsonsecurity/seed-server:bind}.
 Esta imagen ha sido ubicada en el Docker Hub (vea el archivo \texttt{Dockerfile} en el directorio \texttt{base\_image}).
-Aunque todos los nameservers pueden ser generar sus contenedores basados en la imagen de Docker Hub, hemos reducido el número de accesos usados para consultar el Docker Hub (la compania establece un límite en cuanto a la cantidad de accesos que un usuario en particular puede hacer durante un período de 6 horas), primero construimos una imagen local base usando la imagen de Docker Hub y después usamos esa imagen base local para construir el resto de los contenedores del laboratorio.
+Aunque todos los nameservers pueden generar sus contenedores basados en la imagen de Docker Hub, hemos reducido el número de accesos usados para consultar el Docker Hub (ya que la compania establece un límite en cuanto a la cantidad de accesos que un usuario en particular puede hacer durante un período de 6 horas), primero construimos una imagen local base usando la imagen de Docker Hub y después usaremos esa imagen base local para construir el resto de los contenedores del laboratorio.
 
 % -------------------------------------------
 % SUBSECTION
 % -------------------------------------------
-\subsection{Las Imagenes Docker} 
+\subsection{Las Imágenes Docker} 
 
-Exeptuando el servidor de DNS local, todos los nameservers usan el mismo directorio (\texttt{nameserver}) para construir sus imagenes. En el archivo \texttt{Dockerfile} se muestra lo siguiente:
+Exeptuando el servidor de DNS local, todos los nameservers usan el mismo directorio (\texttt{nameserver}) para construir sus imágenes. En el archivo \texttt{Dockerfile} se muestra lo siguiente:
 
 
 \begin{lstlisting}
@@ -180,8 +180,8 @@ COPY ${BIND_CONF_DIR}     /etc/bind/              (*@\ding{204}@*)
 CMD service named start  && tail -f /dev/null
 \end{lstlisting}
 
-La Línea \ding{202} indicate que es una imagen local (que usa la imagen base).
-La Línea \ding{203} copia los archivos de configuración de BIND 9 en el directorio  \texttt{/etc/bind} del contenedor. Estos archivos son los mismos para todos los nameservers, pero cada nameserver tiene su propios archivos de zona. Es por eso que se usa el argumento \texttt{BIND\_CONF\_DIR} (Línea \ding{204}) para indicar que directorio usar como el directorio defecto de los archivos de configuración. El valor de \texttt{BIND\_CONF\_DIR}  se setea en el archivo Compose.
+La Línea \ding{202} indica que es una imagen local (que usa la imagen base).
+La Línea \ding{203} copia los archivos de configuración de BIND 9 en el directorio  \texttt{/etc/bind} del contenedor. Estos archivos son los mismos para todos los nameservers, pero cada nameserver tiene su propios archivos de zona. Es por eso que se usa el argumento \texttt{BIND\_CONF\_DIR} (Línea \ding{204}) para indicar que directorio usar como el directorio por defecto de los archivos de configuración. El valor de \texttt{BIND\_CONF\_DIR} se setea en el archivo Compose.
 
 
 \paragraph{Servidor de DNS local.}
@@ -198,7 +198,7 @@ Los archivos de configuración para este dominio en particular se encuentran den
 
 \paragraph{Paso 1. Agregando la entrada de la zona}. Para hostear el dominio \texttt{example.edu} en el servidor, debemos de agregar la entrada de la zona dentro del archivo de configuración (\texttt{named.conf}) de BIND 9, de esta forma le indicamos que zona es la que va a estar hosteando. Por un tema de conveniencia agregaremos esta zona en el archivo \path{named.conf.seedlabs} que es una versión modificada del archivo \path{named.conf}.
 
-Esta entrada indica que el nameserver actual es el servidor master para este dominio y su archivo de zona está especificado en la entrada dentro del archivo \texttt{file}.
+Esta entrada indica que el nameserver actual es el servidor maestro para este dominio y su archivo de zona está especificado en la entrada dentro del archivo \texttt{file}.
 
 
 \begin{lstlisting}
@@ -249,8 +249,6 @@ www.example.edu.    259200   IN  A   (*@\textbf{1.2.3.5}@*)
 
 
 
-
-
 % *******************************************
 % SECTION
 % *******************************************
@@ -273,7 +271,7 @@ zone "edu" {
 
 Todos los nameservers dentro del dominio \texttt{edu} deben de registrar sus nameservers con este servidor TLD; de otra forma nadie podrá encontrarlo/resolverlo. Como ejemplo hemos agregados dos registros pra el dominio \texttt{syr.edu}: 
 Un registro \texttt{NS} y un registro \texttt{A}.
-El registro \texttt{NS} especifíca el nameserver para el dominio \texttt{syr.edu} mientras que el registro \texttt{A} especifíca la dirección IP del nameserver. Los datos usados en los registros son datoss reales, a modo de simular que el dominio\texttt{syr.edu} ha sido registrado en nuestro servidor TLD \texttt{edu}.
+El registro \texttt{NS} especifíca el nameserver para el dominio \texttt{syr.edu} mientras que el registro \texttt{A} especifíca la dirección IP del nameserver. Los datos usados en los registros son datos reales, a modo de simular que el dominio\texttt{syr.edu} ha sido registrado en nuestro servidor TLD \texttt{edu}.
 
 
 \begin{lstlisting}
@@ -287,7 +285,7 @@ ns1.syr.edu.            IN      A       128.230.12.8
 Los estudiantes deberán de realizar las siguientes tareas: (1) registrar el nameserver \texttt{example.edu} usando este servidor TLD; (2) elegir tres nombres de dominio reales y registrarlos dentro del servidor TLD. Puede encontrar los nameserver de un dominio usando el comando \texttt{"dig <name> NS"} (ejemplo, \texttt{"dig syr.edu NS"}).
 
 Los estudiantes pueden usar los comandos de \texttt{docker-compose} para construir y correr todos los contenedores.
-Una vez que los contenedores esten corriendo, ejecute los siguientes comando usando \texttt{dig} desde su Máquina Virtual y envíe consultas DNS al nameserver \texttt{edu} (su dirección IP es \texttt{10.9.0.60}).
+Una vez que los contenedores esten corriendo, ejecute los siguientes comandos usando \texttt{dig} desde su Máquina Virtual y envíe consultas DNS al nameserver \texttt{edu} (su dirección IP es \texttt{10.9.0.60}).
 Por favor reporte sus observaciones.
 
 
@@ -307,10 +305,10 @@ En el último comando, ud. debería de intentar varios ejemplos con dominios (te
 % *******************************************
 \section{Tarea 4: Creando el servidor raíz}
 
-En esta tarea, construiremos un nameserver para la zona raíz. Todos los servidoress TLD necesitan registrarse con un nameserver raíz, de esta forma pueden ser encontrados en el proceso de consulta DNS.
+En esta tarea, construiremos un nameserver para la zona raíz. Todos los servidores TLD necesitan registrarse con un nameserver raíz, de esta forma pueden ser encontrados en el proceso de consulta DNS.
 En nuestro contenedor, la zona raíz se define dentro del archivo \texttt{bind.conf.seedlabs} que carga los registro del archivo de zona \texttt{root.db}. 
 
-Por cada zona TLD que querramos agregar en nuestro sistema DNS en miniatura, necesitamos agregar al menos dos registros en el archivo de la zona, incluyendo un registro  \texttt{NS} y un registro \texttt{A}. En el siguiente ejemplo, hemos agregado la información del nameserver para las zonas \texttt{com} y \texttt{net} (los datos en los registros son reales).
+Por cada zona TLD que necesitemos agregar en nuestro sistema DNS en miniatura, necesitamos agregar al menos dos registros en el archivo de la zona, incluyendo un registro \texttt{NS} y un registro \texttt{A}. En el siguiente ejemplo, hemos agregado la información del nameserver para las zonas \texttt{com} y \texttt{net} (los datos en los registros son reales).
 Esta dos zonas son manejadas por la misma compania, por lo que comparten el mismo conjunto de nameservers (hemos incluído solamente uno).
 
 \begin{lstlisting}
@@ -348,7 +346,7 @@ En esta tarea, haremos el setup para este servidor de DNS local.
 Si el servidor de DNS local no puede encontrar la respuesta dentro de su caché, este entrará en un proceso iterativo para encontrar la respuesta en los nameservers externos a este. El proceso comienza desde el servidor raíz.
 Además, el servidor de DNS local necesita saber la dirección IP de los servidores raíz.
 
-Dentro de \path{/etc/bind/named.conf.default-zones}, que está incluído en el archivo de configuración de \bind (\path{/etc/bind/named.conf}), existe una entrada para zona raíz. Esta entrada especifíca un archivo de sugerencia (hint file) para cada zona raíz, de esta forma el servidor de DNS local conoce la dirección IP de cada servidor raíz.
+Dentro de \path{/etc/bind/named.conf.default-zones}, que está incluído en el archivo de configuración de \bind (\path{/etc/bind/named.conf}), existe una entrada para cada zona raíz. Esta entrada especifíca un archivo de sugerencia (hint file) para cada zona raíz, de esta forma el servidor de DNS local tiene conocimiento de la dirección IP de cada servidor raíz.
 
 
 \begin{lstlisting}
@@ -392,7 +390,7 @@ $ dig @10.9.0.53 www.xyz.<TLD not registered with your root server>
 % *******************************************
 \section{Tarea 6: Configurar nuestra Máquina Virtual para usar el servidor de DNS local} 
 
-Hast ahora, usamos \texttt{@<ip>} en conjunto con el comando \texttt{dig} para indicar cual es el servidor DNS que debe de contactar el comando \texttt{dig}. Mientras que esto no es un problema para \texttt{dig}, es un problema para otro tipos de programas que dependen del DNS. Necesitamos indicarle al sistema operativo que el contenedor del servidor de DNS que vamos a generar en esta tarea, será el servidor de DNS local por defecto que va a usar el sistema.
+Hast ahora, usamos \texttt{@<ip>} en conjunto con el comando \texttt{dig} para indicar cual es el servidor DNS que debe de contactar el comando \texttt{dig}. Mientras que esto no es un problema para \texttt{dig}, es un problema para otro tipos de programas que dependen del servicio de DNS. Necesitamos indicarle al sistema operativo que el contenedor del servidor de DNS que vamos a generar en esta tarea, será el servidor de DNS local por defecto que va a usar el sistema.
 
 Esto se logra cambiando el archivo de configuración (\texttt{/etc/resolv.conf}) en la máquina del usuario de manera tal que se agregará la dirección IP del contenedor como la primera entrada \texttt{nameserver} dentro de este archivo, es decir, este servidor será usado como el servidor de DNS primario.
 Desafortunadamente nuestra Máquina Virtual usa DHCP para obtener los parámetros de la configuración de red, tales como la dirección IP, el servidor de DNS local, etc. Los clientes DHCP sobreescribirán el archivo \texttt{/etc/resolv.conf} con su la información provista por el servidor DHCP.
@@ -409,8 +407,8 @@ $ sudo resolvconf -u
 
 El contenido del archivo head será antepuesto al que se usa en la generación dinámica por el DHCP.
 
-Después de haber terminado la configuración en la máquina del usuario, repita la prueba del testeo de los comandos que realizó en la Tarea 5, pero esta vez no incluya \texttt{@<ip>} en el comando. Preste atención a las direcciones IP remarcardas para asegurarse que la respuesta provienen de su contenedor. Si la configuración no se hizo de manera correcta, la dirección IP será diferente.
-s
+Después de haber terminado la configuración en la máquina del usuario, repita la prueba del testeo de los comandos que ejecutados en la Tarea 5, pero esta vez no incluya \texttt{@<ip>} en los comandos. Preste atención a las direcciones IP remarcardas para asegurarse que la respuesta provienen de su contenedor. Si la configuración no se hizo de manera correcta, la dirección IP será diferente.
+
 \begin{lstlisting}
 $ dig abc.example.edu
 
@@ -425,7 +423,7 @@ abc.example.edu.	259200	IN	A	1.2.3.7
  
 
 \paragraph{\ding{72}\ding{72} Nota (Muy importante) \ding{72}\ding{72}.} 
-Una vez terminado el laboratorio, recuerde borrar la entrada agregada en \path{/etc/resolvconf/resolv.conf.d/head}; si esto no se hace, pueden ocurrir muchos problemas en futuros laboratorios. Si en un futuro, ud. tiene problemas para conectarse a Internet, pero su red se encuentra andando, existen probabilidades de que ud. haya olvidado borrar esta entrada y esto estropeará el proceso de consultas DNS. Esto me ha ocurrido varias veces y frecuentemente olvido borrar esta entrada. 
+Una vez terminado el laboratorio, recuerde borrar la entrada agregada en \path{/etc/resolvconf/resolv.conf.d/head}; si esto no se hace, pueden ocurrir muchos problemas en futuros laboratorios. Si en un futuro, ud. tiene problemas para conectarse a Internet, pero su red se encuentra funcionando, existen probabilidades de que ud. haya olvidado borrar esta entrada y esto estropeará el proceso de consultas DNS. Esto me ha ocurrido varias veces y frecuentemente olvido borrar esta entrada. 
 
 
 % *******************************************
@@ -439,7 +437,7 @@ En esta tarea, haremos que nuestro sistema DNS en miniatura sea un poco más rea
 \begin{itemize}
 \item Agregue 2 o más servidores raíz. En el mundo real el sistema DNS tiene 13 direcciones IP para cada servidor raíz. En este laboratorio crearemos 3.
 
-\item Seleccione dos TLDs registrados en su servidor raíz, construya un dominio de segundo nivel para cada uno de llos, use su apellido como nombre de dominio.
+\item Seleccione dos TLDs registrados en su servidor raíz, construya un dominio de segundo nivel para cada uno de ellos, use su apellido como nombre de dominio.
 Por ejemplo, si su apellido es \texttt{Smith}, necesita crear los nameservers para los dominios \texttt{smith.<tld1>} y \texttt{smith.<tld2>}.
 Necesita hostear ambos dominios en el mismo nameserver.
 \end{itemize}
