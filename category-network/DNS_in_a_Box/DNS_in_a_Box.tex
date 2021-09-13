@@ -185,7 +185,7 @@ La Línea \ding{203} copia los archivos de configuración de BIND 9 en el direct
 
 
 \paragraph{Servidor de DNS local.}
-La imagen del contenedor que usa el servidor de DNS local es similar a las que usan los contenedores de nameserver. Explicaremos sus diferencias más adelante, dado que la construcción de esta imagen es una de las tareas.
+La imagen del contenedor que usa el servidor de DNS local es similar a las que usan los contenedores de nameserver. Explicaremos sus diferencias más adelante, dado que la construcción de esta imagen será una de las tareas del laboratorio.
 
 
 % *******************************************
@@ -193,24 +193,12 @@ La imagen del contenedor que usa el servidor de DNS local es similar a las que u
 % *******************************************
 \section{Tarea l: Creando el nameserver para \texttt{example.edu}}
 
-In this task, we will build a nameserver for a domain 
-called \texttt{example.edu}. The container files are 
-put inside the \texttt{nameserver} folder. 
-The configuration files for this particular domain
-is placed inside the \path{edu.example} sub-folder.  
+En esta tarea, vamos a construir un nameserver para el dominio \texttt{example.edu}. Los archivos del contenedor están dentro de la carpeta \texttt{nameserver}. 
+Los archivos de configuración para este dominio en particular se encuentran dentro del subdirectorio \path{edu.example}.
 
+\paragraph{Paso 1. Agregando la entrada de la zona}. Para hostear el dominio \texttt{example.edu} en el servidor, debemos de agregar la entrada de la zona dentro del archivo de configuración (\texttt{named.conf}) de BIND 9, de esta forma le indicamos que zona es la que va a estar hosteando. Por un tema de conveniencia agregaremos esta zona en el archivo \path{named.conf.seedlabs} que es una versión modificada del archivo \path{named.conf}.
 
-\paragraph{Step 1. Adding the zone entry}. To host
-a server for the \texttt{example.edu} domain, we need to
-add a zone entry to the BIND 9's configuration file \texttt{named.conf}, 
-so it knows what zones it is going to host. For convenience,
-we will add the entry to the \path{named.conf.seedlabs} file, which
-is included in our modified \texttt{named.conf} file.
-
-
-This entry indicates that the current nameserver 
-is the master server for this domain, and the zone file is 
-specified in the \texttt{file} entry.  
+Esta entrada indica que el nameserver actual es el servidor master para este dominio y su archivo de zona está especificado en la entrada dentro del archivo \texttt{file}.
 
 
 \begin{lstlisting}
@@ -221,13 +209,9 @@ zone "example.edu" {
 \end{lstlisting}
 
 
-\paragraph{Step 2. Creating the zone file}. 
-When building the docker image, the zone file 
-\path{example.edu.db} will be copied into
-the \path{/etc/bind} folder of the container. 
-To get students started, we have provided some 
-information in this zone file, but students need to make 
-all then necessary changes.
+\paragraph{Paso 2. Creando el archivo de la zona}. 
+Al momento de construir una imagen de docker, el archivo de zona \path{example.edu.db} será copiado dentro de la carpeta \path{/etc/bind} que se encuentra en el contenedor.
+Para que los estudiantes puedan empezar, hemos provisto alguna información de este archivo de zona, pero los estudiantes deberán de realizar todos los cambios que sean requeridos.
 
 \begin{lstlisting}
 $TTL 3D
@@ -252,15 +236,8 @@ xyz     IN      A     1.2.3.6
  
 
 
-\paragraph{Step 3. Testing.} Using \texttt{docker-compose} commands
-to build and start all the containers. 
-Once the containers are running,
-run the following command from your VM (i.e., outside of the 
-container). We use the \texttt{@10.9.0.65} option to send our DNS query
-directly to texttt{10.9.0.65}, which is the IP
-address of the \texttt{example.edu} nameserver in our setup. 
-If everything is done correctly, you can get the IP address specified
-in your zone file. Please report your observations.
+\paragraph{Paso 3. Probando.} Se usará el comando \texttt{docker-compose} para generar y correr todos los contenedores. 
+Una vez que los contenedores esten corriendo, ejecute el siguiente comando desde su Máquina Virtual (es decir por fuera del contenedor). Usaremos la opción  \texttt{@10.9.0.65} para enviar nuestra consulta DNS directamente a  \texttt{10.9.0.65}, que es la dirección IP del nameserver para \texttt{example.edu}. Si todo se realiza de manera correcta, obtendrá la dirección IP especificada en su archivo de zona. Por favor reporte sus observaciones.
 
 \begin{lstlisting}
 $ dig @10.9.0.65 www.example.edu
@@ -279,14 +256,10 @@ www.example.edu.    259200   IN  A   (*@\textbf{1.2.3.5}@*)
 % *******************************************
 \section{Tarea 2: Creando el servidor TLD \texttt{edu}}
 
+En esta tarea, vamos a construir un nameserver para el dominio TLD \texttt{edu}.
+Modificaremos los archivos dentro de la carpeta  \texttt{nameserver/edu}.
+Primero necesitamos agregar la siguiente entrada de zona en el archivo \path{named.conf.seedlabs}. Esta entrada indica que el nameserver actual es el nameserver maestro para el dominio y el archivo de zona es especificado en la entrada dentro del archivo \texttt{file}.
 
-In this task, we will build a nameserver for a TLD domain, 
-the \texttt{edu} domain.
-We will modify the files in the \texttt{nameserver/edu} folder. 
-First, we need to  add the following zone entry to the
-\path{named.conf.seedlabs} file. This entry indicates that the current nameserver
-is the master server for this domain, and the zone file is
-specified in the \texttt{file} entry.
 
 \begin{lstlisting}
 zone "edu" {
@@ -296,23 +269,12 @@ zone "edu" {
 \end{lstlisting}
 
 
-\paragraph{Creating the zone file.} Next, we need to
-add records to the zone file. 
-We have already created the zone file \texttt{edu.db},
-but it is incomplete. Students should make all the 
-necessary changes. 
+\paragraph{Creando el archivo de la zona.} A continuación, debemos agregar los registros en el archivo de la zona. Hemos creado el archivo de zona dentro de \texttt{edu.db}, pero está incompleto. Los estudiantes deberán de hacer los cambios necesarios.
 
-All the nameservers within the \texttt{edu} domain
-must register their nameservers with this 
-TLD server; otherwise, nobody can find them. As an example,
-we have added two records for the \texttt{syr.edu} domain: 
-an \texttt{NS} record and an \texttt{A} record.
-The \texttt{NS} record specifies the nameserver for the 
-\texttt{syr.edu} domain, while the \texttt{A} record
-specifies the IP address of the nameserver. The
-data used in the records are real data, as it simulates
-the fact the \texttt{syr.edu} domain has registered 
-itself with our \texttt{edu} TLD server.
+Todos los nameservers dentro del dominio \texttt{edu} deben de registrar sus nameservers con este servidor TLD; de otra forma nadie podrá encontrarlo/resolverlo. Como ejemplo hemos agregados dos registros pra el dominio \texttt{syr.edu}: 
+Un registro \texttt{NS} y un registro \texttt{A}.
+El registro \texttt{NS} especifíca el nameserver para el dominio \texttt{syr.edu} mientras que el registro \texttt{A} especifíca la dirección IP del nameserver. Los datos usados en los registros son datoss reales, a modo de simular que el dominio\texttt{syr.edu} ha sido registrado en nuestro servidor TLD \texttt{edu}.
+
 
 \begin{lstlisting}
 ; Real records for syr.edu
@@ -321,21 +283,12 @@ ns1.syr.edu.            IN      A       128.230.12.8
 \end{lstlisting}
  
 
-\paragraph{Lab Task.}
-Students need to do the following tasks: (1) register 
-your \texttt{example.edu} nameserver with this TLD server;
-(2) choose three real domain names, and register them
-with this TLD server. You can find the nameserver of a domain
-using \texttt{"dig <name> NS"} (e.g., \texttt{"dig syr.edu NS"}). 
+\paragraph{Tareas.}
+Los estudiantes deberán de realizar las siguientes tareas: (1) registrar el nameserver \texttt{example.edu} usando este servidor TLD; (2) elegir tres nombres de dominio reales y registrarlos dentro del servidor TLD. Puede encontrar los nameserver de un dominio usando el comando \texttt{"dig <name> NS"} (ejemplo, \texttt{"dig syr.edu NS"}).
 
-
-Using \texttt{docker-compose} commands, students can 
-build and start all the containers. 
-Once the containers are running,
-run the following \texttt{dig} commands from your VM to
-send DNS queries to the \texttt{edu} nameserver (its IP address
-is \texttt{10.9.0.60} in our setup). 
-Please report your observations. 
+Los estudiantes pueden usar los comandos de \texttt{docker-compose} para construir y correr todos los contenedores.
+Una vez que los contenedores esten corriendo, ejecute los siguientes comando usando \texttt{dig} desde su Máquina Virtual y envíe consultas DNS al nameserver \texttt{edu} (su dirección IP es \texttt{10.9.0.60}).
+Por favor reporte sus observaciones.
 
 
 \begin{lstlisting}
@@ -345,11 +298,8 @@ $ dig @10.9.0.60 <the other three domains you have chosen>
 $ dig @10.9.0.60 <a domain not included in your zone file>
 \end{lstlisting}
 
-It should be noted, the \texttt{edu} TLD server is configured 
-not to conduct the recursive query, so it will only tell you
-the nameserver for the domain name in the query; it will not
-resolve the query for you. In the last command, you should
-try some domains (ended with \texttt{edu}) that are not included in your zone file. 
+Debe de notarse que el servidor TLD \texttt{edu} está configurado para no realizar consultas recursivas, por lo que en la consulta solamente le devolverá el nameserver para el dominio especificado; esto significa que el servidor no va a resolver la consulta por ud. 
+En el último comando, ud. debería de intentar varios ejemplos con dominios (terminados en \texttt{edu}) que no están incluídos en el archivo de la zona.
 
 
 % *******************************************
@@ -357,24 +307,11 @@ try some domains (ended with \texttt{edu}) that are not included in your zone fi
 % *******************************************
 \section{Tarea 4: Creando el servidor raíz}
 
+En esta tarea, construiremos un nameserver para la zona raíz. Todos los servidoress TLD necesitan registrarse con un nameserver raíz, de esta forma pueden ser encontrados en el proceso de consulta DNS.
+En nuestro contenedor, la zona raíz se define dentro del archivo \texttt{bind.conf.seedlabs} que carga los registro del archivo de zona \texttt{root.db}. 
 
-In this task, we will build a nameserver for the 
-root zone. All TLD nameservers need to register
-with the root nameserver, so they can be found
-in the DNS query process. 
-In our container, the root zone is defined in 
-\texttt{bind.conf.seedlabs}, which loads the records 
-from the zone file \texttt{root.db}. 
-
-
-For every TLD zone that we would like to include in our 
-miniature DNS system, we need to add at least two records
-in the zone file, including an \texttt{NS} record 
-and an \texttt{A} record.  In the following example,
-we have added the nameserver information for the 
-\texttt{com} and \texttt{net} zones (the data in the records are real data).
-These two zones are managed by the same company, so they share the 
-same set of nameservers (we have only included one nameserver).
+Por cada zona TLD que querramos agregar en nuestro sistema DNS en miniatura, necesitamos agregar al menos dos registros en el archivo de la zona, incluyendo un registro  \texttt{NS} y un registro \texttt{A}. En el siguiente ejemplo, hemos agregado la información del nameserver para las zonas \texttt{com} y \texttt{net} (los datos en los registros son reales).
+Esta dos zonas son manejadas por la misma compania, por lo que comparten el mismo conjunto de nameservers (hemos incluído solamente uno).
 
 \begin{lstlisting}
 com.                 IN   NS   a.gtld-servers.net.
@@ -383,36 +320,25 @@ a.gtld-servers.net.  IN   A    192.5.6.30
 \end{lstlisting}
  
 
-\paragraph{Lab task.} Students need to add records to the 
-zone file \texttt{root.db} to satisfy the following requirements:  
+\paragraph{Tarea.} Los estudiantes deben agregar registros al archivo de la zona \texttt{root.db} que cumplan con los siguientes requerimientos:
+
 
 \begin{itemize}[nosep]
-\item Register your \texttt{edu} nameserver with this root server.
 
-\item Choose two more real TLD names, and register them
-with this TLD server. One of the TLDs should be 
-a country-code TLD (ccTLD), which is the root for 
-a country. You can find the nameserver of a TLD domain
-using \texttt{"dig <tld> NS"} (e.g., \texttt{"dig com NS"}).
-You can also find all the TLD information from
-\url{https://www.internic.net/domain/root.zone}.
+\item Registre su nameserver \texttt{edu} dentro del servidor raíz.
+
+\item Elija dos nombres de TLD reales más y regístrelos con este servidor de TLD. Uno de los TLD debe ser un TLD código de país (ccTLD), que representa la raíz de un país. Puede encontrar el nameserver de un dominio TLD usando \texttt{"dig <tld> NS"} (por ejemplo, \texttt{"dig com NS"}).
+También puede encontrar toda la información relacionada a los TLD en \url{https://www.internic.net/domain/root.zone}.
 \end{itemize}
  
-
-Using \texttt{docker-compose} commands, students can
-build and start all the containers. 
-Once the containers are running,
-run the \texttt{dig} command from your VM to
-send DNS queries to the root nameserver (using 
-\texttt{"dig @10.9.0.30"}). Please use the 
-testing to demonstrate that your DNS setup 
-is working as expected. 
+Usando los comandos de \texttt{docker-compose}, los estudiantes pueden construir y correr todos los contenedores.
+Una vez que los contenedores estén corriendo, ejecute el comando \texttt{dig} desde su Máquina Virtual y envie consultas DNS hacia el nameserver raíz (usando \texttt{"dig @10.9.0.30"}). Por favor use esta prueba para demostrar que la configuración del setup de su DNS funciona de manera correcta.
 
 
 % *******************************************
 % SECTION
 % *******************************************
-\section{Tarea 5: Creando el servidor de DNS loocal} 
+\section{Tarea 5: Creando el servidor de DNS local} 
 
 When a computer needs to resolve the IP address from a hostname (or vice versa),
 it sends a request to its helper, which is called local DNS server (it
@@ -593,8 +519,7 @@ You need to host both domains on the same nameserver.
 \input{\commonfolder/submission}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\paragraph{Cleanup.} This is another reminder regarding the 
-removing of the entry added to \path{/etc/resolvconf/resolv.conf.d/head}. 
+\paragraph{Limpieza.} Este es un recordatorio que avisa que se debe de borrar la entrada añadida en \path{/etc/resolvconf/resolv.conf.d/head}.
 
 % *******************************************
 % SECTION
