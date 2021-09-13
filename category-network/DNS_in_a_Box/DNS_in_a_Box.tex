@@ -340,26 +340,15 @@ Una vez que los contenedores estén corriendo, ejecute el comando \texttt{dig} d
 % *******************************************
 \section{Tarea 5: Creando el servidor de DNS local} 
 
-When a computer needs to resolve the IP address from a hostname (or vice versa),
-it sends a request to its helper, which is called local DNS server (it
-does not need to be local).  This local DNS server will conduct the 
-entire DNS resolution process, and then send the result back to the computer. 
-In this task, we will set up this local DNS server. 
+Cuando una máquina necesita resolver una dirección IP de un hostname (o visce versa), envía una consulta a un "ayudante" denominado servidor de DNS local (no necesita ser local en realidad). Este servidor de DNS local será el encargado de manejar el proceso de resolución y enviar el resultado de regreso hacia la máquina que hizo la consulta.
+En esta tarea, haremos el setup para este servidor de DNS local.
 
 
-\paragraph{The root hint file.}
-If the local DNS server cannot find the answer from its cache, it 
-will go through an iterative process to get the answer from outside 
-nameservers.  The process starts from the root server. 
-Therefore, the local DNS server needs to
-know the IP address of the root servers. 
+\paragraph{Root hint file.}
+Si el servidor de DNS local no puede encontrar la respuesta dentro de su caché, este entrará en un proceso iterativo para encontrar la respuesta en los nameservers externos a este. El proceso comienza desde el servidor raíz.
+Además, el servidor de DNS local necesita saber la dirección IP de los servidores raíz.
 
-
-In \path{/etc/bind/named.conf.default-zones}, which is included 
-in \bind's configuration file \path{/etc/bind/named.conf}, there is an 
-entry for the root zone. This entry specifies a hint file for the
-root zone, and that is how the local DNS server knows the IP address of the
-root server. 
+Dentro de \path{/etc/bind/named.conf.default-zones}, que está incluído en el archivo de configuración de \bind (\path{/etc/bind/named.conf}), existe una entrada para zona raíz. Esta entrada especifíca un archivo de sugerencia (hint file) para cada zona raíz, de esta forma el servidor de DNS local conoce la dirección IP de cada servidor raíz.
 
 
 \begin{lstlisting}
@@ -368,12 +357,9 @@ zone "." {
 	file "/usr/share/dns/root.hints";
 };
 \end{lstlisting}
- 
-The root hint file specifies the nameservers for the 
-root zone (there are 13 nameservers for the root zone). The 
-IP address (v4 and v6) for these nameservers are provided in this file. 
-The following example shows a snippet of the file. 
 
+El archivo raíz de sugerencia (root hint file) especifíca los nameservers para cada zona raíz (existen 13 nameservers para la zona raíz). La dirección IP (v4 y v6) para cada uno de estos nameservers se encuentran dentro de este archivo.
+El siguiente ejemplo muestra un fragmento del archivo.
 
 \begin{lstlisting}
 .                        3600000      NS    A.ROOT-SERVERS.NET.
@@ -382,22 +368,13 @@ A.ROOT-SERVERS.NET.      3600000      AAAA  2001:503:ba3e::2:30
 ...
 \end{lstlisting}
 
-Inside our \texttt{local\_dns\_server} folder in the lab setup file,
-we have created an empty file called \texttt{root.hints}. This file 
-will be copied into the \path{/usr/share/dns/} folder when
-we build the container image for the Local DNS server. 
-You need to add records to this file, so your local DNS server 
-can use your root server, instead of using the ones in the real world.
+Dentro del directorio \texttt{local\_dns\_server} de los archivos de setup del laboratorio, hemos creado un archivo vacío llamado \texttt{root.hints}. Este archivo será copiado dentro de la carpeta \path{/usr/share/dns/} al momento de crear el contenedor del servidor de DNS local.
+Ud. necesitará agregar esos registros dentro de este archivo, así su servidor de DNS local puede usar su servidor raíz en vez de usar los que pertenecen al mundo real.
 
 
-
-\paragraph{Testing.} Using \texttt{docker-compose} commands
-to build and start all the containers.
-Once the containers are running,
-run the following \texttt{"dig @10.9.0.53"} commands from your VM to
-send DNS queries to the local DNS nameserver (its IP address
-is \texttt{10.9.0.53} in our setup). 
-Please report your observations.
+\paragraph{Probando.} Use los comandos de \texttt{docker-compose} para construir y correr todos los contenedores.
+Una vez que los contenedores estén corriendo ejecute el siguiente comando desde su Máquina Virtual, \texttt{"dig @10.9.0.53"} este comando enviará consultas DNS al servidor de DNS local (su dirección IP es  \texttt{10.9.0.53}).
+Por favor reporte sus observaciones.
 
 \begin{lstlisting}
 $ dig @10.9.0.53 www.example.edu
@@ -415,25 +392,12 @@ $ dig @10.9.0.53 www.xyz.<TLD not registered with your root server>
 % *******************************************
 \section{Tarea 6: Configurar nuestra Máquina Virtual para usar el servidor de DNS local} 
 
-So far, we need to use \texttt{@<ip>} in our \texttt{dig} command
-to indicate what DNS server the \texttt{dig} command should talk to. While this 
-is not an issue for \texttt{dig}, it is a problem for other software that 
-depends on DNS. We need to tell the operating system that the 
-DNS server container built in this task is the system's 
-local DNS server. 
+Hast ahora, usamos \texttt{@<ip>} en conjunto con el comando \texttt{dig} para indicar cual es el servidor DNS que debe de contactar el comando \texttt{dig}. Mientras que esto no es un problema para \texttt{dig}, es un problema para otro tipos de programas que dependen del DNS. Necesitamos indicarle al sistema operativo que el contenedor del servidor de DNS que vamos a generar en esta tarea, será el servidor de DNS local por defecto que va a usar el sistema.
 
-This is achieved by changing
-the resolver configuration file~(\texttt{/etc/resolv.conf}) of the user machine,
-so the container's IP address is added as the first \texttt{nameserver} entry in the file, i.e.,
-this server will be used as the primary DNS server.
-Unfortunately, our provided VM uses the Dynamic Host Configuration Protocol (DHCP) to obtain
-network configuration parameters, such as IP address, local DNS server, etc.
-DHCP clients will overwrite \texttt{/etc/resolv.conf} with the information
-provided by the DHCP server.
+Esto se logra cambiando el archivo de configuración (\texttt{/etc/resolv.conf}) en la máquina del usuario de manera tal que se agregará la dirección IP del contenedor como la primera entrada \texttt{nameserver} dentro de este archivo, es decir, este servidor será usado como el servidor de DNS primario.
+Desafortunadamente nuestra Máquina Virtual usa DHCP para obtener los parámetros de la configuración de red, tales como la dirección IP, el servidor de DNS local, etc. Los clientes DHCP sobreescribirán el archivo \texttt{/etc/resolv.conf} con su la información provista por el servidor DHCP.
 
-One way to get our information into \texttt{/etc/resolv.conf} without worrying about
-the DHCP is to add the following entry to the \path{/etc/resolvconf/resolv.conf.d/head}
-file:
+Una forma de evitar esto es agregar la siguiente entrada dentro del archivo \path{/etc/resolvconf/resolv.conf.d/head}:
 
 \begin{lstlisting}
 Add the following entry to /etc/resolvconf/resolv.conf.d/head
@@ -443,18 +407,10 @@ Run the following command for the change to take effect
 $ sudo resolvconf -u
 \end{lstlisting}
 
-The content of the head file will be prepended to the dynamically generated resolver
-configuration file. Normally, this is just a comment line (the comment in
-\texttt{/etc/resolv.conf} comes from this head file).
+El contenido del archivo head será antepuesto al que se usa en la generación dinámica por el DHCP.
 
-
-After you finish configuring the user machine, repeat 
-the testing commands in Task 5, but this time, do not 
-include the \texttt{@<ip>} in the command. Pay attention to 
-the highlighted IP address to check whether the response does 
-come from your container. If the setup is unsuccessful,
-the IP will be different.
-
+Después de haber terminado la configuración en la máquina del usuario, repita la prueba del testeo de los comandos que realizó en la Tarea 5, pero esta vez no incluya \texttt{@<ip>} en el comando. Preste atención a las direcciones IP remarcardas para asegurarse que la respuesta provienen de su contenedor. Si la configuración no se hizo de manera correcta, la dirección IP será diferente.
+s
 \begin{lstlisting}
 $ dig abc.example.edu
 
@@ -468,37 +424,24 @@ abc.example.edu.	259200	IN	A	1.2.3.7
 \end{lstlisting}
  
 
-\paragraph{\ding{72}\ding{72} Note (very very important) \ding{72}\ding{72}.} 
-After finishing the lab, please do remember to remove the added entry
-from \path{/etc/resolvconf/resolv.conf.d/head}; otherwise, it will 
-cause lot of problems for your future labs. If in the future,
-you have trouble connecting to the Internet, but your network is fine, 
-the chances are that you may have forgotten to remove this entry, and it 
-messes up the DNS query process. This happens to me many times,
-as I often forgot to remove the entry.
+\paragraph{\ding{72}\ding{72} Nota (Muy importante) \ding{72}\ding{72}.} 
+Una vez terminado el laboratorio, recuerde borrar la entrada agregada en \path{/etc/resolvconf/resolv.conf.d/head}; si esto no se hace, pueden ocurrir muchos problemas en futuros laboratorios. Si en un futuro, ud. tiene problemas para conectarse a Internet, pero su red se encuentra andando, existen probabilidades de que ud. haya olvidado borrar esta entrada y esto estropeará el proceso de consultas DNS. Esto me ha ocurrido varias veces y frecuentemente olvido borrar esta entrada. 
 
 
 % *******************************************
 % SECTION
 % ******************************************* 
-\section{Tarea 7: Haciéndolo más Real}
+\section{Tarea 7: Haciéndolo mas Real}
 
-
-In this task, we will make our miniature DNS system
-a little bit more realistic by adding the following 
-nameservers or records to our system. 
+En esta tarea, haremos que nuestro sistema DNS en miniatura sea un poco más realista agregando los siguientes nameservers o registros a nuestro sistema.
 
 
 \begin{itemize}
-\item Adding 2 more root servers. The real-world DNS system has 13 different 
-IP address for the root server. We will create 3 in this lab.
+\item Agregue 2 o más servidores raíz. En el mundo real el sistema DNS tiene 13 direcciones IP para cada servidor raíz. En este laboratorio crearemos 3.
 
-
-\item Pick two of the TLDs registered with your root server, 
-build a second-level domain for each of them, use your last name as the domain name. 
-For example, if your last name is \texttt{Smith}, you need to build the 
-nameservers for the \texttt{smith.<tld1>} and \texttt{smith.<tld2>} domains,
-You need to host both domains on the same nameserver. 
+\item Seleccione dos TLDs registrados en su servidor raíz, construya un dominio de segundo nivel para cada uno de llos, use su apellido como nombre de dominio.
+Por ejemplo, si su apellido es \texttt{Smith}, necesita crear los nameservers para los dominios \texttt{smith.<tld1>} y \texttt{smith.<tld2>}.
+Necesita hostear ambos dominios en el mismo nameserver.
 \end{itemize}
 
 
@@ -519,7 +462,7 @@ You need to host both domains on the same nameserver.
 \input{\commonfolder/submission}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\paragraph{Limpieza.} Este es un recordatorio que avisa que se debe de borrar la entrada añadida en \path{/etc/resolvconf/resolv.conf.d/head}.
+\paragraph{Limpieza.} Este es un recordatorio en el que se avisa nuevamente que se debe de borrar la entrada añadida en \path{/etc/resolvconf/resolv.conf.d/head}.
 
 % *******************************************
 % SECTION
