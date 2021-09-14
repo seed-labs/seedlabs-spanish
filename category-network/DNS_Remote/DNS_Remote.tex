@@ -1,4 +1,4 @@
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ee%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%  Copyright by Wenliang Du.                                       %%
 %%  This work is licensed under the Creative Commons                %%
 %%  Attribution-NonCommercial-ShareAlike 4.0 International License. %%
@@ -33,7 +33,7 @@
 % ******************************************* 
 \section{Descripción del Laboratorio}
 
-El objetivo de este laboratorio es que los estudiantes aprendan y experimenten con el ataque remoto al DNS, en particular DNS cache poisoning attack, también llamado el ataque DNS de Kaminsky. 
+El objetivo de este laboratorio es que los estudiantes aprendan y experimenten con el ataque remoto al DNS, en particular DNS cache poisoning attack, también llamado el ataque de Kaminsky. 
 DNS (Domain Name System o Sistema de nombre de Dominios) es la guía de teléfono de la Internet; se encarga de traducir los hostnames a direcciones IP (y visce versa). Esta traducción se hace a través de la resolución DNS, esta ocurre detrás de escena. Los ataques DNS manipulan este proceso de resolucion en varias maneras, con la intención de desviar a los usuarios a destinos alternativos, que a menudo son maliciosos. 
 Este laboratorio se focaliza en una técnica particular de ataque al DNS, llamada {\em DNS Cache Poisoning attack}. 
 En otro laboratorio SEED, hemos diseñado actividades para conducir el mismo ataque pero en un entorno de red loocal, es decir servidor DNS al cual tiene acceso el atacante y la víctima se encuentran en la misma red, donde es posible hacer sniffeo de paquetes.
@@ -55,8 +55,8 @@ Este laboratorio cubre los siguientes tópicos:
 Para una cobertura más detallada sobre el protocolo DNS y sus ataques puede consultar:
 
 \begin{itemize}
-\item Caoítulo 18 del libro de SEED, \seedbook
-\item Sección 7 del curso de SEED en Udemy,, \seedisvideo
+\item Capítulo 18 del libro de SEED, \seedbook
+\item Sección 7 del curso de SEED en Udemy, \seedisvideo
 \end{itemize}
 
 
@@ -166,49 +166,21 @@ Para este laboratorio podemos usar tanto una Máquina Virtual como un contenedor
 % *******************************************
 % SECTION
 % ******************************************* 
-\section{The Attack Tasks}
+\section{Las tareas de ataque}
 
+El principal objetivo de los ataques DNS sobre un usuario es poder redireccionar al usuario hacia una máquina $B$ cuando el usuario intente acceder a una máquina $A$ usando el hostname de $A$. Por ejemplo, cuando un usuario trata de acceder al online banking, los atacantes pueden redireccionarlo a un sitio web malicioso que luce casi igual al sitio oficial del banco, en consecuencia el usuario puede ser engañado y así los atacantes pueden obtener sus credenciales bancarias.
 
-The main objective of DNS attacks is to redirect the user
-to another machine $B$ when the user tries to get to machine $A$ using
-$A$'s host name. For example, assuming {\tt www.example.com} is an online banking 
-site.  When the user tries to access this site using the
-correct URL {\tt www.example.com}, if the adversaries can redirect the user 
-to a malicious web site that looks very much like 
-{\tt www.example.com}, the user might be fooled and give away 
-his/her credentials to the attacker. 
+En esta tarea, vamos a usar el nombre de dominio {\tt www.example.com} como nuestro objetivo para hacer el ataque. Cabe señalar que el dominio {\tt www.example.com} está reservado solamente para el uso experimental dentro del contexto de este laboratorio y no para el mundo real. La dirección IP real de {\tt www.example.com} es {\tt 93.184.216.34} y su nameserver es controlado por la Internet Corporation for Assigned Names and Numbers (ICANN).
+Cuando el usuario ejecuta el comando {\tt dig} sobre este dominio o usa el navegador para visitarlo, la máquina del usuario envia una consulta DNS a su servidor de DNS local que consultará la dirección IP usando el nameserver de {\tt example.com}.
 
-
-In this task, we use the domain name {\tt www.example.com}
-as our attacking target. It should be noted that the {\tt example.com} 
-domain name is reserved for use in documentation, not for 
-any real company. The authentic IP address of {\tt www.example.com} is 
-{\tt 93.184.216.34}, and its nameserver is managed by
-the Internet Corporation for Assigned Names and Numbers (ICANN).
-When the user runs the {\tt dig} command 
-on this name or types the name in the browser, 
-the user's machine sends a DNS query to its local DNS 
-server, which will eventually ask for the IP address 
-from {\tt example.com}'s nameserver. 
-
-
-The goal of the attack is to launch the DNS cache poisoning attack
-on the local DNS server, such that 
-when the user runs the {\tt dig} command to find out {\tt
-www.example.com}'s IP address, the local DNS server will end
-up going to the attacker's nameserver {\tt ns.attacker32.com} 
-to get the IP address, so the IP address returned can be 
-any number that is decided by the attacker. As results, the 
-user will be led to the attacker's web site,
-instead of to the authentic {\tt www.example.com}.
-
+La meta del ataque es ejecutar un ataque de DNS cache poisoning attack en el servidor de DNS local, de tal forma que cuando el usuario ejecute el comando {\tt dig} para obtener la dirección IP de {\tt www.example.com}, el servidor de DNS local terminará consultando el nameserver del atacante {\tt ns.attacker32.com} y así obtendrá la dirección IP definida por atacante. Como resultado final el usuario será dirigido al sitio web del atacante en lugar del sitio original {\tt www.example.com}.
 
 
 
 \begin{figure}[htb]
 \centering
 \includegraphics[width=0.9\textwidth]{\dnsFigs/DNS_Remote_new1.pdf}
-\caption{The complete DNS query process} 
+\caption{El proceso de consulta DNS} 
 \label{fig:flow_diagram1}
 \end{figure}
 
@@ -216,7 +188,7 @@ instead of to the authentic {\tt www.example.com}.
 \begin{figure}[htb]
 \centering
 \includegraphics[width=0.9\textwidth]{\dnsFigs/DNS_Remote_new2.pdf}
-\caption{The Kaminsky Attack}
+\caption{El Ataque Kaminsky}
 \label{fig:flow_diagram2}
 \end{figure}
 
@@ -225,19 +197,12 @@ instead of to the authentic {\tt www.example.com}.
 % -------------------------------------------
 % SUBSECTION
 % ------------------------------------------- 
-\subsection{How Kaminsky attack works}
+\subsection{Como funciona el Ataque de Kaminsky}
 
-In this task, the attacker sends a DNS query request to the victim
-DNS server ({\tt Apollo}), triggering a DNS query from {\tt Apollo}. The
-query may go through one of the root DNS servers, the {\tt .COM} DNS server, and 
-the final result will come back from {\tt example.com}'s DNS server. This 
-is illustrated in Figure~\ref{fig:flow_diagram1}. In case that 
-{\tt example.com}'s nameserver information is already cached by 
-{\tt Apollo}, the query will not go through the root or the 
-{\tt .COM} server; this is illustrated in Figure~\ref{fig:flow_diagram2}.
-In this lab, the situation depicted in  Figure~\ref{fig:flow_diagram2} is 
-more common, so we will use this figure as the basis to describe 
-the attack mechanism.
+En esta tarea, el atacante envía una consulta de petición DNS al servidor DNS de la víctima ({\tt Apollo}), activando una consulta DNS desde {\tt Apollo}.
+La consulta puede viajar a través de uno de los servidores DNS raíz, el servidor DNS {\tt .COM} y el resultado final vendrá desde el servidor DNS de {\tt example.com}. Esto se ilustra en la Figura \ref{fig:flow_diagram1}. En caso que la información del nameserver para el dominio {\tt example.com} esté cacheada por {\tt Apollo}, la consulta no irá al servidor raíz o al servidor {\tt .COM}; esto se ilustra en la Figura \ref{fig:flow_diagram2}.
+En este laboratorio, la situación representadda en la Figura \ref{fig:flow_diagram2} es la más común, por lo que usaremos esta figura como base para describir el mecanismo de ataque.
+
 
 While {\tt Apollo} waits for the DNS reply from {\tt example.com}'s name
 server, the attacker can send forged replies to {\tt Apollo}, pretending 
@@ -338,7 +303,7 @@ Kaminsky attack. Finally in Task 5, we verify the impact of the attack.
 % -------------------------------------------
 % SUBSECTION
 % ------------------------------------------- 
-\subsection{Task 2: Construct DNS request} 
+\subsection{Tarea 2: Construyendo una petición DNS} 
 
 This task focuses on sending out DNS requests. 
 In order to complete the attack, attackers need to trigger the target 
@@ -372,7 +337,7 @@ request = ip/udp/dns
 % -------------------------------------------
 % SUBSECTION
 % ------------------------------------------- 
-\subsection{Task 3: Spoof DNS Replies.}   
+\subsection{Tarea 3: Spoofeando respuestas DNS.}   
 
 In this task, we need to spoof DNS replies in the Kaminsky attack. 
 Since our target is \texttt{example.com}, we need to spoof
@@ -416,7 +381,7 @@ show that the spoofed packets are valid.
 % -------------------------------------------
 % SUBSECTION
 % ------------------------------------------- 
-\subsection{Task 4: Launch the Kaminsky Attack}   
+\subsection{Tarea 4: Ejecutar el Ataque de Kaminsky}   
 
 Now we can put everything together to conduct the Kaminsky attack. 
 In the attack, we need to send out many spoofed DNS replies, hoping 
@@ -612,12 +577,19 @@ for (int k=0; k<5; k++)
 % *******************************************
 % SECTION
 % ******************************************* 
-\section{Submission}
+\section{Informe del Laboratorio}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \input{\commonfolder/submission}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+
+% *******************************************
+% SECTION
+% *******************************************
+\section*{Agradecimientos}
+
+\input{\commonfolder/acknowledgments}
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -630,13 +602,7 @@ for (int k=0; k<5; k++)
 
 
 \end{document}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 
 
 
