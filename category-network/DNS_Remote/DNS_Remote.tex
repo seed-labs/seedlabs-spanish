@@ -214,12 +214,12 @@ Enviar cientos de respuestas falsas no es poco práctico, por lo que
 no serán necesarios muchos intentos antes de que el atacante pueda tener éxito.
 
 Sin embargo, el hipotético ataque que se planteó anteriormente ha pasado por alto el efecto de la caché.
-En realidad, si el atacante no es lo suficientemente afortunado en su trabajo de adivinar el ID correcto antes de que el paquete de la respuesta original llegue a su destino, la información correcta será cacheada por un período de tiempoo en el servidor DNS. Este efecto de almacenamiento en la caché, hace imposible que el atacante pueda falsificar otra respuesta con respecto al mismo nombre, dado que el servidor DNS no enviará otra consulta DNS para este nombre hasta que expiré la caché para este nombre.
+En realidad, si el atacante no es lo suficientemente afortunado en su trabajo de adivinar el ID correcto antes de que el paquete de la respuesta original llegue a su destino, la información correcta será cacheada por un período de tiempo en el servidor DNS. Este efecto de almacenamiento en la caché, hace imposible que el atacante pueda falsificar otra respuesta con respecto al mismo nombre, dado que el servidor DNS no enviará otra consulta DNS para este nombre hasta que expire la caché para este nombre.
 Para falsificar la respuesta sobre el mismo nombre, el atacante tiene que esperar por otra consulta DNS sobre este nombre, lo que significa que debe de esperar que la caché expire. El tiempo de expiración puede estar en el orden de la horas o de los días.
 
 
 \paragraph{El Ataque de Kaminsky.} 
-Dan Kaminsky ideó una técnica para evadir este efecto del almacenamiento en la caché \cite{dns:Kaminsky}.
+Dan Kaminsky ideó una elegante técnica para evadir este efecto del almacenamiento en la caché \cite{dns:Kaminsky}.
 Con el ataque de Kaminsky, los atacantes tienen la posibilidad de atacar continuamente un servidor DNS en un nombre de dominio específico sin la necesidad de esperar que la caché expire, por lo que los ataques pueden ser exitosos en un tiempo relativamente corto. 
 Los detalles del ataque son descriptos en \cite{dns:Kaminsky,seedbook}. 
 En esta tarea, usaremos este ataque. Los siguientes pasos que hacen referencia a la Figura \ref{fig:flow_diagram2} que describe el ataque.
