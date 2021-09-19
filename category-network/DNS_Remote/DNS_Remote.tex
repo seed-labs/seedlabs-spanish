@@ -280,20 +280,12 @@ request = ip/udp/dns
 % ------------------------------------------- 
 \subsection{Tarea 3: Spoofeando respuestas DNS.}   
 
-In this task, we need to spoof DNS replies in the Kaminsky attack. 
-Since our target is \texttt{example.com}, we need to spoof
-the replies from this domain's nameserver. Students first need to 
-find out the IP addresses of \texttt{example.com}'s legitimate 
-nameservers (it should be noted that there are multiple 
-nameservers for this domain).
+En esta tarea, necesitamos spoofear las respuestas DNS en el ataque de Kaminsky.
+Dado que nuestro objetivo es  \texttt{example.com}, necesitamos spoofear las respuesta del nameserver para este dominio. Los estudiantes primero necesitarán descubrir la dirección IP de los nameservers originales de  \texttt{example.com} (cabe señalar que existen multiples nameservers para este dominio).
 
-Students can use Scapy to implement this task. The following 
-code snippet constructs a DNS response packet that includes 
-a question section, an answer section, and an NS section. 
-In the sample code, we use \texttt{+++} as placeholders; 
-students need to replace them with the correct values 
-that are needed in the Kaminsky attack. Students need to explain
-why they pick those values. 
+Los estudiantes pueden usar Scapy para implementar esta tarea. El siguiente fragmento de código, construye un paquete que representa una respuesta DNS que incluye la sección Question, una sección Answer y una sección NS.
+En este código deejemplo, usarmos \texttt{+++} como placeholders; los estudiantes deben de reemplazar estos placeholders con los valores correctos que son necesarios para el ataqu de Kaminsky. Los estudiantes deben de explicar porque escogieron esos valores.
+
 
 \begin{lstlisting}
 name   = '+++'  
@@ -312,11 +304,7 @@ udp   = UDP(dport=+++, sport=+++, chksum=0)
 reply = ip/udp/dns
 \end{lstlisting}
  
-
-Since this reply by itself will not be able to lead to a successful 
-attack, to demonstrate this task, students need to 
-use Wireshark to capture the spoofed DNS replies, and 
-show that the spoofed packets are valid. 
+Dado que esta respuesta por sí sóla no será capaz de conducir a un ataque exitoso, para demostrar lo hecho en esta tarea, los estudiantes deberán de usar Wireshark para capturar las respuestas DNS spoofeadas y mostrar que los paquetes spoofeados son válidos.
 
 
 % -------------------------------------------
@@ -324,40 +312,22 @@ show that the spoofed packets are valid.
 % ------------------------------------------- 
 \subsection{Tarea 4: Lanzar el Ataque de Kaminsky}   
 
-Now we can put everything together to conduct the Kaminsky attack. 
-In the attack, we need to send out many spoofed DNS replies, hoping 
-one of them hits the correct transaction number and arrives sooner
-than the legitimate replies. Therefore, speed is essential: the more packets 
-we can send out, the higher the success rate is. If we use 
-Scapy to send the spoofed DNS replies like what we did in the 
-previous task, the success rate is too low. Students can use 
-C, but constructing DNS packets in C is non-trivial. 
-We introduce a hybrid approach using both Scapy and C (see the SEED
-book for details). 
+Ahora que hemos puesto todo junto, estamos listos para realizar el ataque de Kaminsky.
+En este ataque, necesitamos enviar muchas respuestas DNS spoofeadas, con la esperanza de que alguna de ellas entre en el número correcto de transacción y llegue antes que la respuesta original.
+La velocidad es esencial en este asunto: mientras más paquetes enviemos, más posibilidades tendremos de que el ataque sea exitoso.
+Si usamos Scapy para enviar respuestas DNS spoofeadas como hicimos en las tareas anteriores, la taza de exito será baja. Los estudiantes pueden usar C, pero construir paquetes DNS en C es algo no trivial.
+Vamos a introducir un enfoque híbrido usando Scapy y C (vea el libro de SEED para más detalles)
+
+Con este enfoque híbrido, primero usaremos Scapy para generar un paquete DNS que sirva como planilla, esta será guardada en un archivo.
+Luego, cargaremos esta planilla dentro de un programa en C, y le haremos unos pequeños cambios a algunos de sus campos y por último enviaremos este paquete.
+Hemos incluído un código base en C dentro de  \path{Labsetup/Files/attack.c}. 
+Los estudiantes pueden realizar cambios en las áreas que están marcadas. Para una explicación mas detallada consulte la sección Guías.
 
 
-With the hybrid approach, we first use Scapy to generate 
-a DNS packet template, which is stored in a file. 
-We then load this template into a C program, and make 
-small changes to some of the fields, and then send 
-out the packet. 
-We have included a skeleton C code
-in \path{Labsetup/Files/attack.c}. 
-Students can make changes
-in the marked areas. Detailed explanation
-of the code is given in the 
-guideline section.
 
-
-\paragraph{Check the DNS cache.}
-To check whether the attack is successful or not, we need to 
-check the {\tt dump.db} file to see whether our spoofed DNS
-response has been successfully accepted by the DNS server. 
-The following commands dump the DNS cache, and search whether
-the cache contains the word \texttt{attacker} (in our 
-attack, we used \texttt{attacker32.com} as the attacker's 
-domain; if students use a different domain name, they should 
-search for a different word).  
+\paragraph{Chequear la caché DNS.}
+Para chequear si el ataque fue exitoso o no, necesitamos chequear el archivo  {\tt dump.db} para ver si nuestra respuesta DNS spoofeada fue aceptada por el servidor DNS.
+El siguiente comando hace un dump de la caché DNS y se encarga de buscar si la palabra \texttt{attacker} se encuentra dentro de la caché (en nuestro ataque hemos usado \texttt{attacker32.com} como el dominio del atacante, si los estudiantes desean usar un nombre diferente, deberían de buscar por una palabra difernte)
 
 \begin{lstlisting}
 # rndc dumpdb -cache && grep attacker /var/cache/bind/dump.db
@@ -367,7 +337,7 @@ search for a different word).
 % -------------------------------------------
 % SUBSECTION
 % ------------------------------------------- 
-\subsection{Task 5: Result Verification}
+\subsection{Tarea 5: Verificación del Resultado}
 
 If the attack is successful, in the local DNS server's DNS cache, 
 the {\tt NS} record for \texttt{example.com} will become 
@@ -412,7 +382,7 @@ require you to redo the attack.
 % *******************************************
 % SECTION
 % ******************************************* 
-\section{Guidelines} 
+\section{Guías} 
 
 To implement the Kaminsky attack, we can use Scapy to do the packet spoofing. Unfortunately,
 the speed of Python is too slow; the number of packets generated per second is too low to
