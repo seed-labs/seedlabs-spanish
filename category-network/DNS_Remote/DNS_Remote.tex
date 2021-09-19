@@ -232,7 +232,7 @@ En esta tarea, usaremos este ataque. Los siguientes pasos que hacen referencia a
 \item Dado que este mapeo no está disponible en la cache del DNS de {\tt Apollo},
 {\tt Apollo} envía una consulta DNS al nameserver del dominio  {\tt example.com}.
 
-\item Mientras que {\tt Apollo} espera por la respuesta, el atacante  inunda {\tt Apollo} con un flujo de respuesta DNS falsificadas, en cada una de estas respuestas se prueba un ID de transacción diferente esperando que alguna sea correcta.
+\item Mientras que {\tt Apollo} espera por la respuesta, el atacante  inunda {\tt Apollo} con un flujo de respuestas DNS falsificadas, en cada una de estas respuestas se prueba un ID de transacción diferente esperando que alguna sea la correcta.
 En la respuesta, el atacante no solo proporciona una resolución de IP
 para {\tt twysw.example.com}, el atacante también proporciona un registro de ``Authoritative Nameservers'', indicando a {\tt ns.attacker32.com} como nameserver para el dominio {\tt example.com}.
 Si la respuesta falsificada supera a las respuestas reales y el ID de transacción coincide con el de la consulta, {\tt Apollo} va a aceptarla y cacheará la respuesta falsificada por lo que la caché DNS de {\tt Apollo} está envenenada (poisoned)
@@ -392,7 +392,7 @@ with open('ip.bin', 'wb') as f:
   f.write(bytes(pkt))
 \end{lstlisting}
 
-En el programa en C, cargamos este paquete desde un archivo llamado  \texttt{ip.bin} y lo usamos como nuestro paquete planilla (template), a partir del mismo crearemos varios paquetes similares y haremos un flood con estos paquetes spoofeados de respuesta al servidor de DNS local.
+En el programa en C, cargamos este paquete desde un archivo llamado  \texttt{ip.bin} y lo usamos como nuestro paquete planilla (template), a partir del mismo crearemos varios paquetes similares y inundaremos con estos paquetes spoofeados de respuesta al servidor de DNS local.
 Por cada respuesta, debemos de cambiar tres lugares: el ID de transacción y el nombre \texttt{twysw} que aparece en dos lugares (la sección Question y la sección Answer). El ID de transacción siempre se encuentra en el mismo lugar (offset \texttt{28} a partir del comienzo de nuestro paquete IP), pero el offset para el nombre \texttt{twysw} depende de la longitud del nombre de dominio. Podemos usar un editor binario como \texttt{bless} para visualizar el archivo binario \texttt{ip.bin} y encontrar los dos offsets donde se encuentra la cadena \texttt{twysw}. En nuestro paquete se encuentran en los offsets \texttt{41} y \texttt{64}.
 
 El siguiente fragmento de código muestra hacer los cambios en esos campos. Cambiamos el nombre en nuestra respuesta a \texttt{bbbbb.example.com} y enviamos una respuesta DNS spoofeada con el ID de transacción que es \texttt{1000}. En este código la variable  \texttt{ip} apunta al comienzo del paquete IP.
