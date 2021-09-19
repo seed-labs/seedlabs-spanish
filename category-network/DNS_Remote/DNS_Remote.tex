@@ -361,33 +361,14 @@ En particular, cuando corra el primer comando \texttt{dig} use Wireshark para ca
 % ******************************************* 
 \section{Guías} 
 
-To implement the Kaminsky attack, we can use Scapy to do the packet spoofing. Unfortunately,
-the speed of Python is too slow; the number of packets generated per second is too low to
-make the attack successful. It is better to use a C program. This could
-be quite challenging to many students, because constructing DNS packets using C is not very
-easy. I have developed a hybrid method, and have experimented with it in my own class. Using
-this approach, students' time spent on coding can be significantly reduced, so they can spend
-more time focusing on the actual attack.
+Para implementar el ataque de Kaminsky, podemos usar Scapy para hacer spoofing de paquetes. Desafortunadamente la velocidad de Python es demasiado lenta; el número de paquetes generados por segundo son insuficientes para que el ataque tenga éxito. Es mejor usa un programa hecho en C. Esto puede ser algo desafiante para mucho de los estudiantes, porque construir un paquete DNS usando C no es tan fácil.
+He desarrollado un método híbrido y lo hemos usado en mis clases. Usando este enfoque, el tiempo que tardan los estudiantes en desarrollar el programa se ve reducido de manera significativa, esto es beneficioso ya que pueden concentrarse mucho más tiempo en el ataque en sí.
 
-
-The idea is to leverage the strength of both Scapy and C: Scapy is much more convenient in
-creating DNS packets than C, but C is much faster. Therefore we simply
-use Scapy to create the spoofed DNS packet, and save it to a file.
-We then load the packet into a C program. Even though we need to send a 
-lot of different DNS packets
-during the Kaminsky attack, these packets are mostly the same, except for a few fields. 
-Therefore, we can
-use the packet generated from Scapy as the basis, find the offsets where
-changes need to be made (e.g., the transaction ID field),
-and directly make changes. This will be much easier than
-creating the entire DNS packets in C.
-After the changes are made, we can use the raw socket to send out the packets.
-Details of such a hybrid method are provided in
-the Packet Sniffing and Spoofing chapter 
-of the SEED book~\cite{seedbook}.
-The following Scapy program creates a simple DNS reply packet, 
-and saves it into a file.
-
+La idea es unir las fuerzas de Scapy y C: Scapy es mucho mas conveniente en la creación de paquetes DNS que C. Hemos usado Scapy para crear paquetes DNS spoofeados y guardarlos en un archivo, para después cargar estos paquetes dentro de un programa en C. Aunque necesitamos enviar mucho paquetes DNs durante el ataque de Kaminsky, esos paquetes son bastantes similares, exepto por algunos pocos campos.
+Podemos usar a Scapy para generar paquetes que sirvan como base para encontrar los offsets en donde esos cambios deben de realizarse (Ejemplo: el campo de ID de Transacción) y hacer directamente el cambio sobre el. Esto será mucho más fácil que crear el paquete DNS en C.
+Despues de que los cambios se han realizado podemos usar raw sockets para enviar esos paquetes.
+Los detalles de este método híbrido son provistos en el capítulo de Packet Sniffing and Spoofing en el libro de SEED \cite{seedbook}.
+El siguiente programa usa Scapy para crear un paquete de respuesta DNs bastante simple y lo guarda en un archivo.
 
 \begin{lstlisting}[caption={\texttt{generate\_dns\_reply.py}}]
 #!/usr/bin/env python3
@@ -411,23 +392,10 @@ with open('ip.bin', 'wb') as f:
   f.write(bytes(pkt))
 \end{lstlisting}
 
-In a C program, we load the packet from the file \texttt{ip.bin}, and use
-it as our packet template, based on which we create many similar packets,
-and flood the target local DNS servers with these spoofed replies. For each
-reply, we change three places: the transaction ID and the name
-\texttt{twysw} occurred in two places (the question section and the answer
-section).  The transaction ID is at a fixed place (offset  \texttt{28} from
-the beginning of our IP packet), but the offset for the name \texttt{twysw}
-depends on the length of the domain name. We can use a binary editor
-program, such as \texttt{bless}, to view the binary file \texttt{ip.bin}
-and find the two offsets of \texttt{twysw}. In our packet, they are at
-offsets \texttt{41} and \texttt{64}.
+En el programa en C, cargamos este paquete desde un archivo llamado  \texttt{ip.bin} y lo usamos como nuestro paquete planilla (template), a partir del mismo crearemos varios paquetes similares y haremos un flood con estos paquetes spoofeados de respuesta al servidor de DNS local.
+Por cada respuesta, debemos de cambiar tres lugares: el ID de transacción y el nombre \texttt{twysw} que aparece en dos lugares (la sección Question y la sección Answer). El ID de transacción siempre se encuentra en el mismo lugar (offset \texttt{28} a partir del comienzo de nuestro paquete IP), pero el offset para el nombre \texttt{twysw} depende de la longitud del nombre de dominio. Podemos usar un editor binario como \texttt{bless} para visualizar el archivo binario \texttt{ip.bin} y encontrar los dos offsets donde se encuentra la cadena \texttt{twysw}. En nuestro paquete se encuentran en los offsets \texttt{41} y \texttt{64}.
 
-
-The following code snippet shows how we make change to these fields. We change
-the name in our reply to \texttt{bbbbb.example.com}, and then send out a
-spoofed DNS replies, with transaction ID being \texttt{1000}.
-In the code, the variable \texttt{ip} points to the beginning of the IP packet.  
+El siguiente fragmento de código muestra hacer los cambios en esos campos. Cambiamos el nombre en nuestra respuesta a \texttt{bbbbb.example.com} y enviamos una respuesta DNS spoofeada con el ID de transacción que es \texttt{1000}. En este código la variable  \texttt{ip} apunta al comienzo del paquete IP.
 
 \begin{lstlisting}
   // Modify the name in the question field (offset=41)
@@ -444,11 +412,7 @@ In the code, the variable \texttt{ip} points to the beginning of the IP packet.
 
 
 
-\paragraph{Generar Nombres Aleatorios.} In the Kaminsky attack, we need to 
-generate random hostnames. There are many ways to do so. The following 
-code snippet shows how to generate a random name consisting of 
-5 characters. 
-
+\paragraph{Generar Nombres Aleatorios.} En el ataque de Kaminsky, necesitamos generar nombres aleatorios. Hay muchas formas de hacerlo. El siguiente fragmento de código muestra como generar un nombre aleatorio de 5 caracteres.
 \begin{lstlisting}
 char a[26]="abcdefghijklmnopqrstuvwxyz";
 
