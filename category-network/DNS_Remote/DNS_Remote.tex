@@ -339,21 +339,10 @@ El siguiente comando hace un dump de la caché DNS y se encarga de buscar si la 
 % ------------------------------------------- 
 \subsection{Tarea 5: Verificación del Resultado}
 
-If the attack is successful, in the local DNS server's DNS cache, 
-the {\tt NS} record for \texttt{example.com} will become 
-\texttt{ns.attacker32.com}.
-When this server receives a DNS query for any hostname
-inside the \texttt{example.com} domain,  it will
-send a query to \texttt{ns.attacker32.com}, instead of 
-sending to the domain's legitimate nameserver. 
+Si el ataque es exitoso, veremos en la caché del servidor de DNS local, el registro {\tt NS} para \texttt{example.com} será \texttt{ns.attacker32.com}.
+Cuando este servidor recibe una consulta DNS para cualquier hostname dentro del dominio \texttt{example.com}, este enviará una consulta a \texttt{ns.attacker32.com}, en lugar de enviarla al nameserver original del dominio.
 
-
-To verify whether your attack is successful or not, 
-go to the User machine, run the following two
-\texttt{dig} commands. In the responses, the IP addresses for 
-\texttt{www.example.com} should be the same for both 
-commands, and it should be whatever you have included
-in the zone file on the Attacker nameserver. 
+Para verificar si el ataque fue exitoso o no, vaya a la máquina de usuario y corra los siguientes dos comandos usando \texttt{dig}. En las respuesta, la direcciones IP para \texttt{www.example.com} deberían de ser las mismas para ambos comandos, y debería de ser lo que haya incluído en el archivo de la zona del nameserver del atacante.
 
 \begin{lstlisting}
 // Ask the local DNS server to do the query
@@ -363,20 +352,8 @@ $ dig www.example.com
 $ dig @ns.attacker32.com www.example.com
 \end{lstlisting}
  
-Please include your observation (screenshots) in the lab 
-report, and explain why you think your attack is successful. 
-In particular, when you run the first \texttt{dig} commands,
-use Wireshark to capture the network traffic, and 
-point out what packets are triggered by this
-\texttt{dig} command. Use the packet trace to 
-prove that your attack is successful. Note that DNS results
-may be cached on the local DNS server after the first
-\texttt{dig} command is run. This could influence the
-results if you run the first \texttt{dig} command before using
-Wireshark. You can clear the cache using \texttt{"sudo rndc flush"} 
-on the local DNS server, but that will 
-require you to redo the attack.
-
+Por favor incluya su observación (capturas de pantalla) en el informe del laboratorio y explique porque ud. piensa que su ataque fue exitoso.
+En particular, cuando corra el primer comando \texttt{dig} use Wireshark para capturar el tráfico de red y señalar que paquetes son disparados por este comando  \texttt{dig}. Use el trackeo del paquete para probar que su ataque es exitoso. Note que los resultados en el servidor de DNS local pueden estar cacheados después de que correr por primera vez el comando \texttt{dig}. Esto puede influenciar en los resultados si ud. corre el comando \texttt{dig} antes de usar Wireshark. Puede limpiar la caché usando  \texttt{"sudo rndc flush"}  en el servidor de DNS local, pero esto requerirá que ud. lance nuevamente el ataque.
 
 
 % *******************************************
@@ -467,7 +444,7 @@ In the code, the variable \texttt{ip} points to the beginning of the IP packet.
 
 
 
-\paragraph{Generate random names.} In the Kaminsky attack, we need to 
+\paragraph{Generar Nombres Aleatorios.} In the Kaminsky attack, we need to 
 generate random hostnames. There are many ways to do so. The following 
 code snippet shows how to generate a random name consisting of 
 5 characters. 
