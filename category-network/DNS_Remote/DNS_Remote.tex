@@ -1,4 +1,4 @@
-ee%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%  Copyright by Wenliang Du.                                       %%
 %%  This work is licensed under the Creative Commons                %%
 %%  Attribution-NonCommercial-ShareAlike 4.0 International License. %%
@@ -234,7 +234,7 @@ En esta tarea, usaremos este ataque. Los siguientes pasos que hacen referencia a
 
 \item Mientras que {\tt Apollo} espera por la respuesta, el atacante  inunda {\tt Apollo} con un flujo de respuesta DNS falsificadas, en cada una de estas respuestas se prueba un ID de transacción diferente esperando que alguna sea correcta.
 En la respuesta, el atacante no solo proporciona una resolución de IP
-para {\tttwysw.example.com}, el atacante también proporciona un registro de ``Authoritative Nameservers'', indicando a {\tt ns.attacker32.com} como nameserver para el dominio {\tt example.com}.
+para {\tt twysw.example.com}, el atacante también proporciona un registro de ``Authoritative Nameservers'', indicando a {\tt ns.attacker32.com} como nameserver para el dominio {\tt example.com}.
 Si la respuesta falsificada supera a las respuestas reales y el ID de transacción coincide con el de la consulta, {\tt Apollo} va a aceptarla y cacheará la respuesta falsificada por lo que la caché DNS de {\tt Apollo} está envenenada (poisoned)
 
 \item Incluso si la respuesta DNS que se falsificó/spoofeo falla (por ejemplo el ID de transacción no coincide o llega tarde), no importa, porque la próxima vez, el atacante consultará un nombre diferente, por lo que {\tt Apollo} deberá de enviar otra consulta dándole al atacante otra chance de hacer un ataque de este tipo.
