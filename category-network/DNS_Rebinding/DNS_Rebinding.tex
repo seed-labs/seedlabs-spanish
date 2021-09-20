@@ -88,46 +88,24 @@ Para una cobertura más detallada sobre el protocolo DNS y sus ataques puede con
 % ******************************************* 
 \section{Background: IoT}
 
-Our attack target is an IoT device behind the firewall. We cannot directly
-access this IoT device from outside. Our goal is to get an inside
-user to run our JavaScript code, so we can use
-the DNS rebinding attack to interact with the IoT device.
+Nuestro objetivo a atacar será un dispositivo IoT detrás de un firewall. No podemos acceder directamente a este dispositivo por fuera de la red interna. Nuestra meta será que el usuario corra nuestro código JavaScript, y de esta forma usar el ataque de DNS Rebinding para interactuar con el dispositivo IoT.
 
+Muchos dispostivos IoT vienen con un simple un servidor web corriendo dentro de ellos, de esta forma los usuarios pueden interactuar con el dispositivo a usando APIs web. A menudo estos dispositivos son protegidos por firewall. Debido a este tipo de protección, muchos equipos de este tipo no implementan un mecanismo de autenticación robusto. Si los atacantes pueden encontrar la forma de interactuar con ellos, pueden comprometer la seguridad de estos dispositivos de manera sencilla.
 
-Many IoT devices have a simple built-in web server, so users can
-interact with these devices via web APIs. Typically, these IoT
-devices are protected by a firewall, they cannot be accessed directly
-from outside. Due to this type of protection,  many IoT devices do not
-implement a strong authentication mechanism. If attackers can find ways
-to interact with them, they can easily compromise its security.
+En este laboratorio vamos a emular un dispositivo IoT vulnerable usando un servidor web muy simple, que servirá dos APIs:  \texttt{password} y \texttt{temperature}.
+El dispositivo IoT setea la temperatura de una habitación. Para hacerlo, necesitamos enviar request HTTP a la API \texttt{temperature}; el request debe de incluir dos datos: la temperatura y el passowrd.
+El password cambia períodicamente, pero se puede obtener usando \texttt{password}. Para setear la temperatura de forma exitosa, los usuarios necesitan obtener primero el password y luego incluir este password en el llamado a la API \texttt{temperature}.
 
-We emulate such a vulnerable IoT device using 
-a simple web server, which serves
-two APIs: \texttt{password} and \texttt{temperature}.
-The IoT device can set the room temperature. To do that,
-we need to send out an HTTP request to the server's
-\texttt{temperature} API; the request should include
-two pieces of data: the target temperature value and a
-password.  The password is a secret that changes
-periodically, but it can be fetched using
-the \texttt{password} API. Therefore, to successfully
-set the temperature, users needs to
-first get the password, and then attach the password
-in the \texttt{temperature} API.
-
-The password is not meant for the authentication purpose; it is used to defeat the Cross-Site
-Request Forgery (CSRF) attack. Without this protection, a simple CSRF attack is sufficient;
-there is no need to use the more sophisticated DNS rebinding attack.
-For the sake of simplicity, we hardcoded the
-password; in real systems, the password will be re-generated periodically.
-
+El password no fue pensando para propósitos de autenticación; este es usado para evadir el ataque de Cross-Site Request Forgery (CSRF). Sin esta protección, un ataque de Cross-Site
+Request Forgery (CSRF) es suficiente; no habría necesidad de usar un ataque de tipo DNS Rebinding.
+Para simplificar un poco todo, hemos harcodeado el password; en los sistemas reales, el password se regenera periódicamente.
 
 
 
 % *******************************************
 % SECTION
 % ******************************************* 
-\section{Lab Environment Setup Using Container}
+\section{Setup del Entorno de Laboratorio usando Contenedores}
 
 
 
@@ -138,34 +116,13 @@ password; in real systems, the password will be re-generated periodically.
 \label{rebind:fig:labsetup}
 \end{figure}
 
+En este laboratorio, usaremos seis máquinas.
+El setup del entorno del entorno de laboratorio es ilustrado en la Figura \ref{rebind:fig:labsetup}. Sólo la máquina del usuario será una Máquina Virtual, el resto serán contenedores.
+En el setup, tenemos dos redes, una red hogareña y otra red externa. La red hogareña simula una red típica de una casa. La máquina de usuario y el los servicios IoT están conectados a esta red, que es protegida por un firewall en un contenedor router. El firewall bloquea todo el tráfico  a \texttt{192.168.60.80}. De esta forma, las máquinas externas no pueden acceder al dispositivo.
+También hemos un setup para un servidor NAT en el router, de esta forma las maquinas en la red hogareña pueden salir a Internet.
 
-In this lab, we will use six machines. 
-The lab environment setup is illustrated
-in Figure~\ref{rebind:fig:labsetup}. Only the user machine 
-will be using VM, and the others are all containers. 
-In the setup, we have two networks, a home network and 
-an outside network. The home network 
-simulates a typical network at home. 
-The user machine and the IoT 
-services are connected to this network, which
-is protected by the firewall on the router container. 
-The firewall blocks
-all traffic going to the \texttt{192.168.60.80}. 
-This way, outside machines cannot 
-access the IoT device.
-We also set up a NAT server on the router, so the machines
-on the home network can access outside (and the reply
-packets can come back). 
-
-The second network simulates the outside world. In addition to
-the router, there are three containers attached to this network,
-one serving as the local DNS server, and the other two
-serving as the attacker's nameserver and web server.
-The attacker owns the \texttt{attacker32.com} domain, 
-which is hosted by the attacker's nameserver container. 
-The web server hosts a malicious website used for the 
-attack. 
-
+La segunda red simula el mundo externo. Aparte del router, existen tres contenedores conectados a esta red, uno es el servidor de DNS local, y los otros dos serán el nameserver de ataque y el web server.
+El atacante posee el dominio \texttt{attacker32.com}, que está hosteado en el contenedor del nameserver. El web server hostea el sitio malicioso que es usado para el ataque.
 
 
 % -------------------------------------------
@@ -263,7 +220,7 @@ $ sudo resolvconf -u
 % -------------------------------------------
 % SUBSECTION
 % ------------------------------------------- 
-\subsection{Testing the Lab Setup.}
+\subsection{Probando el Setup del Laboratorio.}
 
 After configuring the user VM, use the \texttt{dig} command
 to get the IP address of \texttt{www.attacker32.com}
