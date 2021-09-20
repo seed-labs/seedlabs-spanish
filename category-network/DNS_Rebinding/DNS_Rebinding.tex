@@ -142,73 +142,50 @@ El atacante posee el dominio \texttt{attacker32.com}, que está hosteado en el c
 % ------------------------------------------- 
 \subsection{Configurar la Máquina Virtual del Usuario}
 
-We need to provide further configuration on the user VM.
+Necesitamos proporcionar una configuración adicional en la máquina virtual del usuario.
 
 
-\paragraph{Step 1. Reduce Firefox's DNS caching time.}
-To reduce load on DNS servers and to speed up response time, Firefox browser caches DNS
-results.  By default, the cache's expiration time is 60 seconds. That means that our DNS
-rebinding attack needs to wait for at least 60 seconds. To make our life easier, we reduce
-the time to 10 seconds or less. Type \texttt{about:config} in the URL field.
-After clicking through a warning page, we will see a list of preference names and their values.
-Search for \texttt{dnsCache}, find the following entry and change its value:
+\paragraph{Paso 1.Reducir el tiempo de expiración de la caché DNS del Firefox.}
+Con el objetivo de reducir la carga en los servidores DNS y optimizar los tiempos de respuestas, el navegador Firefox cachea los resultados de los DNS. Por defecto el tiempo de expiración de esta caché es de 60 segundos. Eso quiere decir que nuestro ataque de DNS Rebinding necesita esperar al menos 60 segundos. Para hacer todo mas sencillo, hemos reducido este tiempo a 10 segundos o menos. Para esto en la barra de navegación escriba  \texttt{about:config}. 
+Despues de hacer click y pasar la página de advertencia, veremos una lista de preferencias con sus nombres y valores correspondientes.
+Busque \texttt{dnsCache} encuentre la entrada y cambie su valor:
 
 \begin{lstlisting}
-(*@\textbf{network.dnsCacheExpiration}@*):  change its value to 10 (default is 60)
+(*@\textbf{network.dnsCacheExpiration}@*): cambie el valor a 10 (el valor por defecto es 60)
 \end{lstlisting}
 
-After making the change, we should exit from the Firefox browser, and restart it; otherwise the
-change will not take effect.
+Después de hacer este cambio, debe de reiniciar el navegador, de otra forma no tomará efecto.
 
 
-\paragraph{Step 2. Change \texttt{/etc/hosts}.}
-We need to add the following entry to the \texttt{/etc/hosts} file. 
-We will use \texttt{www.seedIoT32.com} as the name for the 
-IoT server. Its IP address is \texttt{192.168.60.80}. 
-We need to use the superuser privilege to modify this file (using \texttt{sudo}): 
+\paragraph{Paso 2. Cambiar \texttt{/etc/hosts}.}
+Necesitamos agregar la siguiente entrada en el archivo \texttt{/etc/hosts}. Usaremos \texttt{www.seedIoT32.com} como el nombre para el servidor IoT. Su dirección IP es \texttt{192.168.60.80}. 
+Necesitamos tener privilegios de superusuario para modificar este archivo (usando \texttt{sudo}): 
 
 \begin{lstlisting}
 192.168.60.80  www.seedIoT32.com
 \end{lstlisting}
 
-While we are in this file, check whether there is any entry 
-that contains \texttt{attacker32.com}. Remove them if there 
-is any. These entries may have been added when we worked on
-other SEED labs, and their existence will cause problems for this lab. 
+Mientras este editando este archivo, verifique si existe alguna entrada que contenga \texttt{attacker32.com}. Si está presente borrela.
 
-
-We can now test the IoT server. Point the browser to the following URL on the 
-user VM. If everything is set up correctly, we should be able to see 
-a thermostat. We can also change the temperature setting by dragging the 
-sliding bar. Please provide a screenshot in your lab report. 
+Estamos listos para testear el servidor IoT. Ingreser en su navegador la siguiente URL usando la máquina virtual de usuario. Si está todo configurado correctamente, deberíamos de ver un termostato. También podemos cambiar la temperatura usando la barra de sliding. Por favor provea una captura de pantalla en su informe de laboratorio.
 
 \begin{lstlisting}
 http://www.seedIoT32.com
 \end{lstlisting}
  
 
+\paragraph{Paso 3. Servidor de DNS local.}
+Necesitamos que la máquina virtual del usuario use un servidor de DNS local particular.
+Esto se logra cambiando el archivo de configuración (\texttt{/etc/resolv.conf}) en la máquina del usuario de manera tal que se agregará la dirección IP del contenedor como la primera entrada \texttt{nameserver} dentro de este archivo, es decir, este servidor será usado como el servidor de DNS primario.
+Desafortunadamente nuestra Máquina Virtual usa DHCP para obtener los parámetros de la configuración de red, tales como la dirección IP, el servidor de DNS local, etc. Los clientes DHCP sobreescribirán el archivo \texttt{/etc/resolv.conf} con su la información provista por el servidor DHCP.
 
-\paragraph{Step 3. Local DNS Server.}
-We need to get the user VM to use a particular local DNS server. This is achieved by
-setting the local DNS server as the first \texttt{nameserver} entry in the resolver
-configuration file (\texttt{/etc/resolv.conf}). 
-One challenge is that the provided VM uses the
-Dynamic Host Configuration Protocol (DHCP) to obtain network configuration parameters, such as
-IP address, local DNS server, etc. DHCP clients overwrite the \texttt{/etc/resolv.conf}
-file with the information provided by the DHCP server.
-
-One way to get our information into \texttt{/etc/resolv.conf} without worrying about
-the DHCP is to add the following entry to the \path{/etc/resolvconf/resolv.conf.d/head}
-file (\texttt{10.9.0.53} is the IP address of the local DNS server in our setup):
+Una forma de evitar esto es agregar la siguiente entrada dentro del archivo \path{/etc/resolvconf/resolv.conf.d/head}  (\texttt{10.9.0.53} es la dirección IP de nuestro servidor de DNS local que hemos configurado en el setup):
 
 \begin{lstlisting}
 nameserver 10.9.0.53
 \end{lstlisting}
 
-The content of the head file will be prepended to the dynamically generated resolver
-configuration file. Normally, this is just a comment line (the comment in
-\texttt{/etc/resolv.conf} comes from this head file). After making the change,
-we need to run the following command for the change to take effect: 
+El contenido del archivo head será antepuesto al que se usa en la generación dinámica por el DHCP. Después de hacer este cambio necesitamos correr el siguiente comando para que tome efecto.
 
 \begin{lstlisting}
 $ sudo resolvconf -u
@@ -222,18 +199,12 @@ $ sudo resolvconf -u
 % ------------------------------------------- 
 \subsection{Probando el Setup del Laboratorio.}
 
-After configuring the user VM, use the \texttt{dig} command
-to get the IP address of \texttt{www.attacker32.com}
-and \texttt{ns.attacker32.com}. You should get 
-\texttt{10.9.0.180} and \texttt{10.9.0.153}, respectively. 
-If you do not get this, your lab environment is not 
-set up correctly. 
+Después de configura la máquina virtual del usuario, use el comando \texttt{dig} para obtener la dirección IP de \texttt{www.attacker32.com} y \texttt{ns.attacker32.com}. Debería de obtener \texttt{10.9.0.180} y \texttt{10.9.0.153} respectivamente. Si ud. no obtiene estas direcciones su entorno de laboratorio no fue configurado correctamente.
 
+Ahora podemos testear el sitio del atacante.
+Ingrese la siguiente URL en la máquina virtual del usuario y debería de poder ingresar al sitio del atacante.
+Por favor incluya una captura de pantalla en su informe de laboratorio.
 
-We can now test the attacker's website. 
-Point the browser to the following URL on the user VM, and you should 
-be able to see the attacker's website. 
-Please provide a screenshot in your lab report. 
 
 \begin{lstlisting}
 http://www.attacker32.com
@@ -252,17 +223,15 @@ any entry that contains \texttt{attacker32.com}.
 % *******************************************
 % SECTION
 % ******************************************* 
-\section{Launch the Attack on the IoT Device}
+\section{Lanzando el Ataque en el Dispositivo IoT}
 
-We are ready to launch the attack on the IoT device. To help students 
-understand how the attack works, we break down
-the attack into several incremental steps. 
+Estamos listos para lanzar el ataque en el dispositivo IoT. Para una mejor comprensión de parte de los estudiantes en como funciona el ataque, hemos fragmentado el ataque en varios pasos incrementales.
 
 
 % -------------------------------------------
 % SUBSECTION
 % ------------------------------------------- 
-\subsection{Task 1. Understanding the Same-Origin Policy Protection}
+\subsection{Tarea 1. Entendiendo la Protección de Same-Origin Policy}
 
 In this task, we will do some experiment to understand the 
 same-origin policy protection implemented on browsers. On the user VM,
