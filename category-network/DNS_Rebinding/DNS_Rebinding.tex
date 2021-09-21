@@ -47,9 +47,9 @@ Este laboratorio cubre los siguientes tópicos:
 
 \begin{itemize}[noitemsep]
 \item Setup del servidor DNS
-\item El Ataque de DNS rebinding 
+\item El Ataque de DNS Rebinding 
 \item Ataques en dispositivos IoT
-\item Same Origin Policy
+\item Política de Same Origin  (Same Origin Policy)
 \end{itemize}
 
 
@@ -146,6 +146,7 @@ Necesitamos proporcionar una configuración adicional en la máquina virtual del
 
 
 \paragraph{Paso 1.Reducir el tiempo de expiración de la caché DNS del Firefox.}
+
 Con el objetivo de reducir la carga en los servidores DNS y optimizar los tiempos de respuestas, el navegador Firefox cachea los resultados de los DNS. Por defecto el tiempo de expiración de esta caché es de 60 segundos. Eso quiere decir que nuestro ataque de DNS Rebinding necesita esperar al menos 60 segundos. Para hacer todo mas sencillo, hemos reducido este tiempo a 10 segundos o menos. Para esto en la barra de navegación escriba  \texttt{about:config}. 
 Despues de hacer click y pasar la página de advertencia, veremos una lista de preferencias con sus nombres y valores correspondientes.
 Busque \texttt{dnsCache} encuentre la entrada y cambie su valor:
@@ -210,12 +211,7 @@ Por favor incluya una captura de pantalla en su informe de laboratorio.
 http://www.attacker32.com
 \end{lstlisting}
 
-\paragraph{Note.} We may have used the same hostname  
-\texttt{www.attacker32.com} in other SEED labs, so it is likely 
-that this name is already mapped to a different IP address. Therefore,
-if you do not see the expected attacker's website, you should 
-check the \texttt{/etc/hosts} file, and remove
-any entry that contains \texttt{attacker32.com}. 
+\paragraph{Note.} Puede que se haya usado el mismo hostname \texttt{www.attacker32.com} en otros laboratorios de SEED, por lo cual es probable que ese hostname pueda haber quedado mapeado en una dirección IP diferente. Si ud. al entrar a la URL no ve el sitio del atacante indicado, por favor chequee el archivo \texttt{/etc/hosts} y borre cualquier entrada que contenga \texttt{attacker32.com}. 
 
 
 
@@ -231,12 +227,10 @@ Estamos listos para lanzar el ataque en el dispositivo IoT. Para una mejor compr
 % -------------------------------------------
 % SUBSECTION
 % ------------------------------------------- 
-\subsection{Tarea 1. Entendiendo la Protección de Same-Origin Policy}
+\subsection{Tarea 1. Entendiendo la Protección de la Política de Same-Origin}
 
-In this task, we will do some experiment to understand the 
-same-origin policy protection implemented on browsers. On the user VM,
-we will browse the following three URLs. It is better to show these three pages on three
-different Firefox windows (instead of on three different tabs), so they are all visible. 
+En esta tarea, haremos algunos experimentos para entender la protección otorgada por la política de same-origin (Same Origin Policy), este mecanismo se encuentra implementado en los navegadores.
+En la Máquina Virtual del Usuario, navegaremos a las siguientes tres URLs. Es mejor que estas tres páginas se abran en tres ventanas diferentes de Firefox (en vez de tres tabs diferentes), para así poder visualizarlas por completo.
 
 
 \begin{lstlisting}
@@ -245,34 +239,21 @@ URL 2:  http://www.seedIoT32.com/change
 URL 3:  http://www.attacker32.com/change
 \end{lstlisting}
 
- 
-The first page lets us see the current temperature setting of the thermostat (see
-Figure~\ref{rebinding:fig:webpages}.a); it fetches
-the temperature value from the IoT server once every second. We should keep this page always
-visible, so we can see the temperature setting on the thermostat. 
-The second and third pages
-are identical (see Figure~\ref{rebinding:fig:webpages}.b), 
-except that one comes from the IoT server, and the other comes from
-the attacker's server. When we click the button on both pages, 
-a request will be sent out to the IoT server to set its temperature. 
-We are supposed to raise the thermostat's temperature 
-to \texttt{99} Celsius.  
-
+En la primera página veremos la temperatura actual que está seteada en el termostato (vea la Figura \ref{rebinding:fig:webpages}.a); esta obtiene el valor de la temperatura del servidor IoT cada un segundo. Esta página debe estar siempre visible, de estas forma podremos observar la temperatura seteada en el termostato.
+La segunda y tercer página son iguales (vea la Figura \ref{rebinding:fig:webpages}.b), excepto que una viene del servidor de IoT y la otra viene del servidor del atacante. Cuando clickeamos en el botón en ambas páginas, un request será enviado al servidor IoT para setear la temperatura del termostato.
+Se supone que debemos de setear la setear la temperatura a \texttt{99} grados Celsius.  
 
 \begin{figure}[htb]
 \begin{center}
 \includegraphics[width=0.8\textwidth]{\rebindingFigs/iot_webpages.pdf}
 \end{center}
-\caption{The web pages from the three URLs}
+\caption{Las páginas de las tres URLs}
 \label{rebinding:fig:webpages}
 \end{figure}
  
+Haga click en el botón de la segunda y tercer página, y describa su observación. ¿Cuál es la página que permite setear de forma exitosa la temperatura del termostato? Explique el porque.
+Para encontrar la razón, siga la siguiente secuencia del menú de Firefox. Se abrirá una ventana de consola y desplegará mensajes de error si es que hay alguno/s. Pista: la razón se relaciona a la política de same-origin implementada por los navegadores. Por favor explique porque esta política hace que una de las páginas falle.
 
-Click the button on the second and third pages, and describe your observation. Which page
-can successfully set the thermostat's temperature? Please explain why. 
-To find the reason, click the following menu sequence from Firefox. A console window will appear,
-which displays error messages if any. Hint: the reason is related to the same-origin policy 
-enforced by browsers. Please explain why this policy causes one of the pages to fail.
  
 \begin{lstlisting}
 Web Developer -> Web Console
@@ -283,35 +264,17 @@ Web Developer -> Web Console
 % -------------------------------------------
 % SUBSECTION
 % ------------------------------------------- 
-\subsection{Task 2. Defeat the Same-Origin Policy Protection}
+\subsection{Tarea 2. Evadiendo la Protección de la Política de Same Origin}
+
+Basados en la tarea anterior, pareciera imposible establecer el valor de la temperatura del termostato desde la página del atacante, debido a la protección de la política de same-origin implementada por el navegador. El objetivo de esta tarea es evadir dicha protección, para así poder setear la temperatura desde esta página.
+
+La principal idea en orden para evadir la protección de same-origin viene del hecho que esta política esta reforzada por el hostname y no en la dirección IP, por lo tanto mientras  usemos \texttt{www.attacker32.com} como URL, estamos cumpliendo con la política SOP, lo que no significa que estamos restringidos para comunicarnos con el servidor web \texttt{www.attacker32.com}.
+
+Antes que el usuario desde su navegador envíe un request hacia \texttt{www.attacker32.com}, el navegador necesita saber la dirección IP de \texttt{www.attacker32.com}. Una petición DNS será enviada desde la máquina del usuario. Si la dirección IP no está cacheada en el servidor de DNS local, una petición DNS será enviada al nameserver de \texttt{attacker32.com} que está controlado por el atacante.
+Por lo que el atacante puede decidir que poner en la respuesta.
 
 
-From the previous task, it seems impossible to
-set the thermostat's temperature from the attacker's
-page, due to the browser's   
-same-origin policy protection.  The objective of this task
-is to defeat such a protection, so we can set the 
-temperature from this page. 
-
-
-The main idea for defeating the same origin protection 
-comes from the fact that the policy enforcement is 
-based on the host name, not on the IP address, so as long as 
-we use \texttt{www.attacker32.com} in the URL, we are complying with
-the SOP policy, but that does not mean we are restricted 
-to communicate with the \texttt{www.attacker32.com} web server.  
-
-
-Before the user's browser sends out requests to \texttt{www.attacker32.com},
-it first needs to know the IP address of \texttt{www.attacker32.com}. 
-A DNS request will be sent out from the user's machine. If the 
-IP address is not cached at the local DNS server, a DNS request will
-eventually be sent to \texttt{attacker32.com}'s  nameserver, which 
-is controlled by the attacker. 
-Therefore, the attacker can decide what to put in the response. 
-
-
-\paragraph{Step 1: Modify the JavaScript code.}
+\paragraph{Paso 1: Modificar el código JavaScript.}
 On the attacker's web server, the JavaScript code running inside the 
 \url{www.attacker32.com/change} page is 
 stored in the following file: 
@@ -419,7 +382,7 @@ demonstrate your success.
 % -------------------------------------------
 % SUBSECTION
 % ------------------------------------------- 
-\subsection{Task 3. Launch the Attack}
+\subsection{Tarea 3. Lanzar el Ataque}
 
 In the previous task, the user has to click the button to set the 
 temperature to the dangerously high value. Obviously, it is unlikely that users will 
