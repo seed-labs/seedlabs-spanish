@@ -36,7 +36,7 @@
 % ******************************************* 
 \section{Introducción}
 
-El objetivo de este laboratorio es separado en dos partes: (1) demostrar como funciona el ataque de DNS Rebinding, y (2) ayudar a que los estudiantes obtengan experiencia en el uso de la técnica de DNS Rebinding para atacar dispositivos IoT. En el setup, hemos simulado un dispositivo IoT que puede ser controlado a través de una interfaz web (esto es típico en muchos dispositivos IoT). Muchos de estos dispositivos no tienen mecanismos de seguridad fuertes, si los atacantes pueden interactuar directamente con esta interfaz poco segura, podrán hacerse del control de estos dispositivos.
+El objetivo de este laboratorio es separado en dos partes: (1) demostrar como funciona el ataque de DNS Rebinding, y (2) ayudar a que los estudiantes obtengan experiencia en el uso de la técnica de DNS Rebinding para atacar dispositivos IoT. En el setup, hemos simulado un dispositivo IoT que puede ser controlado a través de una interfaz web (esto es típico en muchos dispositivos IoT). Muchos de estos dispositivos no tienen mecanismos de seguridad robustos, si los atacantes pueden interactuar directamente con esta interfaz poco segura, podrán hacerse del control de estos dispositivos.
 
 El dispositivo IoT simulado en este laboratorio es un termostato que controla la temperatura de una habitación.
 Para controlar y setear la temperatura de manera correcta, el cliente necesita interactuar con el servidor IoT. Dado que el dispositivo IoT se encuentra detrás de un firewall, las máquinas por fuera de este no podrán acceder a este dispositivo IoT y por ende no podrán controlar el termostato. Para evadir la protección del firewall, el código del atacante debe estar dentro de la red interna en donde se encuentra el dispositivo. Esto no es difícil. Cada vez que un usuario de una red interna visita el sitio de un atacante, el código del atacante (Código JavaScript) se ejecuta en el navegador del usuario y corre dentro de la red interna que se está protegida. Sin embargo, debido a las protecciones de sandbox implementadas por los navegadores, el código del atacante no podrá interactuar con el dispositivo IoT aunque este se encuentre en la red interna.
@@ -90,7 +90,7 @@ Para una cobertura más detallada sobre el protocolo DNS y sus ataques puede con
 
 Nuestro objetivo a atacar será un dispositivo IoT detrás de un firewall. No podemos acceder directamente a este dispositivo por fuera de la red interna. Nuestra meta será que el usuario corra nuestro código JavaScript, y de esta forma usar el ataque de DNS Rebinding para interactuar con el dispositivo IoT.
 
-Muchos dispostivos IoT vienen con un simple un servidor web corriendo dentro de ellos, de esta forma los usuarios pueden interactuar con el dispositivo a usando APIs web. A menudo estos dispositivos son protegidos por firewall. Debido a este tipo de protección, muchos equipos de este tipo no implementan un mecanismo de autenticación robusto. Si los atacantes pueden encontrar la forma de interactuar con ellos, pueden comprometer la seguridad de estos dispositivos de manera sencilla.
+Muchos dispostivos IoT vienen con un simple un servidor web corriendo dentro de ellos, de esta forma los usuarios pueden interactuar con el dispositivo a usando APIs web. A menudo estos dispositivos son protegidos por un firewall. Debido a este tipo de protección, muchos equipos de este tipo no implementan un mecanismo de autenticación robusto. Si los atacantes pueden encontrar la forma de interactuar con ellos, pueden comprometer la seguridad de estos dispositivos de manera sencilla.
 
 En este laboratorio vamos a emular un dispositivo IoT vulnerable usando un servidor web muy simple, que servirá dos APIs:  \texttt{password} y \texttt{temperature}.
 El dispositivo IoT setea la temperatura de una habitación. Para hacerlo, necesitamos enviar request HTTP a la API \texttt{temperature}; el request debe de incluir dos datos: la temperatura y el passowrd.
@@ -112,14 +112,14 @@ Para simplificar un poco todo, hemos harcodeado el password; en los sistemas rea
 \begin{figure}[htb]
 \centering
 \includegraphics[width=0.9\textwidth]{\commonfolder/Figs/IoT_2lans.pdf}
-\caption{Lab environment setup}
+\caption{Setup del Entorno de Laboratorio}
 \label{rebind:fig:labsetup}
 \end{figure}
 
 En este laboratorio, usaremos seis máquinas.
 El setup del entorno del entorno de laboratorio es ilustrado en la Figura \ref{rebind:fig:labsetup}. Sólo la máquina del usuario será una Máquina Virtual, el resto serán contenedores.
-En el setup, tenemos dos redes, una red hogareña y otra red externa. La red hogareña simula una red típica de una casa. La máquina de usuario y el los servicios IoT están conectados a esta red, que es protegida por un firewall en un contenedor router. El firewall bloquea todo el tráfico  a \texttt{192.168.60.80}. De esta forma, las máquinas externas no pueden acceder al dispositivo.
-También hemos un setup para un servidor NAT en el router, de esta forma las maquinas en la red hogareña pueden salir a Internet.
+En el setup, tenemos dos redes, una red hogareña y otra red externa. La red hogareña simula una red típica de una casa. La máquina de usuario y los servicios IoT están conectados a esta red, que es protegida por un firewall en un contenedor router. El firewall bloquea todo el tráfico  a \texttt{192.168.60.80}. De esta forma, las máquinas externas no pueden acceder al dispositivo.
+También hemos hecho un setup para un servidor NAT en el router, de esta forma las maquinas en la red hogareña pueden salir a Internet.
 
 La segunda red simula el mundo externo. Aparte del router, existen tres contenedores conectados a esta red, uno es el servidor de DNS local, y los otros dos serán el nameserver de ataque y el web server.
 El atacante posee el dominio \texttt{attacker32.com}, que está hosteado en el contenedor del nameserver. El web server hostea el sitio malicioso que es usado para el ataque.
@@ -168,7 +168,7 @@ Necesitamos tener privilegios de superusuario para modificar este archivo (usand
 
 Mientras este editando este archivo, verifique si existe alguna entrada que contenga \texttt{attacker32.com}. Si está presente borrela.
 
-Estamos listos para testear el servidor IoT. Ingreser en su navegador la siguiente URL usando la máquina virtual de usuario. Si está todo configurado correctamente, deberíamos de ver un termostato. También podemos cambiar la temperatura usando la barra de sliding. Por favor provea una captura de pantalla en su informe de laboratorio.
+Estamos listos para testear el servidor IoT. Ingreser en su navegador la siguiente URL usando la máquina virtual de usuario. Si está todo configurado correctamente, deberíamos de ver un termostato. También podemos cambiar la temperatura usando la barra de sliding. Por favor provea una captura de pantalla en su informe del laboratorio.
 
 \begin{lstlisting}
 http://www.seedIoT32.com
@@ -194,17 +194,16 @@ $ sudo resolvconf -u
 
 
 
-
 % -------------------------------------------
 % SUBSECTION
 % ------------------------------------------- 
 \subsection{Probando el Setup del Laboratorio.}
 
-Después de configura la máquina virtual del usuario, use el comando \texttt{dig} para obtener la dirección IP de \texttt{www.attacker32.com} y \texttt{ns.attacker32.com}. Debería de obtener \texttt{10.9.0.180} y \texttt{10.9.0.153} respectivamente. Si ud. no obtiene estas direcciones su entorno de laboratorio no fue configurado correctamente.
+Después de configurar la máquina virtual del usuario, use el comando \texttt{dig} para obtener la dirección IP de \texttt{www.attacker32.com} y \texttt{ns.attacker32.com}. Debería de obtener \texttt{10.9.0.180} y \texttt{10.9.0.153} respectivamente. Si ud. no obtiene estas direcciones su entorno de laboratorio no fue configurado correctamente.
 
 Ahora podemos testear el sitio del atacante.
 Ingrese la siguiente URL en la máquina virtual del usuario y debería de poder ingresar al sitio del atacante.
-Por favor incluya una captura de pantalla en su informe de laboratorio.
+Por favor incluya una captura de pantalla en su informe del laboratorio.
 
 
 \begin{lstlisting}
@@ -268,33 +267,20 @@ Web Developer -> Web Console
 
 Basados en la tarea anterior, pareciera imposible establecer el valor de la temperatura del termostato desde la página del atacante, debido a la protección de la política de same-origin implementada por el navegador. El objetivo de esta tarea es evadir dicha protección, para así poder setear la temperatura desde esta página.
 
-La principal idea en orden para evadir la protección de same-origin viene del hecho que esta política esta reforzada por el hostname y no en la dirección IP, por lo tanto mientras  usemos \texttt{www.attacker32.com} como URL, estamos cumpliendo con la política SOP, lo que no significa que estamos restringidos para comunicarnos con el servidor web \texttt{www.attacker32.com}.
+La principal idea en orden para evadir la protección de same-origin viene del hecho que esta política esta reforzada por el hostname y no en la dirección IP, por lo tanto mientras usemos \texttt{www.attacker32.com} como URL, estamos cumpliendo con la política SOP, lo que no significa que estamos restringidos para comunicarnos con el servidor web \texttt{www.attacker32.com}.
 
 Antes que el usuario desde su navegador envíe un request hacia \texttt{www.attacker32.com}, el navegador necesita saber la dirección IP de \texttt{www.attacker32.com}. Una petición DNS será enviada desde la máquina del usuario. Si la dirección IP no está cacheada en el servidor de DNS local, una petición DNS será enviada al nameserver de \texttt{attacker32.com} que está controlado por el atacante.
 Por lo que el atacante puede decidir que poner en la respuesta.
 
 
 \paragraph{Paso 1: Modificar el código JavaScript.}
-On the attacker's web server, the JavaScript code running inside the 
-\url{www.attacker32.com/change} page is 
-stored in the following file: 
-\path{/app/rebind_server/templates/js/change.js}. Since this page
-comes from the \texttt{www.attacker32.com} server, 
-according to the same-origin policy, it can only
-interact with the same server. Therefore, we need to change the first 
-line of the code from \url{http://www.seediot32.com} 
-to the following (we have installed a simple editor called \texttt{nano}
-in the container):
+En el servidor del atacante, el código JavaScript que se encuentra en la página \url{www.attacker32.com/change} está dentro del archivo: \path{/app/rebind_server/templates/js/change.js}. Dado que está página viene del servidor  \texttt{www.attacker32.com}, de acuerdo a la política de same-origin, solamente puede interactuar con el mismo servidor. Necesitamos cambiar la primera línea del código de  \url{http://www.seediot32.com} por la siguiente (en el contenedor hemos instalado un editor llamado \texttt{nano}):
 
 \begin{lstlisting}
 let url_prefix = 'http://www.attacker32.com'
 \end{lstlisting}
  
-
-After making the change, restart the attacker's web server container (see the 
-command below). Then go to the user VM, refresh the page, and click the button again. 
-Do you still see the error
-message in the web console? Please explain your observation. 
+Después de haber hecho este cambio, debe reiniciar el servidor web en el contenedor del atacante (vea el comando mas abajo). Después de esto debe de ir a la página de la máquina virtual de usuario, refrescarla y hacer click en el botón nuevamente: ¿El error aún permanece? Por favor explique su observación.
 
 
 \begin{lstlisting}
@@ -306,30 +292,14 @@ $ docker container restart 7835
 \end{lstlisting}
  
 
+\paragraph{Paso 2: Conduciendo el ataque de DNS Rebinding.}
+Nuestro código JavaScript envía la petición a  \url{www.attacker32.com},  es decir, la petición regresará hacia el servidor web del atacante. Eso no es lo que queremos; lo que queremos es que las peticiones vayan hacia el servidor IoT.
+Esto se puede lograr usando la técnica de DNS Rebinding. Primero mapeamos  \url{www.attacker32.com} con la dirección IP del servidor web del atacante, así el usuario puede obtener la página desde \url{http://www.attacker32.com/change}. Antes de hacer click en el botón dentro de la página, remapeamos el hostname \url{www.attacker32.com} con la dirección IP del servidor IoT, lo que hará que la petición lanzada por el botón vaya hacia el servidor IoT. Eso es exactamente lo que queremos.
 
-\paragraph{Step 2: Conduct the DNS rebinding.}
-Our JavaScript code sends requests to \url{www.attacker32.com}, 
-i.e., the requests will come back to the Attacker's web server. That is not 
-what we want; we want the requests to go to the IoT server. 
-This can be achieved using the DNS rebinding 
-technique. We first map \url{www.attacker32.com} to the IP address of the attacker's
-web server, so
-the user can get the actual page from \url{http://www.attacker32.com/change}. 
-Before we click on the button on the page, we remap
-the \url{www.attacker32.com} hostname to the IP address of the IoT server, so
-the request triggered by the button will go to the IoT server. That is exactly what 
-we want. 
-
-
-To change the DNS mapping, students can modify the 
-\path{zone_attacker32.com} file inside attacker's nameserver container.
-The zone file can be found in 
-the \texttt{/etc/bind} folder. 
-The following shows the content of the zone file. The first 
-entry is the default Time-To-Live (\texttt{TTL}) value (seconds) 
-for the response, specifying how long the response can stay in
-the DNS cache. This value may need to be modified. 
-The following is the content of the zone file:
+Para cambiar el mapeo DNS, los estudiantes pueden modificar el archivo de zona \path{zone_attacker32.com} dentro del contenedor del nameserver del atacante.
+El archivo zona se encuentra dentro del directorio \texttt{/etc/bind}.
+A continuación se muestra el contenido del archivo de zona. La primera entrada es el valor por defecto del Time-To-Live (\texttt{TTL}) (en segundos) para la respuesta, este especifíca cuanto tiempo se almacena la respuesta en caché. Este valor puede que necesite ser modificado.
+Contenido del archivo de zona:
 
 \begin{lstlisting}
 $TTL 1000
@@ -348,62 +318,36 @@ ns      IN      A     10.9.0.21
 *       IN      A     10.9.0.22
 \end{lstlisting}
 
-
-After making the changes to the zone file, 
-run the following command to ask the nameserver 
-to reload the revised zone data. 
+Después de haber hecho los cambios en el archivo de zona, corra el siguiente comando para recargar los datos de la zona en el nameserver.
 
 \begin{lstlisting}
 # rndc reload attacker32.com
 \end{lstlisting}
 
+Debido a que en las tareas anteriores hemos hecho algunas operaciones con los DNS, el mapeo DNS para \texttt{www.attacker32.com} ha sido cacheado por el servidor de DNS local, este tiene un tiempo de expiración de 1000 segundos o más. Para acortar la espera, los estudiantes pueden limpiar la caché usando el siguiente comando (en el servidor de DNS local). Sin embargo, esto puede hacerse antes de empezar el ataque. Una vez que el ataque comienza, los estudiantes no deberán de tocar el servidor de DNS local.
 
-
-Because of the tasks conducted previously, the DNS mapping for the 
-\texttt{www.attacker32.com} has already been cached by the local
-DNS server, it will not expire until 1000 seconds later.  To 
-shorten the waiting, students are allowed to clean out the cache using the 
-following command (on the local DNS server). However, this can only be 
-conducted before the attack starts. Once the attack starts, students 
-are not allowed to touch the local DNS server. 
 
 \begin{lstlisting}
 // Do it on the local DNS server container
 # rndc flush
 \end{lstlisting}
  
- 
-If both steps in this task are done correctly, clicking the button 
-on the \texttt{change} page from \url{www.attacker32.com} should be able to change
-the thermostat's temperature successfully. Please provide evidence in your report to
-demonstrate your success.
-
+Si los dos pasos descriptos en esta tarea son realizados de forma correcta, al clickear el botón en la página \texttt{change} de  \url{www.attacker32.com} debería de permitir cambiar la temperatura del termostato exitosamente. Por favor incluya la evidencia en su informe del laboratorio que demuestre que esto funcionó de manera correcta.
 
 % -------------------------------------------
 % SUBSECTION
 % ------------------------------------------- 
 \subsection{Tarea 3. Lanzar el Ataque}
 
-In the previous task, the user has to click the button to set the 
-temperature to the dangerously high value. Obviously, it is unlikely that users will 
-do that.  In this task, we need to do that automatically. We have already created 
-a web page for that purpose. It can be accessed using the following URL:
+En la tarea anterior, el usuario debe de hacer click en el botón para setear la temperatura en un valor peligrosamente alto. Obviamente, los usuarios no harían eso. En esta tarea, necesitamos hacer esto de forma automática. Hemos creado una página web para este propósito. Se puede acceder usando la siguiente URL:
 
 
 \begin{lstlisting}
 http://www.attacker32.com
 \end{lstlisting}
  
-
-Once you have loaded this page into the user VM, you should be able to see a page with a 
-timer, which goes down from 10 to 0. Once it reaches 0, the JavaScript code 
-on this page will send the set-temperature request to 
-\url{http://www.attacker32.com}, and then reset the timer value to 10. 
-Students need to use the DNS rebinding technique, so
-once the timer reaches 0, the thermostat's temperature is set to 
-88 Celsius. 
-
-
+Una vez que haya cargada esta página dentro de la máquina virtual del usuario, debería de poder ver una página con un timer, que desde 10 a 0. Una vez que este en 0, el código JavaScript enviará una petición para setear la temperatura a \url{http://www.attacker32.com} y reseteará el timer a 10.
+Los estudiantes necesitan usar la técnica de DNS Rebinding, para que cuando el timer este en 0, la temperatura del termostato sea 88 grados Celsius.
 
 % *******************************************
 % SECTION
