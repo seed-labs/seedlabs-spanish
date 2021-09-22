@@ -71,111 +71,54 @@ Para una cobertura más detallada sobre  TCP session hijacking puede consultar:
 % ******************************************* 
 \section{Como funciona el Ataque de Mitnick}
 
-The Mitnick attack is a special case of TCP session hijacking attacks. 
-Instead of hijacking an existing TCP connection between victims A and B, 
-the Mitnick attack creates a TCP connection between A and B first on 
-their behalf, and then naturally hijacks the connection.  
+El ataque de Mitnick es un caso especial de un ataque de TCP session hijacking.
+En vez de hacer hijacking sobre una conexión TCP entre una víctima A y otra B, el ataque de Mitnick primero crea una conexión TCP entre A y B en su nombre y luego procede a hacer el hijacking de la conexión.
 
-
-In the actual Mitnick attack, host A was called X-Terminal, 
-which was the target. Mitnick
-wanted to log into X-Terminal and run his commands on it. 
-Host B was a trusted server, which was allowed to log into X-Terminal without a password.  
-In order to log into X-Terminal, Mitnick had to impersonate the trusted server, so
-he did not need to provide any password. Figure~\ref{tcp:mitnick} depicts
-the high-level picture of the attack. 
-There are four primary steps in this attack.
+En el ataque de Mitnick real, el host A fue llamado la X-Terminal y era el objetivo. Mitnick quería loguearse dentro de X-Terminal y ejecutar comandos dentro de este host.
+El Host B era un servidor de confianza, que permitía loguear dentro X-Terminal sin usar un password.
+Para loguearse dentro de X-Terminal, Mitnick tuvo que impersonar el servidor de confianza, para que así no tenga que ingresar ningun password. La Figura \ref{tcp:mitnick} ilustra a grosso modo el ataque.
+Existen cuatro pasos primarios en este ataque.
 
 
 \begin{figure}[htb]
 \centering
 \includegraphics[width=0.8\textwidth]{\mitnickFigs/mitnick_attack.pdf}
-\caption{The illustration of the Mitnick Attack}
+\caption{Ilustración del Ataque de Mitnick}
 \label{tcp:mitnick}
 \end{figure}
 
 
-\paragraph{Step 1: Sequence number prediction.} 
-Before the attack, Mitnick needed to learn the pattern of the initial sequence numbers (ISN)
-on X-terminal (in those days, ISNs were not random). 
-Mitnick sent SYN requests to X-terminal and received SYN+ACK responses, 
-then he sent
-RESET packet to X-Terminal, to clear the half-open connection
-from X-Terminal's queue (to prevent the queue from being filled up). After repeating
-this for twenty times. He found there was a pattern between two successive
-TCP ISNs. This allowed Mitnick to predict ISNs, which was essential for
-the attack. 
+\paragraph{Paso 1: Predicción del Número de Secuencia.} 
+Antes del ataque, Mitnick necesitaba aprender el patrón del inicio de los números de secuencia (ISN) de la X-Terminal (en esos días los ISN no eran aleatorios).
+Mitnick enviaba peticiones SYN a la X-Terminal y recibia respuestas SYN+ACK, entonces enviaba un paquete RESET a la X-Terminal, para así limpiar la cola de half-open connections en esta máquina (esto lo hacía para prevenir que la cola se llene). Después de repetir esto veinte veces. Encontro que había un patrón entre dos TCP ISNs sucesivos. Esto le permitió a Mitnick predecir ISNs, que era un elemento esencial para el ataque.
 
 
-\paragraph{Step 2: SYN flooding attack on the trusted server.} To
-send a connection request from the trusted server to X-Terminal,
-Mitnick needed to send out a SYN packet from
-the trusted server to X-Terminal. X-Terminal would respond with a
-SYN+ACK packet, which was sent to the trusted server. Since the trusted server
-did not actually initiate the request, it would send a RESET packet 
-to X-Terminal, asking X-Terminal to stop the 3-way handshake. This behavior
-caused trouble to the Mitnick attack.
-
-To solve this problem. Mitnick had to silence the trusted server. 
-Therefore, before spoofing, Mitnick launched a SYN
-flooding attack on the server. Back then, operating systems were far more
-vulnerable to the SYN flooding attack.  The attack could actually shut down the
-trusted computer, completely silencing it. 
+\paragraph{Paso 2: Ataque de SYN flooding en el Servidor de Confianza.}
+Para enviar una petición de conexión desde el Servidor de Confianza hacia la X-Terminal, Mitnick necesitaba enviar un paquete SYN desde el Servidor de Confianza hacia la X-Terminal. Entonces la X-Terminal respondería un paquete SYN+ACK que se enviaría al Servidor de Confianza. Dado que este Servidor de Confianza no era el que iniciaba la petición, enviaría un paquete RESET a la X-Terminal para detener el protcolo de 3-way handshake. Este comportamiento era problemático para el ataque de Mitnick.
+Para resolver este problema. Mitnick debía de silenciar al Servidor de Confianza.
+Para esto, antes de hacer el spoofing, Mitnick lanzaba un ataque de SYN flooding sobre el servidor. En esa época los servidores eran mucho más vulnerables a este tipo de ataques. El ataque podría dejar a la máquina fuera de servicio, silenciándola por completo.
 
 
-\paragraph{Step 3: Spoofing a TCP connection.} Mitnick wanted to 
-use \rsh (remote shell) to run a backdoor command on X-Terminal; once the 
-backdoor was setup, he could then log into X-Terminal. 
-To run a remote shell on X-Terminal, Mitnick needed to pass the 
-authentication, i.e, he needed to have a valid account on X-Terminal and know
-its password. Obviously, he did not have that.
+\paragraph{Paso 3: Spoofear la Conexión TCP.}
+Mitnick quería usar \rsh (shell remota o remote shell) para ejecutar un comando a modo de backdoor en la X-Terminal; una vez que el backdoor haya sido instalado, podría loguearse dentro de la X-Terminal.
+Para correr una shell remota en la X-Terminal, Mitnick necesitaba poder autenticarse, es de cir necesitaba tener una cuenta válida en la X-Terminal y saber su password. Obviamente, no tenía esta información.
 
-Shimomura often needed to log into X-Terminal from the trusted server. To 
-avoid typing passwords each time, he added some information
-in the \texttt{.rhosts} file on X-Terminal, so when he logged into
-X-Terminal from the trusted server, no password would be asked. This was quite a 
-common practice back then. With this setup,
-without typing any password, 
-Shimomura could run a command on X-Terminal from the trusted server using 
-\rsh, or run \texttt{rlogin} to log into X-Terminal. 
-Mitnick wanted to exploit this trusted relationship.
+Shimomura solía loguearse a menudo dentro de la X-Terminal desde el Servidor de Confianza. Para evitar tipear el password cada vez que entraba, agregó alguna información en el archivo \texttt{.rhosts}  dentro de la X-Terminal, por lo que al loguearse dentro de la X-Terminal desde el Servidor de Confianza, no se le pediría ningún password. En ese entonces esta era una práctica común. En este escenario Shimomura podía correr cualquier comando en la X-Terminal desde el Servidor de Confianza usando \rsh, or corriendo \texttt{rlogin} para loguearse en la X-Terminal, sin la necesidad de tipear un password.
+Mitnick quería explotar esta brecha.
+
+Mitnick necesitaba crear una conexión TCP entre el servidor de confianza y la X-Terminal y luego correr  \rsh dentro de esta conexión
+Primero envió una petición SYN hacia la X-Terminal, usando la dirección IP del servidor de confianza como la dirección IP de origen.
+La X-Terminal respondió con un SYN+ACK hacia el servidor. Dado que el servidor se encontraba fuera de servicio, no enviaría un RESET para cerrar la conexión. 
+
+Para completar el proceso de 3-way handshake, Mitnick necesitaba spoofear un paquete ACK, que debía de confirmar el número de secuencia en el paquete SYN+ACK de la X-Terminal. Desafortunadamente la respuesta SYN+ACK sólo iba hacia el servidor de confianza y no hacia Mitnick, él no podía ver cual era este número de secuencia. Sin embargo, debido a investigaciones previas, Mitnick podía predecir cual podría ser este número, por lo que podía enviar un paquete ACK spoofeado hacia la X-Terminal para completar el 3-way handshake de forma exitosa.
 
 
-He needed to create a TCP connection between the trusted server and
-X-Terminal, and then run \rsh inside this connection.   
-He first sent a SYN request to X-Terminal, using the trusted server's IP as the source IP address.
-X-Terminal then sent a SYN+ACK response to the server. Since the server had been shut
-down, it would not send RESET to close the connection. 
+\paragraph{Paso 4: Correr una shell remota.} 
+Usando la conexión TCP establecida entre el servidor de confianza y la X-Terminal, Mitnick podía enviar una petición de shell remota a la X-Terminal, con el objetivo de ejecutar un comando. Usando este comando, Mitnick quería plantar un backdoor en la X-Terminal que le otorgará una shell de forma persistente para no tener que volver a repetir el flujo de ataque.
 
-To complete the three-way handshake protocol, Mitnick needed to spoof
-an ACK packet, which must acknowledge the sequence number in 
-X-Terminal's SYN+ACK packet. Unfortunately, 
-the SYN+ACK response only went to the trusted server, not to Mitnick,
-he could not see the sequence number. However, 
-because of the prior investigation, Mitnick was able to
-predict what this number was, so he was able to 
-successfully spoof the ACK response sent to X-Terminal to complete the TCP three-way
-handshake. 
-
-
-\paragraph{Step 4: Running a remote shell.} 
-Using the established TCP connection between the trusted server and X-Terminal, Mitnick
-could send a remote shell request to X-terminal, asking 
-it to run a command. Using this command, 
-Mitnick wanted to create a
-backdoor on X-Terminal so that he could get a shell 
-on X-Terminal anytime without repeating the attack. 
-
-All he needed to do was to add  
-\texttt{"+ +"} to the \texttt{.rhosts} file on X-Terminal.
-He could achieve that
-by executing the following command using \rsh on X-Terminal: 
-{\tt "echo + + > .rhosts"}. 
-Since \rsh and \texttt{rlogin} program used
-\texttt{.rhosts} file for authentication, with this addition, 
-X-Terminal would trust every
-\rsh and \texttt{rlogin} request from anyone. 
-
+Todo lo que necesitaba era agregar \texttt{"+ +"} en el archivo \texttt{.rhosts} dentro la X-Terminal.
+Pudo hacerlo ejecutando el siguiente comando usando \rsh en la X-Terminal:  {\tt "echo + + > .rhosts"}. 
+Dado que los programas \rsh y \texttt{rlogin} usaban el archivo \texttt{.rhosts} para autenticación, con este agregado de Mitnick, X-Terminal confiaría en cualquier petición \rsh y \texttt{rlogin} sin importar de quien sea.
 
 
 % *******************************************
@@ -190,23 +133,18 @@ X-Terminal would trust every
 % ------------------------------------------- 
 \subsection{Setup del Contenedor}
 
-In this lab, we need three machines, 
-one for X-Terminal, one for Trusted Server, and the other for the attacker. 
-In the real Mitnick attack, the attacker machine is a remote machine. 
-In this lab, for the 
-sake of simplicity, we put all these three machines on the same network. 
-Students can use three virtual
-machines for this lab, but it will be much more convenient to
-use containers. The lab environment is depicted 
-Figure~\ref{mitnick:fig:labsetup}.
-
+En este laboratorio, necesitamos tres máquinas, una para la X-Terminal, la otra para el Servidor de Confianza y la otra será la del atacante.
+En el escenario real del ataque de Mitnick, la máquina del atacante era una máquina remota.
+En este laboratorio, por un tema de simplicidad, hemos puesto estas tres máquinas en la misma red.
+Los estudiantes pueden usar tres máquina virtuales por separado para hacer el laboratorio, pero es mucho mas conveniente usar los contenedores. 
+El entorno de laboratorio se muestra en la Figura \ref{mitnick:fig:labsetup}.
 
 
 \begin{figure}[htb]
 \begin{center}
 \includegraphics[width=0.8\textwidth]{\commonfolder/Figs/Mitnick_onelan.pdf}
 \end{center}
-\caption{Lab environment setup}
+\caption{Setup del Entorno de Laboratorio}
 \label{mitnick:fig:labsetup}
 \end{figure}
  
@@ -240,28 +178,25 @@ Figure~\ref{mitnick:fig:labsetup}.
 % -------------------------------------------
 % SUBSECTION
 % -------------------------------------------
-\subsection{About the Attacker Container}
+\subsection{Sobre el Contenedor del Atacante}
 
-In this lab, we can either use the VM or the attacker container
-as the attacker machine. If you look at the Docker Compose file, you will
-see that the attacker container is configured differently from the other
-containers. Here are the differences:
+I
+Para este laboratorio podemos usar tanto una Máquina Virtual como un contenedor como máquina de ataque. Si observa el archivo Docker Compose, verá que el contenedor de ataque está configurado de forma
+diferente al resto de los contenedores.
 
 \begin{itemize}
-\item \textit{Shared folder.} When we use the attacker container
-to launch attacks, we need to put the attacking code inside
-the attacker container.
+\item \textit{Directorio Compartido.} Cuando usemos el contenedor del atacante para realizar los ataques, necesitamos poner el código de ataque dentro del contenedor.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \input{\commonfolder/container/volumes}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\item \textit{Host mode.}
+\item \textit{Host Mode.}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \input{\commonfolder/container/host_mode}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
-\item \textit{Privileged mode.}
+\item \textit{Privileged Mode.}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \input{\commonfolder/container/privileged_mode}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -272,7 +207,7 @@ the attacker container.
 % -------------------------------------------
 % SUBSECTION
 % ------------------------------------------- 
-\subsection{Installing the \rsh program (no action is needed)}
+\subsection{Instalando \rsh}
 
 The remote shell \rsh is a command line program that can execute shell commands
 remotely. Although we will use \rsh in this task, we should know that 
@@ -309,7 +244,7 @@ $ sudo apt-get install rsh-redone-server
 % -------------------------------------------
 % SUBSECTION
 % ------------------------------------------- 
-\subsection{Configuration}
+\subsection{Configuración}
 \label{subsec:configuration}
 
 The \rsh server program uses two files for authentication, 
