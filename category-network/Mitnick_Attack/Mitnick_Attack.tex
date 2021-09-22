@@ -209,29 +209,18 @@ diferente al resto de los contenedores.
 % ------------------------------------------- 
 \subsection{Instalando \rsh}
 
-The remote shell \rsh is a command line program that can execute shell commands
-remotely. Although we will use \rsh in this task, we should know that 
-\rsh and \texttt{rlogin} programs are not secure, and they 
-are not used any more. They have been replaced by
-more secured programs, such as \texttt{ssh}.   
-That is why in the modern Linux operating systems, the \rsh command 
-is actually a symbolic link to the \texttt{ssh} program. 
+Remote shell \rsh es un programa de consola que sirve para ejecutar comandos shell de manera remota. Aunque usaremos \rsh en esta tarea, deberíamos de saber que \rsh y \texttt{rlogin} no son seguros y ya no se usan mas.
+Han sido reemplazados por programas más seguros como \texttt{ssh}.
+Debido a esto en los sistemas operativos linux actuales, el comando \rsh es un link simbólico al programa \texttt{ssh}.
 
 \begin{lstlisting}
 $ ls -al /etc/alternatives | grep rsh
 lrwxrwxrwx   1 root root    12 Jul 25  2017 rsh -> /usr/bin/ssh
 \end{lstlisting}
 
-
-To recreate the Mitnick attack, we need to install the unsecure version
-of the \rsh program. Obviously, the old version of 
-the \rsh no longer works, but an open-source project
-re-implements the remote shell clients and servers. 
-It is called \texttt{rsh-redone}. 
-We can use the following commands to install \rsh server and client. 
-\textbf{Note:} The \rsh programs are already installed in  
-the X-Terminal and Trusted Server containers (see the \texttt{Dockerfile} 
-inside the container image folder). 
+Para recrear el ataque de Mitnick, necesitamos instalar la version insegura del programa \rsh. Obviamente la vieja versión de\ \rsh ya no funciona, pero existe un proyecto de código abierto que implementa el cliente y el servidor remoto de shell.
+Podemos usar los siguientes comandos para instalar el servidor y el cliente \rsh:
+\textbf{Nota:} Los programas \rsh ya fueron instalados en los contenedores X-Terminal y el Servidor de Confianza (vea dentro del archivo \texttt{Dockerfile} dentro del directorio de las imágenes).
 
 \begin{lstlisting}
 $ sudo apt-get install rsh-redone-client
@@ -247,27 +236,15 @@ $ sudo apt-get install rsh-redone-server
 \subsection{Configuración}
 \label{subsec:configuration}
 
-The \rsh server program uses two files for authentication, 
-\texttt{.rhosts} and \texttt{/etc/hosts.equiv}.
-Every time the server receives a remote command request, it will check
-the \texttt{/etc/hosts.equiv}. If the request comes from a hostname stored in the file, the
-server will accept it without asking for passwords. 
-If \texttt{/etc/hosts.equiv} does not exist or
-do not have that hostname, \rsh  will check the \texttt{.rhosts} file 
-on the user's home directory. 
+El servidor \rsh usa dos archivos para autenticación, \texttt{.rhosts} y \texttt{/etc/hosts.equiv}.
+Cada vez que el servidor recibe una petición de comando de manera remota, chequeará the \texttt{/etc/hosts.equiv}. Si la petición proviene de un hostname que se encuentra dentro de este archivo, el servidor la aceptará sin pedir password.
+Si  \texttt{/etc/hosts.equiv} no existe o no contiene ese hostname, \rsh chequeará el archivo \texttt{.rhosts} en el directorio home del usuario.
 
-Shimomura often needed to run remote commands on X-Terminal
-from the trusted server. To avoid typing passwords, he
-created a \texttt{.rhosts} file on host X-Terminal and put the trusted
-server's IP address into the file.
-Note that the \texttt{.rhosts} file must reside at the top level of a user's home directory and
-can be written \textbf{only by the owner/user}.
+Shimomura necesitaba correr con frecuencia comandos remotos en la X-Terminal desde el servidor de confianza. Para evitar ingresar un password cada vez que le era necesario, creo el archivo \texttt{.rhosts} en la X-Terminal y puso la dirección IP del servidor dentro del mismo.
+Note que el archivo \texttt{.rhosts} debe de ubicarse en la raíz del directorio home del usuario y puede ser escrito solamente por el \textbf{usuario propietario}.
 
-
-Please use the following commands on X-Terminal to set up the \texttt{.rhosts} file.
-It should be noted when we get into a container, we will be in the root 
-account. In this lab, we need to switch to a normal user account called seed, which
-is already created inside the container: 
+Por favor ejecute los siguientes comandos en la X-Terminal para hacer el setup del archivo \texttt{.rhosts}.
+Cabe señalar que cuando entramos en este contenedor, lo haremos con una cuenta de root. En este laboratorio necesitamos cambiar a una cuenta de usuario normal llamada seed, que fue creada dentro del contenedor:
 
 \begin{lstlisting}
 # su seed          (*@\reflectbox{\ding{217}}@*) Switch to the seed account
@@ -277,66 +254,34 @@ $ echo [Server's IP address] > .rhosts
 $ chmod 644 .rhosts
 \end{lstlisting}
 
-To verify your configuration, try running the following command on the trusted server.
+Para verificar su configuración, intente ejecutar el siguiente comando en el servidor de confianza.
 \begin{lstlisting}
 # su seed          (*@\reflectbox{\ding{217}}@*) Switch to the seed account
 $ rsh [X-Terminal's IP] date
 \end{lstlisting}
 
-If the command prints the current date and time, your configuration is working now. If you
-see ``Authentication Failure'', something in your setup may not be correct. 
-One of the common mistakes is the permission on the \texttt{.rhosts} file:
-you should make sure it is only writable to the owner.
+Si el comando despliega en pantalla la fecha y hora actual, su configuración esta funcionando. Si ud. ve  ``Authentication Failure'', quiere decir que fue mal configurado.
+Un error común es el permiso en el archivo \texttt{.rhosts}: debería de asegurarse que solamente el usuario propietario posea permisos de escritura sobre el mismo.
 
-
-\paragraph{Allow all.} To allow users to execute commands on X-Terminal from 
-all IP addresses, we just need to put two plus signs (\texttt{"+ +"})
-in the \texttt{.rhosts} file. This is very dangerous, and nobody should 
-do that. But if you are an attacker, this is a convenient way
-to set up a backdoor. As we have mentioned before, this is what has been used in
-the Mitnick attack. 
-
+\paragraph{Permitir a Todos.} Para hacer que cualquier usuario con cualquier dirección IP pueda ejecutar comandos en la X-Terminal, necesitamos poner dos signos de suma (\texttt{"+ +"}) dentro del archivo \texttt{.rhosts}. Esto es algo peligroso y nadie debería de hacerlo. Pero si ud. es el atacante, es una forma conveniente de setear un backdoor. Como hemos mencionado anteriormente, esto es lo que se usó en el ataque de Mitnick.
 
 
 % *******************************************
 % SECTION
 % ******************************************* 
-\section{Task 1: Simulated SYN flooding}
+\section{Tarea 1: SYN flooding Simulado}
 
-The operating systems at the time of the Mitnick Attack were vulnerable to SYN
-flooding attacks, which could mute the target machine or even shut it down. 
-However, SYN flooding can no longer cause such a damage for modern operating systems. 
-We will simulate this effect. 
+En la época del ataque de Mitnick, los sistemas operativos eran vulnerables a ataques de SYN flooding, que ocasionaban que una máquina remota quede fuera de servicio o sin responder.
+Hoy en día con el avance de los sistemas operativos modernos, los ataques de SYN flooding no causan semejante daño.
+Haremos una simulación de los daños de este tipo de ataque.
 
-We can manually stop the trusted server container, but that is not enough.
-When X-Terminal receives a SYN packet from the trusted server, it will respond with
-a SYN+ACK packet. Before sending out this packet, 
-it needs to know the MAC address of the trusted server. 
-The ARP cache will be checked first. If there is no entry
-for the trusted server, X-Terminal will send out an ARP request packet 
-to ask for the MAC address. Since the trusted server has been
-muted, no one is going to answer the ARP request, hence 
-X-Terminal cannot send out the response. As a result, the
-TCP connection will not be established. 
+Podemos detener el contenedor del servidor de confianza manualmente, pero eso no es suficiente.
+Cuando la X-Terminal recibe un paquete SYN del servidor de confianza, responderá con un paquete SYN+ACK. Antes de enviar este paquete, necesita saber la dirección MAC del servidor de confianza.
+La caché ARP será chequeada primero. Si no existe ninguna entrada para el servidor de confianza, la X-Terminal enviará un petición ARP para preguntar por esa dirección MAC. Dado que el servidor confianza ha sido silenciado, nadie va a responder esa petición ARP, por ende X-Terminal no podrá enviar la respuesta. Como resultado la conexión TCP no podrá ser establecida.
 
-In the real attack, the trusted server's MAC address was actually in X-Terminal's ARP
-cache. Even if it was not, before silencing the trusted server, 
-we could simply spoof an ICMP echo request from the trusted 
-server to X-Terminal, that would trigger X-Terminal to reply to 
-the trusted server, and hence would get the trusted server's MAC address, and 
-save it to the cache. 
+En el ataque real, la dirección MAC del servidor de confianza se encontraba dentro de la caché ARP de la X-Terminal. Incluso si no lo estaba, antes de dejar inhabilitado al servidor de confianza, podíamos spoofear una petición echo ICMP desde el servidor de confianza hacia la X-Terminal, lo que haría que la X-Terminal respondiera al servidor de confianza y obtendríamos la dirección MAC del mismo y la guardaríamos en la caché.
 
-
-To simplify the task, before stopping the trusted server, 
-we will simply ping it from X-Terminal once, and then use 
-the \texttt{arp} command to check and make sure that
-the MAC address is in the cache. It should be noted that 
-cache entry may be deleted by the operating system if 
-the OS fails to reach a destination using 
-the cached MAC address. To simply your attack, 
-you can run the following command on X-Terminal to
-permanently add an entry to the ARP cache (it needs to
-run in the root account):
+Para simplificar la tarea, antes de detener el servidor de confianza, haremos un ping de la X-Terminal una sola vez, y usaremos el comando \texttt{arp} para asegurarnos que la dirección MAC se encuentre en la caché. Cabe señalar que esta entrada puede ser removida por el sistema operativo si este falla a la hora encontrar el destino usando la dirección MAC que está en la caché. Para simplificar su ataque, puede ejecutar el siguiente comando en la X-Terminal para agregar una entrada de manera permanente en la caché ARP (necesita hacerlo como usuario root):
 
 \begin{lstlisting}
 # arp -s [Server's IP] [Server's MAC]
@@ -347,53 +292,31 @@ run in the root account):
 % *******************************************
 % SECTION
 % ******************************************* 
-\section{Task 2: Spoof TCP Connections and \rsh Sessions}
+\section{Tarea 2: Spoofear Conexiones TCP y Sesiones \rsh}
 \label{sec:task2}
 
-Now that we have ``brought down'' the trusted server, we can impersonate the trusted
-server, and try to launch a \rsh session  
-with X-Terminal. Since \rsh runs on top of TCP, we first need to 
-establish a TCP connection between the trusted server and X-Terminal,
-and then run the \rsh in this TCP connection.  
+Ahora que hemos ``desactivado'' al servidor de confianza, podemos suplantarlo y tratar de lanzar una sesión \rsh con X-Terminal. Dado que \rsh corre sobre TCP, primero necesitamos establecer una conexión TCP entre el servidor de confianza y la X-Terminal y recién después correr \rsh sobre esta conexión.
+
+Una de las dificultades en el ataque de Mitnick es predecir los números de secuencia TCP.
+En aquel tiempo era posible cuando los números de secuencia TCP no eran generados de forma aleatoria.
+Hoy en día los sistemas operativos randomizan los números de secuencia TCP (como medida de protección contra ataques de TCP session hijacking), por lo que predecirlos se vuelve imposible.
+Para simular la situación del ataque original, los estudiantes pueden sniffear los paquetes y obtener los números de secuencia, en vez de adivinarlos.
 
 
-One of the difficulties in the Mitnick attack is to predict the TCP sequence numbers. 
-It was possible back then when TCP sequence numbers were not randomized. 
-However, modern operating systems now randomize their TCP sequence numbers
-(as a countermeasure against TCP session hijacking attacks), so
-predicting the numbers becomes infeasible.
-To simulate the situation of the original Mitnick attack, we 
-allow students to sniff packets, so
-they can get the sequence numbers, instead of guessing them.  
+\paragraph{Restricción.} Para poder simular el ataque original de Mitnick lo más parecido posible al que fue en ese tiempo, aunque los estudiantes pueden sniffear paquetes TCP de la X-Terminal, no pueden usar todos los campos de estos paquetes, porque en los ataques reales Mitnick no pudo sniffear paquetes. Cuando los estudiantes escriban sus programas de ataque, solamente podrán usar los siguientes campos de los paquetes capturados, de forma contraria se aplicará una pena.
 
-\paragraph{Restriction.} To simulate the original Mitnick attack
-as closely as we can, even though students can sniff
-the TCP packets from X-Terminal, they cannot use all the 
-fields in captured packets, because in the real attacks,
-Mitnick could not sniff packets. When students write their 
-attack programs, they can only use the 
-following fields from the captured packets. Penalty will be 
-applied if other fields are used.
 
 \begin{itemize}
-\item \textbf{The TCP sequence number field} (this does not include the acknowledgment
-field).
+\item \textbf{Campo de Número de Secuencia TCP} (Esto no incluye el campo de Acknowledgment).
 
-\item \textbf{The TCP flag field}. This allows us to know the types of the 
-captured TCP packets. In the actual Mitnick attack, Mitnick knew
-exactly what type of packets were sent out by X-Terminal, because 
-they are part of the TCP three-way handshake protocol. 
-We allow students to use this field for task simplification. 
+\item \textbf{Campo flag TCP}. Este nos permite saber que tipo de paquete TCP es. En el ataque real de Mitnick, Mitnick sabía que tipo de paquetes eran enviados por la X-Terminal, porque eran parte del protocolo de 3way-handshake. Para simplificar el ataque se les permite a los estudiantes usar este campo.
 
 
-\item \textbf{All the length fields}, including IP header length, IP total length,
-and TCP header length. These pieces of information are not necessary 
-for the attacks. In the actual Mitnick attack, Mitnick knew exactly what their
-values are. We allow students to use these fields for task simplification. 
+\item \textbf{Todos los campos de Longitud}, incluídos el campo de longitud del encabezado IP, la longitud total IP y la longitud del encabezado TCP. Estas piezas de información no son necesarias para los ataques. En el ataque de Mitnick , Mitnick sabía exactamente cuales eran estos valores. Para simplificar el ataque se les permite a los estudiantes usar estos campos.
 \end{itemize}
 
 
-\paragraph{The behavior of \rsh.} 
+\paragraph{El Comportamiento \rsh.} 
 To create a spoofed \rsh session between the trusted server and X-Terminal,
 we need to understand the behavior of \rsh. Let us start a 
 \rsh session from Trusted Server to X-Terminal, and then use Wireshark
@@ -476,7 +399,7 @@ We divide the attack task into two sub-tasks, each one focusing on one connectio
 % -------------------------------------------
 % SUBSECTION
 % ------------------------------------------- 
-\subsection{Task 2.1: Spoof the First TCP Connection}
+\subsection{Tarea 2.1: Spoofear la primera Conexión TCP}
 \label{sec:first-conn}
 
 The first TCP connection is initiated by the attacker via a spoofed SYN packet. As you can see
@@ -493,7 +416,7 @@ the sequence number.
 \end{figure}
 
 
-\paragraph{Step 1: Spoof a SYN packet.}
+\paragraph{Paso 1: Spoofear un paquete SYN.}
 Students should write a program to spoof a SYN packet 
 from the trusted server to X-Terminal (see Packet 1 in Listing~\ref{listing:rsh}). 
 There are six standard 
@@ -531,7 +454,7 @@ able to see a SYN+ACK packet coming out of
 X-Terminal (see Packet 2 in Listing~\ref{listing:rsh}).
 
 
-\paragraph{Step 2: Respond to the SYN+ACK packet.}
+\paragraph{Paso 2: Responder al paquete SYN+ACK.}
 After X-Terminal sends out a SYN+ACK, the trusted server needs 
 to send out an ACK packet to complete the three-way handshake protocol. 
 The acknowledge number in the packet should be \texttt{S+1}, where 
@@ -593,7 +516,7 @@ sniff(iface='br-****', filter=myFilter, prn=spoof)
 
 
 
-\paragraph{Step 3: Spoof the \rsh data packet.}
+\paragraph{Paso 3: Spoofear el paquete de datos de \rsh.}
 Once the connection is established, the attacker needs to 
 send \rsh data to X-Terminal.
 The structure of the \rsh data is shown below.
@@ -632,7 +555,7 @@ include snapshots of your Wireshark.
 % -------------------------------------------
 % SUBSECTION
 % ------------------------------------------- 
-\subsection{Task 2.2: Spoof the Second TCP Connection}
+\subsection{Paso 2.2: Spoofear la segunda Conexión TCP}
 \label{sec:second-conn}
 
 \begin{figure}[htb]
@@ -669,7 +592,7 @@ include your evidence in your report.
 % *******************************************
 % SECTION
 % ******************************************* 
-\section{Task 3: Set Up a Backdoor}
+\section{Tarea 3: Plantar el Backdoor}
 
 In Task 2, we only run a \texttt{touch} command in the attack to prove that we can
 successfully run a command on X-Terminal. If we want to run
