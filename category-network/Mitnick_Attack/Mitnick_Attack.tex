@@ -377,28 +377,20 @@ Hemos dividido el ataque en dos sub-tareas, cada una se centra en una conexión.
 \subsection{Tarea 2.1: Spoofear la primera Conexión TCP}
 \label{sec:first-conn}
 
-The first TCP connection is initiated by the attacker via a spoofed SYN packet. As you can see
-in Figure~\ref{fig:first-conn}, after X-Terminal receives the SYN packet, it will in turn send
-a SYN+ACK packet to the trusted server. Since the server has been brought down, it will not
-reset the connection. The attacker, which is on the same network, can sniff the packet and get
-the sequence number.
+La primera conexión TCP es iniciada por el atacante por medio de un paquete SYN spoofeado. Como puede ver en la Figura \ref{fig:first-conn}, después de que la X-Terminal recibe el paquete SYN, enviará un paquete SYN+ACK  al servidor de confianza. Dado que el servidor se encuentra fuera de línea, no reseteará la conexión. El atacante, quien esta en la misma red, puede sniffear los paquetes y obtener el número de secuencia.
 
 \begin{figure}[htb]
 \centering
 \includegraphics[width=0.6\textwidth]{\mitnickFigs/mitnick-diagram-1.pdf}
-\caption{First Connection}
+\caption{Primera Conexión}
 \label{fig:first-conn}
 \end{figure}
 
 
 \paragraph{Paso 1: Spoofear un paquete SYN.}
-Students should write a program to spoof a SYN packet 
-from the trusted server to X-Terminal (see Packet 1 in Listing~\ref{listing:rsh}). 
-There are six standard 
-TCP code bits, and they can be set in the flag field of the TCP header. 
-The following code examples show how to set the flag field
-and how to check whether certain bits are set in
-the flag field. 
+Los estudiantes deberían de escribir un programa para spoofear un paquete SYN desde servidor de confianza hacia la X-Termina (Vea Paquete 1 en el Listado \ref{listing:rsh}). 
+Hay seis bits que representan códigos standard en el protocolo TCP, y pueden ser seteadas a través del campo flag del encabezado TCP.
+El siguiente ejemplo de código muestra como setear el campo flag y como chequear si ciertos bits están presentes dentro de este campo.
 
 \begin{lstlisting}
 # 'U': URG bit
@@ -420,32 +412,18 @@ if tcp.flags == "SA":
 if 'S' in tcp.flags and 'A' in tcp.flags: 
 \end{lstlisting}
 
-It should be noted that the source port of the SYN packet 
-must be from port \texttt{1023}. If a different port 
-is used, \rsh will reset the connection 
-after the connection is established.  If this step is successful, 
-from Wireshark, we should be
-able to see a SYN+ACK packet coming out of 
-X-Terminal (see Packet 2 in Listing~\ref{listing:rsh}).
+Cabe señalar que el puerto de origen del paquete SYN debe ser del puerto \texttt{1023}. Si se usa un puerto diferente \rsh reseteará la conexión después de que la conexión fue establecida. Si este paso es exitoso deberíamos de ver el paquete SYN+ACK que viene de la X-Terminal usando Wireshark (Vea Paquete 2 del Listado \ref{listing:rsh}).
 
 
 \paragraph{Paso 2: Responder al paquete SYN+ACK.}
-After X-Terminal sends out a SYN+ACK, the trusted server needs 
-to send out an ACK packet to complete the three-way handshake protocol. 
-The acknowledge number in the packet should be \texttt{S+1}, where 
-\texttt{S} is the sequence number contained in the SYN+ACK packet. 
-See Packet 3 in Listing~\ref{listing:rsh}.
+Después de que la X-Terminal envía el SYN+ACK, el servidor de confianza necesita enviar un paquete ACK para completar el protocolo de 3way-handshake.
+El número de acknowledge en este paquete debería de ser \texttt{S+1}, donde \texttt{S} es el número de secuencia que se encuentra en el paquete SYN+ACK.
 
-In the actual Mitnick attack, the attacker could not see the SYN+ACK packet, because
-it was sent to the trusted server, not to the attacker. 
-That is why Mitnick had to guess the value of the sequence number.
-In this lab, we allow students to get 
-the sequence number via packet sniffing. 
+En el ataque real de Mitnick, el atacante no podía ver el paquete SYN+ACK, porque era enviado hacia el servidor de confianza y no hacia el atacante.
+Esto es el porque Mitnick tuvo que adivinar el valor del número de secuencia.
+En este laboratorio, a los estudiantes se les permitirá obtener el número de secuencia haciendo sniffing de paquetes.
 
-Students need to write a sniff-and-spoof program using \texttt{Scapy} and run it
-on the attacker's machine. Here is a skeleton of a sniff-and-spoof program that might be
-useful. Please make sure to follow the restrictions described at the
-beginning of the section, or you will get a penalty. 
+Los estudiantes deben de escribir un programa de sniff-and-spoff usando \texttt{Scapy} y ejecutarlo en la máquina del atacante. A continuación se muestra el código base para el programa de sniff-and-spoof que podría ser de utilidad. Por favor asegúrese de seguir las restricciones descriptas al inicio de la sección o será penado.
 
 
 \begin{lstlisting}
@@ -490,41 +468,31 @@ sniff(iface='br-****', filter=myFilter, prn=spoof)
 
 
 
-
 \paragraph{Paso 3: Spoofear el paquete de datos de \rsh.}
-Once the connection is established, the attacker needs to 
-send \rsh data to X-Terminal.
-The structure of the \rsh data is shown below.
+Una vez establecida la conexión, el atacante necesita enviar datos por medio de \rsh hacia la X-Terminal.
+La estructura de los datos \rsh se muestran a continuación.
 
 \begin{lstlisting}
 [port number]\x00[uid_client]\x00[uid_server]\x00[your command]\x00
 \end{lstlisting}
 
-The data has four parts: a port number, client's user ID, server's user ID,
-and a command.
-The port number will be used for the second connection (see Task 2.2). 
-Both client and server's user ID is \texttt{seed} in our container. 
-The four fields are separated by a byte 0.
-Note that there is also a byte 0 at the end of the \rsh data. An example is given in the
-following. In this example, we tell X-Terminal that we are going to listen on port 9090 for the
-second connection and the command we want to run is \texttt{"touch /tmp/xyz"}. 
+Esta estructura tiene cuatro partes: un número de puerto, un user ID de cliente, un user ID de servidor y un comando.
+El número de puerto será usado en la segunda conexión (Vea la Tarea 2.2).
+Tanto los IDs del cliente y del servidor tienen el valor de \texttt{seed} en nuestro contenedor.
+Los cuatro campos son separados por un byte 0.
+Note que hay un byte 0 al final de los datos \rsh. 
+Un ejemplo de esto se muestra abajo.
+En este ejemplo, le decimos a la X-Terminal que vamos a escuchar en el puerto 9090 para la segunda conexión y el comando que queremos correr es \texttt{"touch /tmp/xyz"}. 
 
 \begin{lstlisting}
 data = '9090\x00seed\x00seed\x00touch /tmp/xyz\x00'
 send(IP()/TCP()/data, verbose=0)
 \end{lstlisting}
  
+Los estudiantes deberían de modificar el programa de sniff-and-program escrito en el Paso 2, por lo que el paquete de datos \rsh se envía a la X-Termina (Vea Paquete 4 en el Listado \ref{listing:rsh}). 
+Si este paso es exitoso, desde Wireshark, podremos ver que la X-Terminal va a iniciar una conexión TCP hacia el puerto del servidor de confianza \texttt{9090}, que es especificado dentro de los datos de \rsh.
 
-Students should modify the sniff-and-spoof program written in Step 2, so
-an \rsh data packet is sent to X-Terminal (see Packet 4 
-in Listing~\ref{listing:rsh}). 
-If this step is successful, from Wireshark, we can see
-that X-Terminal is going to initiate a TCP connection to the trusted server's port
-\texttt{9090}, which is the port number specified in our \rsh data.  
-
-In your report, please describe whether the \texttt{touch} command 
-has been executed on X-Terminal or not. Please also 
-include snapshots of your Wireshark. 
+Por favor describa en su reporte, si el comando \texttt{touch} ha sido ejecutado en la X-Terminal o no. Por favor incluya capturas de pantalla de su Wireshark.
 
 
 % -------------------------------------------
@@ -536,7 +504,7 @@ include snapshots of your Wireshark.
 \begin{figure}[htb]
 \centering
 \includegraphics[width=0.6\textwidth]{\mitnickFigs/mitnick-diagram-2.pdf}
-\caption{Second Connection}
+\caption{Segunda Conexión}
 \label{fig:second-conn}
 \end{figure}
 
