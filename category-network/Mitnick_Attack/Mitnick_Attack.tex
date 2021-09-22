@@ -521,36 +521,25 @@ Si ambas conexiones son establecidas de forma exitosa, \texttt{rshd} ejecutará 
 % ******************************************* 
 \section{Tarea 3: Plantar el Backdoor}
 
-In Task 2, we only run a \texttt{touch} command in the attack to prove that we can
-successfully run a command on X-Terminal. If we want to run
-more commands later, we can always launch the same attack. That is quite inconvenient. 
+En la Tarea 2, en nuestro ataque solamente hemos corrido el comando \texttt{touch} para probar que podemos ejecutar un comando de forma exitosa en la X-Terminal. Si queremos ejecutar más comandos en un futuro, podemos lanzar el mismo ataque. Esto no es muy conveniente.
 
-Mitnick did plan to come back to X-Terminal. Instead of launching the attack
-again and again, he planted a backdoor in X-Terminal after his initial attack. 
-This backdoor allowed him to log into X-Terminal normally anytime he wanted, without 
-typing any password. 
-To achieve this goal, as we have discussed in 
-Section~\ref{subsec:configuration}, 
-all we need to do is to add the string \texttt{"+ +"} to
-the \texttt{.rhosts} file (in a single line). We can
-include the following command in our \rsh data.
+Mitnick hizo un plan que le permitia volver a la X-Terminal. En vez de lanzar el ataque una y otra vez, instaló un backdoor en la X-Terminal después de haber hecho su primer ataque.
+Este backdoor le permitía loguearse dentro de la X-Terminal de forma normal en cualquier momento que el quisiera sin necesida de escribir un password.
+Para lograr este objetivo, como hemos discutido en la Sección \ref{subsec:configuration}, todo lo que debemos de hacer es agregar la siguiente cadena \texttt{"+ +"} en el archivo \texttt{.rhosts} (en una sola línea). Podemos incluir el siguiente comando en nuestros datos \rsh.
 
 \begin{lstlisting}
 echo + + > .rhosts
 \end{lstlisting}
 
-Students should replace the \texttt{touch} command in Task 2 with
-the \texttt{echo} command above, and then repeat the attack.   
-If the attack succeeds, the attacker should be able to 
-remotely log into X-Terminal using the following command,
-and no password is needed: 
+Los estudiantes deberían de reemplazar el comando  \texttt{touch} de la Tarea 2 con el comando \texttt{echo} mostrado arriba y lanzar el ataque nuevamente.
+Si el ataque funciona, el atacante debería de poder loguearse remotamente en la X-Terminal usando el comando que se muestr más abajo y sin necesidad de tipear ningún password:
 
 \begin{lstlisting}
 $ rsh [X-Terminal's IP]
 \end{lstlisting}
 
-The \texttt{rsh} program may have not been installed on the attacker container, 
-but you can easily install it using the following commands:
+El programa \texttt{rsh} puede que no este instalado en el contenedor del atacante, para instalarlo puede ingresar los siguientes comandos:
+
 
 \begin{lstlisting}
 # apt-get update && apt-get -y install rsh-redone-client 
