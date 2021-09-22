@@ -492,7 +492,7 @@ send(IP()/TCP()/data, verbose=0)
 Los estudiantes deberían de modificar el programa de sniff-and-program escrito en el Paso 2, por lo que el paquete de datos \rsh se envía a la X-Termina (Vea Paquete 4 en el Listado \ref{listing:rsh}). 
 Si este paso es exitoso, desde Wireshark, podremos ver que la X-Terminal va a iniciar una conexión TCP hacia el puerto del servidor de confianza \texttt{9090}, que es especificado dentro de los datos de \rsh.
 
-Por favor describa en su reporte, si el comando \texttt{touch} ha sido ejecutado en la X-Terminal o no. Por favor incluya capturas de pantalla de su Wireshark.
+Por favor describa en su informe del laboratorio, si el comando \texttt{touch} ha sido ejecutado en la X-Terminal o no. Por favor incluya capturas de pantalla de su Wireshark.
 
 
 % -------------------------------------------
@@ -508,28 +508,12 @@ Por favor describa en su reporte, si el comando \texttt{touch} ha sido ejecutado
 \label{fig:second-conn}
 \end{figure}
 
+Después de que la primera conexión ha sido establecida, la X-Terminal iniciará la segunda conexión. Esta conexión es usada por \texttt{rshd} para enviar mensajes de errores. En nuestro ataque no usaremos esta conexión pero si esta conexión no se establece, \texttt{rshd} se detendrá sin ejecutar nuestro comando. Ademas, necesitamos de la ayuda del spoofing para ayudar que la X-Terminal y el servidor de confianza, terminen de establecer esta conexión.
+Vea la Figura \ref{fig:second-conn}. 
 
-After the first connection has been established, X-Terminal will initiate 
-the second connection. This connection is used by \texttt{rshd} to send 
-out error messages. In our attack, we will not use this connection, but
-if this connection is not established, \texttt{rshd} will stop without 
-executing our command. Therefore, we need to use spoofing 
-to help X-Terminal and the trusted server finish establishing this connection. 
-See Figure~\ref{fig:second-conn}. 
+Los estudiantes necesitan escribir otro programa de sniff-and-program, el cual sniffea el tráfico TCP que va desde el puerto 9090 del servidor de confianza (asumiendo que se uso el puerto \texttt{9090} de la Tarea 2.1). Cuando este vea el paquete SYN, debería de responder con un paquete SYN+ACK. Vea Paquete 7 del Listado \ref{listing:rsh} a modo de ejemplo.
 
-
-Students need to write another sniff-and-spoof program, which
-sniffs the TCP traffic going to the port 9090 of the trusted server (assuming
-\texttt{9090} is used in Task 2.1). When it sees a SYN packet,
-it should respond with a SYN+ACK packet. See Packet 7 
-in Listing~\ref{listing:rsh} for an example.
-
-If both connections have been successfully established, \texttt{rshd} 
-will execute the command contained in the \rsh data packet. Please 
-check the \texttt{/tmp} folder and see whether \texttt{/tmp/xyz} is created
-and whether its timestamp matches the present time. Please 
-include your evidence in your report. 
-
+Si ambas conexiones son establecidas de forma exitosa, \texttt{rshd} ejecutará el comando contenido en el paquete de datos \rsh. Por favor verifique que dentro del directorio \texttt{/tmp} se haya creado el archivo \texttt{/tmp/xyz} y que su fecha creación coincida con el tiempo actual. Por favor incluya evidencia en su informe del laboratorio.
 
 
 % *******************************************
