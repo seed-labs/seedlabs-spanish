@@ -317,29 +317,19 @@ Para simular la situación del ataque original, los estudiantes pueden sniffear 
 
 
 \paragraph{El Comportamiento \rsh.} 
-To create a spoofed \rsh session between the trusted server and X-Terminal,
-we need to understand the behavior of \rsh. Let us start a 
-\rsh session from Trusted Server to X-Terminal, and then use Wireshark
-to capture the packets between them (note: we will run Wireshark
-on the attacker VM; make sure to select the correct network
-interface corresponding to the \texttt{10.9.0.0/24} network). 
-We use the following command to
-run the \texttt{date} command on Host B from Host A via the \rsh  
-remote shell.
-
+Para crear una sesión \rsh spoofeada entre el servidor de confianza y la X-Terminal, necesitamos entender el comportamiento de \rsh. Vamos a crear una sesión \rsh desde el servidor de confianza hacia la X-Terminal y usaremos Wireshark para capturar los paquetes enviados entre ellos (nota: correremos Wireshak desde la máquina virtual del atacante; asegurése de seleccionar la interfaz de red correcta que corresponde a la red \texttt{10.9.0.0/24}).
+Usamores el siguiente comando para ejecutar el comando \texttt{date} en el Host B desde el Host A a través de \rsh.
 
 \begin{lstlisting}
 // On Trusted Server
 $ rsh 10.9.0.5 date
 \end{lstlisting}
- 
-The packet trace in this \rsh session is shown in the following. 
-Here \texttt{10.9.0.6} is the Trusted Server's IP address, 
-and \texttt{10.9.0.5} is X-Terminal's IP address.
-If a packet does not carry any TCP data, the length information (i.e.
-\texttt{Len=0}) is omitted. 
 
-\begin{lstlisting}[caption={Packet trace of a \rsh session},
+El packet trace de la sesión \rsh es motrado a continuación.
+En este entorno  \texttt{10.9.0.6} es la dirección IP del servidor de confianza y \texttt{10.9.0.5} es la dirección IP de la X-Terminal.
+Si el paquete no lleva ningún dato TCP, la información de longitud (es decir \texttt{Len=0}) es omitida.
+
+\begin{lstlisting}[caption={Packet trace de una sesión \rsh},
                   label={listing:rsh}]
 # The first connection
    SRC IP    DEST IP   TCP Header
@@ -365,34 +355,19 @@ If a packet does not carry any TCP data, the length information (i.e.
                        Data: Sun Feb 16 13:41:17 EST 2020
 \end{lstlisting}
 
+Podemos observar que una sesión \rsh consiste en dos conexiones TCP.
+La primera conexión es iniciada por el Host A (el cliente).
+El proceso \texttt{rshd} en el Host B está a la escucha de peticiones entrantes en el puerto 514.
+Los paquetes del 1 a 3 son para del protocolo del 3way-handshake.
+Después de que la conexión ha sido establecida, el cliente envía los datos \rsh (incluídos los IDs de usuario y los comandos) al Host B (paquete 4).
+El proceso \texttt{rshd} autenticará al usuario y si este es autenticado de forma exitosa, \texttt{rshd} inicia una conexión TCP separada con el cliente.
 
-We can observe that a \rsh session consists of two TCP connections.  
-The first connection is initiated by Host A (the client). 
-An \texttt{rshd} process on Host B is listening to connection requests at port 514. 
-Packets 1 to 3 are for the three-way handshake protocol. 
-After the connection has been established, the client 
-send \rsh data (including user IDs and commands) to the Host B (Packet 4).
-The \texttt{rshd} process will authenticate the user, and 
-if the user is authenticated, \texttt{rshd} initiates a
-separate TCP connection with the client. 
+La segunda conexión es usada para enviar mensajes de error.
+En la traza anterior, dado que no hubo errores, esta conexión nunca fue usada, pero la conexión debe ser establecida o  \texttt{rshd} no podrá continuar. Los paquetes del 6 al 7 son para el protocolo de 3way-handshake de la segunda conexión.
 
-
-The second connection is used for sending error messages. 
-In the trace above, since there was no error, the connection was never used, 
-but the connection must be successfully established, or \texttt{rshd} 
-will not continue. Packets 6 to 7 are for the three-way handshake protocol
-of the second connection. 
-
-
-After the second connection has been established, 
-Host B will send a zero byte to the client (using the first connection),
-Host A will acknowledge the packet. After that, \texttt{rshd} on Host B
-will run the command sent by the client, and the
-output of the command will be sent back to the client, all via the 
-first connection. 
-Students can use Wireshark to capture a \rsh session, and study its
-behaviors, before launching the Mitnick attack. 
-We divide the attack task into two sub-tasks, each one focusing on one connection. 
+Después de que la segunda conexión ha sido establecida, el Host B enviará un zero byte al cliente (usando la primera conexión) el Host A aceptará este paquete. Después de eso, el proceso  \texttt{rshd} en el Host B ejecutará el comando enviado por el cliente y su salida será enviada de regreso al cliente, usando la primera conexión.
+Los estudiantes pueden usar Wireshak para capturar la sesión \rsh y estudiar sus comportamientos antes de lanzar el ataque de Mitnick.
+Hemos dividido el ataque en dos sub-tareas, cada una se centra en una conexión.
 
 
 
