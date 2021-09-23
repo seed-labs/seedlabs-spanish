@@ -299,11 +299,11 @@ Ahora que hemos ``desactivado'' al servidor de confianza, podemos suplantarlo y 
 
 Una de las dificultades en el ataque de Mitnick es predecir los números de secuencia TCP.
 En aquel tiempo era posible cuando los números de secuencia TCP no eran generados de forma aleatoria.
-Hoy en día los sistemas operativos randomizan los números de secuencia TCP (como medida de protección contra ataques de TCP session hijacking), por lo que predecirlos se vuelve imposible.
+Hoy en día los sistemas operativos randomizan el proceso de generación de los números de secuencia TCP (como medida de protección contra ataques de TCP session hijacking), por lo que predecirlos se vuelve imposible.
 Para simular la situación del ataque original, los estudiantes pueden sniffear los paquetes y obtener los números de secuencia, en vez de adivinarlos.
 
 
-\paragraph{Restricción.} Para poder simular el ataque original de Mitnick lo más parecido posible al que fue en ese tiempo, aunque los estudiantes pueden sniffear paquetes TCP de la X-Terminal, no pueden usar todos los campos de estos paquetes, porque en los ataques reales Mitnick no pudo sniffear paquetes. Cuando los estudiantes escriban sus programas de ataque, solamente podrán usar los siguientes campos de los paquetes capturados, de forma contraria se aplicará una pena.
+\paragraph{Restricción.} Para poder simular el ataque original de Mitnick lo más parecido posible al que fue en ese tiempo, los estudiantes pueden sniffear paquetes TCP de la X-Terminal, pero no pueden usar todos los campos de estos paquetes, porque en los ataques reales Mitnick no pudo sniffear paquetes. Cuando los estudiantes escriban sus programas de ataque, solamente podrán usar los siguientes campos de los paquetes capturados, de forma contraria se aplicará una pena.
 
 
 \begin{itemize}
@@ -317,8 +317,8 @@ Para simular la situación del ataque original, los estudiantes pueden sniffear 
 
 
 \paragraph{El Comportamiento \rsh.} 
-Para crear una sesión \rsh spoofeada entre el servidor de confianza y la X-Terminal, necesitamos entender el comportamiento de \rsh. Vamos a crear una sesión \rsh desde el servidor de confianza hacia la X-Terminal y usaremos Wireshark para capturar los paquetes enviados entre ellos (nota: correremos Wireshak desde la máquina virtual del atacante; asegurése de seleccionar la interfaz de red correcta que corresponde a la red \texttt{10.9.0.0/24}).
-Usamores el siguiente comando para ejecutar el comando \texttt{date} en el Host B desde el Host A a través de \rsh.
+Para crear una sesión \rsh spoofeada entre el servidor de confianza y la X-Terminal, necesitamos entender el comportamiento de \rsh. Vamos a crear una sesión \rsh desde el servidor de confianza hacia la X-Terminal y usaremos Wireshark para capturar los paquetes enviados entre ellos (Nota: correremos Wireshak desde la máquina virtual del atacante; asegurése de seleccionar la interfaz de red correcta que corresponde a la red \texttt{10.9.0.0/24}).
+Usaremo el siguiente comando para ejecutar el comando \texttt{date} en el Host B desde el Host A a través de \rsh.
 
 \begin{lstlisting}
 // On Trusted Server
@@ -363,7 +363,7 @@ Después de que la conexión ha sido establecida, el cliente envía los datos \r
 El proceso \texttt{rshd} autenticará al usuario y si este es autenticado de forma exitosa, \texttt{rshd} inicia una conexión TCP separada con el cliente.
 
 La segunda conexión es usada para enviar mensajes de error.
-En la traza anterior, dado que no hubo errores, esta conexión nunca fue usada, pero la conexión debe ser establecida o  \texttt{rshd} no podrá continuar. Los paquetes del 6 al 7 son para el protocolo de 3way-handshake de la segunda conexión.
+En la traza anterior, dado que no hubo errores, esta conexión no fue usada, pero la conexión debe ser establecida o  \texttt{rshd} no podrá continuar. Los paquetes del 6 al 7 son para el protocolo de 3way-handshake de la segunda conexión.
 
 Después de que la segunda conexión ha sido establecida, el Host B enviará un zero byte al cliente (usando la primera conexión) el Host A aceptará este paquete. Después de eso, el proceso  \texttt{rshd} en el Host B ejecutará el comando enviado por el cliente y su salida será enviada de regreso al cliente, usando la primera conexión.
 Los estudiantes pueden usar Wireshak para capturar la sesión \rsh y estudiar sus comportamientos antes de lanzar el ataque de Mitnick.
@@ -489,7 +489,7 @@ data = '9090\x00seed\x00seed\x00touch /tmp/xyz\x00'
 send(IP()/TCP()/data, verbose=0)
 \end{lstlisting}
  
-Los estudiantes deberían de modificar el programa de sniff-and-program escrito en el Paso 2, por lo que el paquete de datos \rsh se envía a la X-Termina (Vea Paquete 4 en el Listado \ref{listing:rsh}). 
+Los estudiantes deberían de modificar el programa de sniff-and-program escrito en el Paso 2, para enviar un paquete de datos \rsh a la X-Terminal (Vea Paquete 4 en el Listado \ref{listing:rsh}). 
 Si este paso es exitoso, desde Wireshark, podremos ver que la X-Terminal va a iniciar una conexión TCP hacia el puerto del servidor de confianza \texttt{9090}, que es especificado dentro de los datos de \rsh.
 
 Por favor describa en su informe del laboratorio, si el comando \texttt{touch} ha sido ejecutado en la X-Terminal o no. Por favor incluya capturas de pantalla de su Wireshark.
@@ -508,12 +508,12 @@ Por favor describa en su informe del laboratorio, si el comando \texttt{touch} h
 \label{fig:second-conn}
 \end{figure}
 
-Después de que la primera conexión ha sido establecida, la X-Terminal iniciará la segunda conexión. Esta conexión es usada por \texttt{rshd} para enviar mensajes de errores. En nuestro ataque no usaremos esta conexión pero si esta conexión no se establece, \texttt{rshd} se detendrá sin ejecutar nuestro comando. Ademas, necesitamos de la ayuda del spoofing para ayudar que la X-Terminal y el servidor de confianza, terminen de establecer esta conexión.
+Después de que la primera conexión ha sido establecida, la X-Terminal iniciará la segunda conexión. Esta conexión es usada por \texttt{rshd} para enviar mensajes de errores. En nuestro ataque no usaremos esta conexión pero si esta conexión no se establece, \texttt{rshd} se detendrá sin ejecutar nuestro comando. Ademas, necesitamos de la ayuda del spoofing para que la X-Terminal y el servidor de confianza, terminen de establecer esta conexión.
 Vea la Figura \ref{fig:second-conn}. 
 
-Los estudiantes necesitan escribir otro programa de sniff-and-program, el cual sniffea el tráfico TCP que va desde el puerto 9090 del servidor de confianza (asumiendo que se uso el puerto \texttt{9090} de la Tarea 2.1). Cuando este vea el paquete SYN, debería de responder con un paquete SYN+ACK. Vea Paquete 7 del Listado \ref{listing:rsh} a modo de ejemplo.
+Los estudiantes necesitan escribir otro programa de sniff-and-program, el cual sniffea el tráfico TCP que se dirige al puerto 9090 del servidor de confianza (asumiendo que se uso el puerto \texttt{9090} de la Tarea 2.1). Cuando este vea el paquete SYN, debería de responder con un paquete SYN+ACK. Vea Paquete 7 del Listado \ref{listing:rsh} a modo de ejemplo.
 
-Si ambas conexiones son establecidas de forma exitosa, \texttt{rshd} ejecutará el comando contenido en el paquete de datos \rsh. Por favor verifique que dentro del directorio \texttt{/tmp} se haya creado el archivo \texttt{/tmp/xyz} y que su fecha creación coincida con el tiempo actual. Por favor incluya evidencia en su informe del laboratorio.
+Si ambas conexiones son establecidas de forma exitosa, \texttt{rshd} ejecutará el comando contenido en el paquete de datos \rsh. Por favor verifique que dentro del directorio \texttt{/tmp} que se haya creado el archivo \texttt{/tmp/xyz} y que su fecha creación coincida con el tiempo actual. Por favor incluya evidencia en su informe del laboratorio.
 
 
 % *******************************************
@@ -521,7 +521,7 @@ Si ambas conexiones son establecidas de forma exitosa, \texttt{rshd} ejecutará 
 % ******************************************* 
 \section{Tarea 3: Plantar el Backdoor}
 
-En la Tarea 2, en nuestro ataque solamente hemos corrido el comando \texttt{touch} para probar que podemos ejecutar un comando de forma exitosa en la X-Terminal. Si queremos ejecutar más comandos en un futuro, podemos lanzar el mismo ataque. Esto no es muy conveniente.
+En nuestro ataque de la Tarea 2 solamente hemos corrido el comando \texttt{touch} para probar que podemos ejecutar un comando de forma exitosa en la X-Terminal. Si queremos ejecutar más comandos en un futuro, podemos lanzar el mismo ataque. Esto no es muy conveniente.
 
 Mitnick hizo un plan que le permitia volver a la X-Terminal. En vez de lanzar el ataque una y otra vez, instaló un backdoor en la X-Terminal después de haber hecho su primer ataque.
 Este backdoor le permitía loguearse dentro de la X-Terminal de forma normal en cualquier momento que el quisiera sin necesida de escribir un password.
