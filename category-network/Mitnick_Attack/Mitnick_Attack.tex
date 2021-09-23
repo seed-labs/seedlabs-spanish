@@ -90,7 +90,7 @@ Existen cuatro pasos primarios en este ataque.
 
 \paragraph{Paso 1: Predicción del Número de Secuencia.} 
 Antes del ataque, Mitnick necesitaba aprender el patrón del inicio de los números de secuencia (ISN) de la X-Terminal (en esos días los ISN no eran aleatorios).
-Mitnick enviaba peticiones SYN a la X-Terminal y recibia respuestas SYN+ACK, entonces enviaba un paquete RESET a la X-Terminal, para así limpiar la cola de half-open connections en esta máquina (esto lo hacía para prevenir que la cola se llene). Después de repetir esto veinte veces. Encontro que había un patrón entre dos TCP ISNs sucesivos. Esto le permitió a Mitnick predecir ISNs, que era un elemento esencial para el ataque.
+Mitnick enviaba peticiones SYN a la X-Terminal y recibia respuestas SYN+ACK, entonces enviaba un paquete RESET a la X-Terminal, para así limpiar la cola de half-open connections en esta máquina (esto lo hacía para prevenir que la cola se llene). Después de repetir esto veinte veces. Encontro que había un patrón entre dos TCP ISNs sucesivos. Esto le permitió a Mitnick predecir el ISN, que era un elemento esencial para el ataque.
 
 
 \paragraph{Paso 2: Ataque de SYN flooding en el Servidor de Confianza.}
@@ -103,7 +103,7 @@ Para esto, antes de hacer el spoofing, Mitnick lanzaba un ataque de SYN flooding
 Mitnick quería usar \rsh (shell remota o remote shell) para ejecutar un comando a modo de backdoor en la X-Terminal; una vez que el backdoor haya sido instalado, podría loguearse dentro de la X-Terminal.
 Para correr una shell remota en la X-Terminal, Mitnick necesitaba poder autenticarse, es de cir necesitaba tener una cuenta válida en la X-Terminal y saber su password. Obviamente, no tenía esta información.
 
-Shimomura solía loguearse a menudo dentro de la X-Terminal desde el Servidor de Confianza. Para evitar tipear el password cada vez que entraba, agregó alguna información en el archivo \texttt{.rhosts}  dentro de la X-Terminal, por lo que al loguearse dentro de la X-Terminal desde el Servidor de Confianza, no se le pediría ningún password. En ese entonces esta era una práctica común. En este escenario Shimomura podía correr cualquier comando en la X-Terminal desde el Servidor de Confianza usando \rsh, or corriendo \texttt{rlogin} para loguearse en la X-Terminal, sin la necesidad de tipear un password.
+Shimomura solía loguearse a menudo dentro de la X-Terminal desde el Servidor de Confianza. Para evitar tipear el password cada vez que entraba, agregó una entrada en el archivo \texttt{.rhosts}  dentro de la X-Terminal, por lo que al loguearse dentro de la X-Terminal desde el Servidor de Confianza, no se le pediría ningún password. En ese entonces esta era una práctica común. En este escenario Shimomura podía correr cualquier comando en la X-Terminal desde el Servidor de Confianza usando \rsh, o corriendo \texttt{rlogin} para loguearse en la X-Terminal, sin la necesidad de tipear un password.
 Mitnick quería explotar esta brecha.
 
 Mitnick necesitaba crear una conexión TCP entre el servidor de confianza y la X-Terminal y luego correr  \rsh dentro de esta conexión
@@ -118,7 +118,7 @@ Usando la conexión TCP establecida entre el servidor de confianza y la X-Termin
 
 Todo lo que necesitaba era agregar \texttt{"+ +"} en el archivo \texttt{.rhosts} dentro la X-Terminal.
 Pudo hacerlo ejecutando el siguiente comando usando \rsh en la X-Terminal:  {\tt "echo + + > .rhosts"}. 
-Dado que los programas \rsh y \texttt{rlogin} usaban el archivo \texttt{.rhosts} para autenticación, con este agregado de Mitnick, X-Terminal confiaría en cualquier petición \rsh y \texttt{rlogin} sin importar de quien sea.
+Dado que los programas \rsh y \texttt{rlogin} usaban el archivo \texttt{.rhosts} para autenticación, con este agregado de Mitnick, la X-Terminal confiaría en cualquier petición \rsh y \texttt{rlogin} sin importar de quien sea o su dirección IP.
 
 
 % *******************************************
