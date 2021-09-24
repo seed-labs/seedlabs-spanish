@@ -17,7 +17,7 @@
 \newcommand{\Netfilter}{\texttt{Netfilter}\xspace}
 
 \newcommand{\firewallFigs}{./Figs}
-\lhead{\bfseries SEED Labs -- Laboratorio de Exploratorio de Firewall}
+\lhead{\bfseries SEED Labs -- Laboratorio Exploratorio de Firewall}
 
 \newcommand{\pointleft}[1]{\reflectbox{\ding{217}} \textbf{\texttt{#1}}}
 
@@ -26,7 +26,7 @@
 
 
 \begin{center}
-{\LARGE Laboratorio de Exploratorio de Firewall}
+{\LARGE Laboratorio Exploratorio de Firewall}
 \end{center}
 
 \seedlabcopyright{2006 - 2021}
@@ -117,56 +117,31 @@ Usaremos contenedores para el setup del entorno de laboratorio.
 % ******************************************* 
 \section{Tarea 1: Implementando un Firewall Simple} 
 
-
-In this task, we will implement a simple packet filtering 
-type of firewall, which 
-inspects each incoming and outgoing packets, and enforces the firewall policies 
-set by the administrator. Since the packet 
-processing is done within the kernel, the filtering must also be 
-done within the kernel. Therefore, it seems that implementing such
-a firewall requires us to modify the \linux kernel. In the past, 
-this had to be done by modifying and rebuilding 
-the kernel. The modern \linux 
-operating systems provide several new mechanisms 
-to facilitate the manipulation of packets without rebuilding
-the kernel image. These two mechanisms are 
-\textit{Loadable Kernel Module} (\texttt{LKM}) and \texttt{Netfilter}.
+En esta tarea, implementaremos un firewall simple para filtrar paquete, el mismo inspeccionará los paquetes que entren y salgan y será reforzado por las políticas establecidas por el administrador. Dado que el procesamiento de pauqetes se hace dentro del kernel, el filtrado también debe ser hecho dentro del mismo. Aunque pareciera que dicho firewall requiere modificar el kernel de \linux. En el pasado se hacía modificando y recompilando el kernel. Hoy por hoy, los sistemas operativos \linux modernos nos proveen nuevos mecanismos para facilitarnos la manipulación de los paquetes sin la necesidad de recompilar la imagen del kernel. Esos dos mecanismos son \textit{Loadable Kernel Module} (\texttt{LKM}) y \texttt{Netfilter}.
 
 
 
-\paragraph{Notes about containers.}
-Since all the containers share the same kernel, kernel modules are global. 
-Therefore, if we set a kernel model from a container,
-it affects all the containers and the host. For this reason, 
-it does not matter where you set the kernel module. In this lab,
-we will just set the kernel module from the host VM.
+\paragraph{Notas sobre los contenedores.}
+Dado que todos los contenedores comparten el mismo kernel, los módulos del kernel son globales.
+Además si seteamos un modelo de kernel para un contenedor, este afectará al resto de los contenedores y al host. Por esta razón, no importa donde ud. ponga el módulo del kernel. En este laboratorio, lo haremos desde la máquina virtual host.
 
-Another thing to keep in mind is that containers' IP addresses are virtual. 
-Packets going to these virtual IP addresses may not 
-traverse the same path as what is described in the Netfilter document. 
-Therefore, in this task, to avoid confusion, we will try to avoid using those virtual addresses. 
-We do most tasks on the host VM. The containers are mainly for the other tasks. 
-
+Otra cosa a tener en cuenta que es la dirección IP de los contenedores son virtuales.
+Los paquetes que irán a esas direcciones IPs virtuales pueden que no recorran todas el mismo camino como se describe en la documentación de Netfilter.
+Aunque para esta tarea, en orden de evitar confusiones, trataremos de evitar esas direcciones virtuales.
+Haremos la mayoría de las tareas en la máquina virtual host. Los contenedores principalmente se utilizarán para otras tareas.
 
 % -------------------------------------------
 % SUBSECTION
 % ------------------------------------------- 
-\subsection{Task 1.A: Implement a Simple Kernel Module}
+\subsection{Tarea 1.A: Implementar un Módulo de Kernel Simple}
 
+{\tt LKM} nos permite agregar un nuevo módulo en el kernel en tiempo de ejecución.
+Este módulo nos permite extender funcionalidades del kernel, sin recompilarlo o reiniciar la máquina.
+El filtrado de paquetes de un firewall puede ser implementado como un LKM.
+En esta tarea, nos familiarizaremos con LKM.
 
-{\tt LKM} allows us to add a new module to the kernel at the runtime. 
-This new module enables us to extend the functionalities of the kernel,
-without rebuilding the kernel or even rebooting the computer. 
-The packet filtering part of a firewall can be implemented as an LKM. 
-In this task, we will get familiar with LKM.
-
-
-The following is a simple loadable kernel module. It prints out 
-\texttt{"Hello World!"} when the module is loaded; when the module
-is removed from the kernel, it prints out \texttt{"Bye-bye World!"}.
-The messages are not printed out on the screen; they are 
-actually printed into the \texttt{/var/log/syslog} file. You can
-use \texttt{"dmesg"} to view the messages. 
+El siguiente es un LKM. Este muestra \texttt{"Hello World!"} cuando este módulo es cargado; cuando el módulo se borra del kernel, este muestra \texttt{"Bye-bye World!"}.
+Los mensajes no son impresos en pantalla; se muestran dentro del archivo \texttt{/var/log/syslog}. Puede usar el comando \texttt{"dmesg"} para visualizar los mensajes.
 
 
 \begin{lstlisting}[language=C, caption=\texttt{hello.c} (included in the lab setup files)]
@@ -188,12 +163,9 @@ module_init(initialization);
 module_exit(cleanup);
 \end{lstlisting}
 
-We now need to create {\tt Makefile}, which includes the following
-contents (the file is included in the lab setup files). 
-Just type {\tt make}, and the above program will be compiled
-into a loadable kernel module (if you copy and paste the following
-into \texttt{Makefile}, make sure replace the spaces before the 
-\texttt{make} commands with a tab).
+Necesitamos crear el {\tt Makefile}, que incluye el siguiente contenido (este archivo esta incluído dentro los archivos de setup del laboratorio).
+Sólo escriba {\tt make}, y el rpograma será compilado como un LKM (si ud. copia y pega lo siguiente dentro del archivo \texttt{Makefile}, asegúrese de reemplazar los espacios por tabs antes de ejecutar el comando \texttt{make}).
+
 
 \begin{lstlisting}
 obj-m += hello.o
@@ -205,12 +177,9 @@ clean:
         make -C /lib/modules/$(shell uname -r)/build M=$(PWD) clean
 \end{lstlisting}
 
-
-The generated kernel module is in \texttt{hello.ko}.  
-You can use the following commands to 
-load the module, list all modules, and remove the module. 
-Also, you can use \texttt{"modinfo hello.ko"} to show information about a 
-Linux Kernel module.
+El módulo del kernel generado es \texttt{hello.ko}. 
+Puede usar el siguiente comando para cargar el módulo, listar todos los módulos y borrar el módulo.
+También puede usar \texttt{"modinfo hello.ko"} para ver información sobre un módulo específico del kernel.
 
 \begin{lstlisting}
 $ sudo insmod hello.ko     (inserting a module)
@@ -220,47 +189,25 @@ $ dmesg                    (check the messages)
 \end{lstlisting}
 
 
-\paragraph{Task.} Please compile this simple kernel module on 
-your VM, and run it on the VM. For this task, we will not use 
-containers.  Please show your running results in the lab report. 
+\paragraph{Tarea.} Por favor compile este simple LKM en su Máquina Virtual y ejecútelo. Para esta tarea, no usaremos contenedores. Por favor muestre sus resultados en el informe del laboratorio.
 
 
 % -------------------------------------------
 % SUBSECTION
 % ------------------------------------------- 
-\subsection{Task 1.B: Implement a Simple Firewall Using \texttt{Netfilter}}  
+\subsection{Tarea 1.B: Implementar un Firewall Simple usando \texttt{Netfilter}}  
+
+En esta tarea, escribiremos nuestro programa para filtrar paquetes como un LKM y lo insertaremos dentro de la cadena de procesamientos de pauqetes en el kernel. Esto no era fácil de hacer en el pasado, antes que \netfilter fuera introducido dentro de \linux.
+
+{\tt Netfilter} está diseñado para facilitar la manipulación de los paquetes por usuarios autorizados. Logra su objetivo implementando una serie de hooks en el kernel de \linux. Estos hooks son intertados en varios lugares, incluyendo en los caminos de entrada y salida de paquetes.
+Si queremos manipular los paquetes entrantes, solamente necesitamos conectar nuestro programa (dentro de un LKM) al hook que corresponde. Una vez que llega un paquete nuestro programa será invocado. Nuestro programa puede decidir si ese paquete debería de ser bloqueado o no; mas aún, podemos modificar los paquetes en el programa.
+
+En esta tarea, ud. necesita usar LKM y {\tt Netfilter} para implementar un módulo de filtrado de paquetes. Este módulo obtendrá las políticas del firewall desde una estructura de datos y usará esta política para decidir si los paquetes deben de ser bloquyeados o no.
+Quisieramos que los estudiantes se enfoquen en la parte del filtrado, el núcleo de los firewalls, a los estudiantes se les permite hardcodear las políticas del firewall en el programa. Para una guía más detallada en como usar \texttt{Netfilter} puede consultar el Capítulo 17 del libro de SEED. 
+En este documento también proveeremos guías.
 
 
-In this task, we will write our packet filtering program
-as an LKM, and then insert in into the packet processing path
-inside the kernel. This cannot be easily done in the past before 
-the \netfilter was introduced into the \linux.
-
-{\tt Netfilter} is designed to facilitate the manipulation of 
-packets by authorized users. It achieves this 
-goal by implementing a number of hooks in the 
-\linux kernel. These hooks are inserted into various places, 
-including the packet incoming and outgoing paths. 
-If we want to manipulate the incoming packets, we simply
-need to connect our own programs (within LKM) to the 
-corresponding hooks. Once an incoming packet arrives, 
-our program will be invoked. Our program can decide 
-whether this packet should be blocked or not; moreover,
-we can also modify the packets in the program.
-
-
-In this task, you need to use LKM and {\tt Netfilter} to implement
-a packet filtering module.  This module will fetch 
-the firewall policies from a data structure, and use the 
-policies to decide whether packets should be blocked or not.
-We would like students to focus on the filtering part, 
-the core of firewalls, so students are allowed to hardcode firewall policies 
-in the program.  Detailed guidelines on how to use \texttt{Netfilter} can be 
-found in Chapter 17 of the SEED book. We will provide 
-some guidelines in here as well.
-
-
-\paragraph{Hooking to \texttt{Netfilter}.} 
+\paragraph{Hookeando en \texttt{Netfilter}.} 
 Using \netfilter is quite straightforward. All we need to do
 is to hook our functions (in the kernel module) to the corresponding
 \netfilter hooks. Here we show an example (the code is in
@@ -318,7 +265,7 @@ module_init(registerFilter);
 module_exit(removeFilter);
 \end{lstlisting}
 
-\paragraph{Note for Ubuntu 20.04 VM:}
+\paragraph{Nota para la Máquina Virtual de Ubuntu 20.04:}
 The code in the SEED book was developed in Ubuntu 16.04. It needs to be changed slightly 
 to work in Ubuntu 20.04. The change is in the hook registration and 
 un-registration APIs. See the difference in the following:
@@ -334,7 +281,7 @@ un-registration APIs. See the difference in the following:
 \end{lstlisting}
  
 
-\paragraph{Hook functions.} We give an example of hook function
+\paragraph{Funciones Hook.} We give an example of hook function
 below. It only prints out the packet information.
 When \netfilter invokes a hook function, it passes
 three arguments to the function, including a pointer to the 
@@ -496,7 +443,7 @@ so when the module is removed, those hooks are also removed.
 % *******************************************
 % SECTION
 % ******************************************* 
-\section{Task 2: Experimenting with Stateless Firewall Rules}
+\section{Tarea 2: Experimentando Reglas en un Firewall Stateless}
 
 In the previous task, we had a chance to build a simple firewall using \netfilter. Actually,
 \linux already has a built-in firewall, also based on \netfilter. This firewall is called
@@ -569,7 +516,7 @@ port on a different host, basically doing port forwarding, we can add a rule to 
 % -------------------------------------------
 % SUBSECTION
 % ------------------------------------------- 
-\subsection{Using \iptables}
+\subsection{Usando \iptables}
 
 
 To add rules to the chains in each table, we use the \iptables command,
@@ -637,7 +584,7 @@ does not touch this table.
 % -------------------------------------------
 % SUBSECTION
 % -------------------------------------------
-\subsection{Task 2.A: Protecting the Router} 
+\subsection{Tarea 2.A: Protegiendo el Router} 
 
 In this task, we will set up rules to prevent outside machines from 
 accessing the router machine, except ping.   
@@ -682,7 +629,7 @@ $ docker restart <Container ID>
 % -------------------------------------------
 % SUBSECTION
 % -------------------------------------------
-\subsection{Task 2.B: Protecting the Internal Network} 
+\subsection{Tarea 2.B: Protegiendo la Red Interna} 
 
 In this task, we will set up firewall rules on the router to protect the 
 internal network \texttt{192.168.60.0/24}. We need to use the 
@@ -733,7 +680,7 @@ before moving on to the next task.
 % -------------------------------------------
 % SUBSECTION
 % -------------------------------------------
-\subsection{Task 2.C: Protecting Internal Servers}
+\subsection{Tarea 2.C: Protegiendo los Servicios Internos}
 
 In this task, we want to protect the TCP servers 
 inside the internal network (\texttt{192.168.60.0/24}). 
@@ -775,7 +722,7 @@ before moving on to the next task.
 % *******************************************
 % SECTION
 % ******************************************* 
-\section{Task 3: Connection Tracking and Stateful Firewall}
+\section{Tarea 3: trackeo de Conexión y Firewall Stateful}
 
 
 In the previous task, we have only set up stateless firewalls, which inspect each
@@ -795,7 +742,7 @@ If it does that, it becomes a stateful firewall.
 % -------------------------------------------
 % SUBSECTION
 % ------------------------------------------- 
-\subsection{Task 3.A: Experiment with the Connection Tracking} 
+\subsection{Tarea 3.A: Experimentado con el Trackeo de Conexiones} 
 
 
 To support stateful firewalls, we need to be able to track connections. 
@@ -862,7 +809,7 @@ your observation. How long is the TCP connection state be kept?
 % -------------------------------------------
 % SUBSECTION
 % ------------------------------------------- 
-\subsection{Task 3.B: Setting Up a Stateful Firewall} 
+\subsection{Tarea 3.B: Configurando un Firewall Stateful} 
 
 
 Now we are ready to set up firewall rules based on connections. 
@@ -916,7 +863,7 @@ When you are done with this task, remember to clear all the rules.
 % *******************************************
 % SECTION
 % ******************************************* 
-\section{Task 4: Limiting Network Traffic}
+\section{Tarea 4: Limitando el Tráfico de Red}
 
 In addition to blocking packets, we can also 
 limit the number of packets that can pass through the firewall. 
@@ -953,7 +900,7 @@ iptables -A FORWARD -s 10.9.0.5 -j DROP
 % *******************************************
 % SECTION
 % *******************************************
-\section{Task 5: Load Balancing}
+\section{Tarea 5: Balanceo de Carga}
 
 The \iptables is very powerful. In addition to firewalls,
 it has many other applications. We will not be able to 
@@ -1045,12 +992,16 @@ Please provide some explanation for the rules.
 % *******************************************
 % SECTION
 % ******************************************* 
-\section{Submission and Demonstration}
+\section{Informe del Laboratorio y Demostraciones}
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \input{\commonfolder/submission}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section*{Agradecimientos}
+
+\input{\commonfolder/acknowledgments}
 
 
 \end{document}
