@@ -208,28 +208,12 @@ En este documento también proveeremos guías.
 
 
 \paragraph{Hookeando en \texttt{Netfilter}.} 
-Using \netfilter is quite straightforward. All we need to do
-is to hook our functions (in the kernel module) to the corresponding
-\netfilter hooks. Here we show an example (the code is in
-\path{Labsetup/packet_filter}, but it may not be exactly the same as 
-this example).
 
-The structure of the code follows the structure of the kernel module 
-implemented earlier. When the kernel module is added to the 
-kernel, the \texttt{registerFilter()} function in the code will be 
-invoked. Inside this function, we register two hooks 
-to \netfilter. 
+Usar \netfilter es relativamente sencillo. Todo lo que necesitamos hacer es hookear nuestras funciones (en el módulo kernel) a los hooks correspondientes de \netfilter. Aquí mostramos un ejemplo (el código está dentro de \path{Labsetup/packet_filter}), pero pued que no sea exactamente el mismo que se muestra en este ejemplo.
+La estructura del código sigue la estructura del módulo del kernel implementado anteriormente. Cuando el módulo del kernel es agregado al kernel, la función \texttt{registerFilter()} que se encuentra en el código será invocada. Dentro de esta función, registramos dos hooks en \netfilter.
 
-To register a hook, you need to prepare a hook data structure, 
-and set all the needed parameters, the most important of which
-are a function name (Line~\ding{202}) and a hook number (Line~\ding{203}). 
-The hook number is one of the 
-5 hooks in \netfilter, and the specified function will be 
-invoked when a packet has reached this hook. In this example,
-when a packet gets to the \texttt{LOCAL\_IN} hook,  the 
-function \texttt{printInfo()} will be invoked (this function
-will be given later). Once the hook data structure is prepared,
-we attach the hook to \netfilter in Line~\ding{204}).
+Para registrar un hook, necesita preparar una estructura de datos para el hook y setear todos los parámetros que son necesarios, el más importante es el nombre de la función (Línea \ding{202})) y el número de hook (Línea \ding{203})).
+El número de hook es uno de los 5 hooks en \netfilter y la función especificada será invocada cuando un pequete llegue a este hook. En este ejemplo, cuando un paquete llega al hook \texttt{LOCAL\_IN}, la función \texttt{printInfo()} será invocada (esta función será desarrollada más adelante). Una vez que la estructura de datos para hook es preparada, atachamos el hook a \netfilter (Línea \ding{204})
 
 
 \begin{lstlisting}[language=C, caption={Register hook functions to \netfilter}]
@@ -266,9 +250,8 @@ module_exit(removeFilter);
 \end{lstlisting}
 
 \paragraph{Nota para la Máquina Virtual de Ubuntu 20.04:}
-The code in the SEED book was developed in Ubuntu 16.04. It needs to be changed slightly 
-to work in Ubuntu 20.04. The change is in the hook registration and 
-un-registration APIs. See the difference in the following:
+El código en el libro de SEED fue desarrollado en Ubuntu 16.04. Necesita ser modificado levemente para que funcione en Ubuntu 20.04, el cambio está en la registración del hook y la API de des-registración. Vea la diferencia en el siguiente fragmento de código:
+
 
 \begin{lstlisting}[language=C]
 // Hook registration:
@@ -281,18 +264,10 @@ un-registration APIs. See the difference in the following:
 \end{lstlisting}
  
 
-\paragraph{Funciones Hook.} We give an example of hook function
-below. It only prints out the packet information.
-When \netfilter invokes a hook function, it passes
-three arguments to the function, including a pointer to the 
-actual packet (\texttt{skb}). 
-In the following code, Line~\ding{202} shows how to retrieve 
-the hook number from the \texttt{state} argument. 
-In Line~\ding{203}, we use \texttt{ip\_hdr()} function
-to get the pointer for the IP header,
-and then use the \texttt{\%pI4} format string specifier
-to print out the source and destination 
-IP addresses in Line~\ding{204}.
+\paragraph{Funciones Hook.} Daremos un ejemplo de una función hook. Solamente mostrará información del paquete.
+Cuando \netfilter invoca una función hook, le pasa tres argumentos a esta función, incluyendo un puntero al paquete actual (\texttt{skb}). 
+En el siguiente código, Línea \ding{202} muestra como obtener el número de hook del argumento \texttt{state}.
+En la Línea \ding{203}, usamos la función \texttt{ip\_hdr()} para obtener el puntero para el header IP, y entonces usamos el especificador de formato de cadena \texttt{\%pI4} para mostrar la dirección IP de origen y destino en la Línea \ding{204}.
 
 \begin{lstlisting}[language=C, caption={An example of hook function}]
 unsigned int printInfo(void *priv, struct sk_buff *skb,   
@@ -313,13 +288,7 @@ unsigned int printInfo(void *priv, struct sk_buff *skb,
 }
 \end{lstlisting}
 
-If you need to get the headers for other protocols, you can use the following
-functions defined in various header files. The  
-structure definition of these headers can be found 
-inside the \path{/lib/modules/5.4.0-54-generic/build/include/uapi/linux} 
-folder, where the version number in the path is the result 
-of \texttt{"uname -r"}, so it may be different if the kernel version
-is different. 
+Si necesita obtener los encabezados para otros protocolos, puede usar la siguiente funciones que se encuentran definidas en varios archivos de encabezado. La definición de la estructura de esos encabezados pueden ser encontradas dentro del directorio \path{/lib/modules/5.4.0-54-generic/build/include/uapi/linux}, donde el número de versión del directorio es el resultado de \texttt{"uname -r"}, por lo que puede variar de acuerdo a la versión de kernel instalada.
 
 \begin{lstlisting}[language=C]
 struct iphdr   *iph   = ip_hdr(skb)    // (need to include <linux/ip.h>) 
@@ -329,13 +298,8 @@ struct icmphdr *icmph = icmp_hdr(skb)  // (need to include <linux/icmp.h>)
 \end{lstlisting}
  
 
-\paragraph{Blocking packets.} 
-We also provide a hook function example to show how 
-to block a packet, if it satisfies the specified 
-condition. The following example blocks the 
-UDP packets if their destination IP is \texttt{8.8.8.8} 
-and the destination port is \texttt{53}. This means 
-blocking the DNS query to the nameserver \texttt{8.8.8.8}. 
+\paragraph{Bloqueando paquetes.} 
+También ofrecemos un ejemplo de una función hook para mostrar como bloquear un paquete, si este cumple con una condición específica. El siguiente ejemplo bloquea paquetes UDP si su IP de dirección de destino es \texttt{8.8.8.8} y el puerto de destino es \texttt{53}. Esto significa que bloqueará las consultas DNS al nameserver \texttt{8.8.8.8}. 
 
 \begin{lstlisting}[language=C, caption={Code example: blocking UDP}]
 unsigned int blockUDP(void *priv, struct sk_buff *skb,
@@ -362,44 +326,22 @@ unsigned int blockUDP(void *priv, struct sk_buff *skb,
 }
 \end{lstlisting}
 
+En el código anterior, la Línea \ding{202} muestra como convertir dentro del kernel, una dirección IP en formato decimal con punto (es decir una cadena, como sería \texttt{1.2.3.4}) es un binario de 32-bits (\texttt{0x01020304}), por lo que puede ser comparado con el número binario que está guardado dentro de los paquetes.
+La Línea \ding{203} compara la dirección IP de destino y el número de puerto con los valores de nuestra regla. Si estos valores coinciden con los de la regla,  \texttt{NF\_DROP} será retornado a \netfilter que se encargará de dropear el paquete. En caso contrario, texttt{NF\_ACCEPT} será retornado y \netfilter dejará que el paquete continue su viaje (\texttt{NF\_ACCEPT} quiere decir que el paquete es aceptado por esta función hook; pero aún así puede ser dropeado por otra función hook).
 
-In the code above, Line~\ding{202} shows, inside the kernel, 
-how to convert an IP address 
-in the dotted decimal format (i.e., a string, such as \texttt{1.2.3.4})
-to a 32-bit binary (\texttt{0x01020304}), 
-so it can be compared with the binary number stored inside packets. 
-Line~\ding{203} compares the destination IP address and port 
-number with the values in our specified rule. If they match the 
-rule, the \texttt{NF\_DROP} will be returned to \netfilter,
-which will drop the packet. Otherwise, the \texttt{NF\_ACCEPT}
-will be returned, and \netfilter will let the packet 
-continue its journey (\texttt{NF\_ACCEPT} only means 
-that the packet is accepted by this hook function; it may still be 
-dropped by other hook functions). 
-
-
-\paragraph{Tasks.} The complete sample code is 
-called \texttt{seedFilter.c}, which is included 
-in the lab setup files (inside the \path{Files/packet_filter}
-folder). Please do the following tasks (do each of them
-separately):
+\paragraph{Tareas.} El código completo de muestra se llama \texttt{seedFilter.c} y está incluído en los archivos del laboratorio (dentro del directorio \path{Files/packet_filter}). Por favor realize las siguientes tareas (hágalas por separado).
 
 \begin{enumerate}
-\item Compile the sample code using the provided \texttt{Makefile}. 
-  Load it into the kernel, and demonstrate that the firewall is working as expected. You can use
-    the following command to generate UDP packets to \texttt{8.8.8.8}, which is Google's DNS
-    server. If your firewall works, your request will be blocked; otherwise, you will get a
-    response.
+	
+\item Compile el código de ejemplo usando el archivo \texttt{Makefile} que se encuentra dentro de los archivos del laboratorio.
+	Cargue este código dentro del kernel y demuestre que el firewall está trabajando como se espera. Puede usar el siguiente comando para generar paquetes UDP hacia \texttt{8.8.8.8}, que son los servidores DNS de Google. Si su firewall funciona, sus peticiones serán bloqueadas; de otra forma, ud. obtendrá una respuesta.
 
 \begin{lstlisting}
 dig @8.8.8.8 www.example.com 
 \end{lstlisting}
-     
-
-\item Hook the \texttt{printInfo} function to all of the 
-\netfilter hooks. Here are the macros of the hook numbers. 
-Using your experiment results to help explain at what condition
-will each of the hook function be invoked. 
+ 
+\item Hookee la función \texttt{printInfo} en todos los hoooks de \netfilter. Aquí están las macros de los números de hooks. 
+Usando los resultados de su experimento, explique en que condiciones la función de cada uno de los hooks es invocada.
 
 \begin{lstlisting}
 NF_INET_PRE_ROUTING 
@@ -410,16 +352,11 @@ NF_INET_POST_ROUTING
 \end{lstlisting}
 
 
-\item Implement two more hooks to achieve the following:
-(1) preventing other computers to ping the VM, and
-(2) preventing other computers to telnet into the VM. 
-Please implement two different hook functions, but register them
-to the same \netfilter hook. You should decide what hook to use.
-Telnet's default port is TCP port \texttt{23}. To test it, you can
-start the containers, go to \texttt{10.9.0.5}, run the 
-following commands (\texttt{10.9.0.1} is the IP address assigned
-to the VM; for the sake of simplicity, you can hardcode this IP
-address in your firewall rules):
+\item Implemente dos hooks más para lograr lo siguiente:
+(1) prevenir que otras máquinas hagan ping a la Máquina virtual y (2) prevenir que otras máquinas puedan hacer telnet a la máquina virtual.
+Por favor implemente dos funciones hooks diferentes, pero registrelas en el mismo hook \netfilter. Ud. debe de decidir que hook usar.
+El puerto default de telnet es \texttt{23}. Para probarlo, puede iniciar los contenedores, ir a texttt{10.9.0.5} y ejecuitar los siguientes comandos (\texttt{10.9.0.1} es la dirección IP asignada a la Máquina Virtual; por hacer las cosas más simples, puede hardcodear esta IP en las reglas del firewall):
+
  
 \begin{lstlisting}
 ping 10.9.0.1
@@ -429,15 +366,8 @@ telnet 10.9.0.1
 \end{enumerate}
  
 
-\paragraph{Important note:} Since we make changes to the kernel, there is a high chance that you would 
-crash the kernel. Make sure you back up your files frequently, so you don't 
-lose them. One of the common reasons for system crash is that 
-you forget to unregister hooks. When a module is removed,
-these hooks will still be triggered, but the module is no longer present 
-in the kernel. That will cause system crash.
-To avoid this, make sure for each hook you
-add to your module, add a line in \texttt{removeFilter} to unregister it, 
-so when the module is removed, those hooks are also removed. 
+\paragraph{Nota importante:} Dando que hemos hecho cambios en el kernel, hay altas chances que el kernel pueda crashear. Asegúrese de hacer un backup de sus archivos con frecuencia. Una de las razones más comunes por la cual el sistema puede crashear es si ud. olvida de desregistrar los hooks. Cuando un módulo es boprrado, esos hooks serán llamados pero el módulo no estará presente en el kernel. Eso causará que el sistema crashee.
+Para evitar esto, asegúrese que por cada hook que ud. agrega en su módulo, agregue una línea en \texttt{removeFilter} para desregistrarlo, por lo que cuando el módulo es borrado, esos hooks también.
 
 
 % *******************************************
@@ -445,12 +375,7 @@ so when the module is removed, those hooks are also removed.
 % ******************************************* 
 \section{Tarea 2: Experimentando Reglas en un Firewall Stateless}
 
-In the previous task, we had a chance to build a simple firewall using \netfilter. Actually,
-\linux already has a built-in firewall, also based on \netfilter. This firewall is called
-\iptables. Technically, the kernel part implementation of the firewall
-is called \texttt{Xtables}, while \iptables is a user-space program to
-configure the firewall. However, \iptables is often used to refer to both the kernel-part
-implementation and the user-space program. 
+En las tareas anteriores, tuvimos la chance de consturir un firewall simple usando \netfilter. Actualmente, \linux tiene un firewall integrado basado en \netfilter. Este firewall se llama \iptables. Técnicamente la parte del kernel que implementa el firewall se llama  \texttt{Xtables}, nmientras que \iptables es un programa en user-space para configurar el firewall. Sin embargo \iptables es usado a menudo para referirse a la implementación a nivel kernel y a nivel usuario.
 
 
 
