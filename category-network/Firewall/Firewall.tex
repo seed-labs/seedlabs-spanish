@@ -36,12 +36,12 @@
 % ******************************************* 
 \section{Descripción}
 
-El objetivo de este laboratorio es separado en dos partes: aprender como funciona un firewall y configurar un firewall simple para una red. Los estudiantes primero implementarán un firewall simple para filtrar paquetes, que inspeccionará los mismo y decidirá cuando rechazarlos o cuando dejarlos pasar basado en una serie de reglas del firewall.
+El objetivo de este laboratorio es separado en dos partes: aprender como funciona un firewall y configurar un firewall simple para una red. Los estudiantes primero implementarán un firewall simple para filtrar paquetes, este firewall se encargará de inspeccionar estos paquetes y decidirá cuando rechazarlos o cuando dejarlos pasar, todo esto basado en una serie de reglas del firewall.
 Usando esta implementación los estudiantes podrán conocer las ideas básicas del funcionamiento de un firewall.
 
 En la actualidad, los sistemas linux tienen integrado un firewall, basado en \texttt{netfilter}. Este firewall se llama \iptables. 
 Los estudiantes tendrán disponible una topología de red simple, y serán los encargados de configurar reglas de firewall para proteger esta red.
-Los estudiantes podrán experimentar diferentes tipos de aplicaciones usando \iptables. 
+Los estudiantes podrán experimentar diferentes tipos de usos con \iptables. 
 
 Este laboratorio cubre los siguientes tópicos:
 
@@ -49,9 +49,9 @@ Este laboratorio cubre los siguientes tópicos:
 \begin{itemize}[noitemsep]
 \item Firewall
 \item Netfilter
-\item Módulo de Kernel (LKM)
+\item Módulo del Kernel (LKM)
 \item Usando \iptables para reglas de firewall
-\item Varios aplicaciones de \iptables
+\item Varios usos de \iptables
 \end{itemize}
 
 
@@ -113,18 +113,18 @@ Usaremos contenedores para el setup del entorno de laboratorio.
 % ******************************************* 
 \section{Tarea 1: Implementando un Firewall Simple} 
 
-En esta tarea, implementaremos un firewall simple para filtrar paquete, el mismo inspeccionará los paquetes que entren y salgan y será reforzado por las políticas establecidas por el administrador. Dado que el procesamiento de pauqetes se hace dentro del kernel, el filtrado también debe ser hecho dentro del mismo. Aunque pareciera que dicho firewall requiere modificar el kernel de \linux. En el pasado se hacía modificando y recompilando el kernel. Hoy por hoy, los sistemas operativos \linux modernos nos proveen nuevos mecanismos para facilitarnos la manipulación de los paquetes sin la necesidad de recompilar la imagen del kernel. Esos dos mecanismos son \textit{Loadable Kernel Module} (\texttt{LKM}) y \texttt{Netfilter}.
+En esta tarea, implementaremos un firewall simple para filtrar paquetes, el mismo inspeccionará los paquetes que entren y salgan y será reforzado por las políticas establecidas por el administrador. Dado que el procesamiento de paquetes se hace dentro del kernel, el filtrado también debe ser hecho dentro del mismo. Aunque pareciera que dicho firewall requiere modificar el kernel de \linux. En el pasado se hacía modificando y recompilando el kernel. Hoy por hoy, los sistemas operativos \linux modernos nos proveen nuevos mecanismos para facilitarnos la manipulación de los paquetes sin la necesidad de recompilar la imagen del kernel. Esos dos mecanismos son \textit{Loadable Kernel Module} (\texttt{LKM}) y \texttt{Netfilter}.
 
 
 
 \paragraph{Notas sobre los contenedores.}
 Dado que todos los contenedores comparten el mismo kernel, los módulos del kernel son globales.
-Además si seteamos un modelo de kernel para un contenedor, este afectará al resto de los contenedores y al host. Por esta razón, no importa donde ud. ponga el módulo del kernel. En este laboratorio, lo haremos desde la máquina virtual host.
+Además si seteamos un modelo de kernel para un contenedor, este afectará al resto de los contenedores y al host. Por esta razón, no importa donde ponga el módulo del kernel. En este laboratorio, lo haremos desde la máquina virtual host.
 
 Otra cosa a tener en cuenta que es la dirección IP de los contenedores son virtuales.
 Los paquetes que irán a esas direcciones IPs virtuales pueden que no recorran todas el mismo camino como se describe en la documentación de Netfilter.
-Aunque para esta tarea, en orden de evitar confusiones, trataremos de evitar esas direcciones virtuales.
-Haremos la mayoría de las tareas en la máquina virtual host. Los contenedores principalmente se utilizarán para otras tareas.
+Aunque para esta tarea, lo haremos lo menos confuso posible y trataremos de evitar esas direcciones virtuales.
+Haremos la mayoría de las tareas en la máquina virtual host. Los contenedores se utilizarán para otras tareas.
 
 % -------------------------------------------
 % SUBSECTION
@@ -136,7 +136,7 @@ Este módulo nos permite extender funcionalidades del kernel, sin recompilarlo o
 El filtrado de paquetes de un firewall puede ser implementado como un LKM.
 En esta tarea, nos familiarizaremos con LKM.
 
-El siguiente es un LKM. Este muestra \texttt{"Hello World!"} cuando este módulo es cargado; cuando el módulo se borra del kernel, este muestra \texttt{"Bye-bye World!"}.
+El siguiente código es un LKM. Este muestra \texttt{"Hello World!"} cuando este módulo es cargado; cuando el módulo se borra del kernel, este muestra \texttt{"Bye-bye World!"}.
 Los mensajes no son impresos en pantalla; se muestran dentro del archivo \texttt{/var/log/syslog}. Puede usar el comando \texttt{"dmesg"} para visualizar los mensajes.
 
 
@@ -160,7 +160,7 @@ module_exit(cleanup);
 \end{lstlisting}
 
 Necesitamos crear el {\tt Makefile}, que incluye el siguiente contenido (este archivo esta incluído dentro los archivos de setup del laboratorio).
-Sólo escriba {\tt make}, y el rpograma será compilado como un LKM (si ud. copia y pega lo siguiente dentro del archivo \texttt{Makefile}, asegúrese de reemplazar los espacios por tabs antes de ejecutar el comando \texttt{make}).
+Sólo escriba {\tt make}, y el programa será compilado como un LKM (si ud. copia y pega lo siguiente dentro del archivo \texttt{Makefile}, asegúrese de reemplazar los espacios por tabs antes de ejecutar el comando \texttt{make}).
 
 
 \begin{lstlisting}
@@ -185,7 +185,7 @@ $ dmesg                    (check the messages)
 \end{lstlisting}
 
 
-\paragraph{Tarea.} Por favor compile este simple LKM en su Máquina Virtual y ejecútelo. Para esta tarea, no usaremos contenedores. Por favor muestre sus resultados en el informe del laboratorio.
+\paragraph{Tarea.} Por favor compile este LKM en su Máquina Virtual y ejecútelo. Para esta tarea, no usaremos contenedores. Por favor muestre sus resultados en el informe del laboratorio.
 
 
 % -------------------------------------------
@@ -193,23 +193,23 @@ $ dmesg                    (check the messages)
 % ------------------------------------------- 
 \subsection{Tarea 1.B: Implementar un Firewall Simple usando \texttt{Netfilter}}  
 
-En esta tarea, escribiremos nuestro programa para filtrar paquetes como un LKM y lo insertaremos dentro de la cadena de procesamientos de pauqetes en el kernel. Esto no era fácil de hacer en el pasado, antes que \netfilter fuera introducido dentro de \linux.
+En esta tarea, escribiremos nuestro programa para filtrar paquetes como un LKM y lo insertaremos dentro de la cadena de procesamientos de paquetes en el kernel. Esto no era fácil de hacer en el pasado, antes que \netfilter fuera introducido dentro de \linux.
 
 {\tt Netfilter} está diseñado para facilitar la manipulación de los paquetes por usuarios autorizados. Logra su objetivo implementando una serie de hooks en el kernel de \linux. Estos hooks son intertados en varios lugares, incluyendo en los caminos de entrada y salida de paquetes.
 Si queremos manipular los paquetes entrantes, solamente necesitamos conectar nuestro programa (dentro de un LKM) al hook que corresponde. Una vez que llega un paquete nuestro programa será invocado. Nuestro programa puede decidir si ese paquete debería de ser bloqueado o no; mas aún, podemos modificar los paquetes en el programa.
 
-En esta tarea, ud. necesita usar LKM y {\tt Netfilter} para implementar un módulo de filtrado de paquetes. Este módulo obtendrá las políticas del firewall desde una estructura de datos y usará esta política para decidir si los paquetes deben de ser bloquyeados o no.
-Quisieramos que los estudiantes se enfoquen en la parte del filtrado, el núcleo de los firewalls, a los estudiantes se les permite hardcodear las políticas del firewall en el programa. Para una guía más detallada en como usar \texttt{Netfilter} puede consultar el Capítulo 17 del libro de SEED. 
+En esta tarea, ud. necesita usar LKM y {\tt Netfilter} para implementar un módulo de filtrado de paquetes. Este módulo obtendrá las políticas del firewall desde una estructura de datos y usará esta política para decidir si los paquetes deben de ser bloqueados o no.
+Quisieramos que los estudiantes se enfoquen en la parte del filtrado, ya que es el núcleo de los firewalls, a los estudiantes se les permite hardcodear las políticas del firewall en el programa. Para una guía más detallada en como usar \texttt{Netfilter} puede consultar el Capítulo 17 del libro de SEED. 
 En este documento también proveeremos guías.
 
 
 \paragraph{Hookeando en \texttt{Netfilter}.} 
 
-Usar \netfilter es relativamente sencillo. Todo lo que necesitamos hacer es hookear nuestras funciones (en el módulo kernel) a los hooks correspondientes de \netfilter. Aquí mostramos un ejemplo (el código está dentro de \path{Labsetup/packet_filter}), pero pued que no sea exactamente el mismo que se muestra en este ejemplo.
-La estructura del código sigue la estructura del módulo del kernel implementado anteriormente. Cuando el módulo del kernel es agregado al kernel, la función \texttt{registerFilter()} que se encuentra en el código será invocada. Dentro de esta función, registramos dos hooks en \netfilter.
+Usar \netfilter es relativamente sencillo. Todo lo que necesitamos hacer es hookear nuestras funciones (en el módulo kernel) a los hooks correspondientes de \netfilter. Aquí mostramos un ejemplo (el código está dentro de \path{Labsetup/packet_filter}), pero puede que no sea exactamente el mismo que se muestra en este ejemplo.
+La estructura del código sigue la estructura del módulo del kernel implementado anteriormente. Cuando el módulo del kernel es agregado al kernel linux, la función \texttt{registerFilter()} que se encuentra en el código será invocada. Dentro de esta función, registramos dos hooks en \netfilter.
 
-Para registrar un hook, necesita preparar una estructura de datos para el hook y setear todos los parámetros que son necesarios, el más importante es el nombre de la función (Línea \ding{202})) y el número de hook (Línea \ding{203})).
-El número de hook es uno de los 5 hooks en \netfilter y la función especificada será invocada cuando un pequete llegue a este hook. En este ejemplo, cuando un paquete llega al hook \texttt{LOCAL\_IN}, la función \texttt{printInfo()} será invocada (esta función será desarrollada más adelante). Una vez que la estructura de datos para hook es preparada, atachamos el hook a \netfilter (Línea \ding{204})
+Para registrar un hook, necesita preparar una estructura de datos para el hook y setear todos los parámetros que son necesarios, el más importante es el nombre de la función (Línea \ding{202}) y el número de hook (Línea \ding{203}).
+El número de hook es uno de los 5 hooks en \netfilter y la función especificada será invocada cuando un paquete llegue a este hook. En este ejemplo, cuando un paquete llega al hook \texttt{LOCAL\_IN}, la función \texttt{printInfo()} será invocada (esta función será desarrollada más adelante). Una vez que la estructura de datos para hook es preparada, atachamos el hook a \netfilter (Línea \ding{204})
 
 
 \begin{lstlisting}[language=C, caption={Register hook functions to \netfilter}]
@@ -246,7 +246,7 @@ module_exit(removeFilter);
 \end{lstlisting}
 
 \paragraph{Nota para la Máquina Virtual de Ubuntu 20.04:}
-El código en el libro de SEED fue desarrollado en Ubuntu 16.04. Necesita ser modificado levemente para que funcione en Ubuntu 20.04, el cambio está en la registración del hook y la API de des-registración. Vea la diferencia en el siguiente fragmento de código:
+El código en el libro de SEED fue desarrollado en Ubuntu 16.04. Este código necesita ser modificado levemente para que funcione en Ubuntu 20.04, el cambio está en la registración del hook y en la API de desregistración. A continuación puede observar las diferencias:
 
 
 \begin{lstlisting}[language=C]
@@ -260,10 +260,10 @@ El código en el libro de SEED fue desarrollado en Ubuntu 16.04. Necesita ser mo
 \end{lstlisting}
  
 
-\paragraph{Funciones Hook.} Daremos un ejemplo de una función hook. Solamente mostrará información del paquete.
+\paragraph{Funciones Hook.} A continuación daremos un ejemplo de una función hook. Este hook mostrará la información del paquete.
 Cuando \netfilter invoca una función hook, le pasa tres argumentos a esta función, incluyendo un puntero al paquete actual (\texttt{skb}). 
-En el siguiente código, Línea \ding{202} muestra como obtener el número de hook del argumento \texttt{state}.
-En la Línea \ding{203}, usamos la función \texttt{ip\_hdr()} para obtener el puntero para el header IP, y entonces usamos el especificador de formato de cadena \texttt{\%pI4} para mostrar la dirección IP de origen y destino en la Línea \ding{204}.
+En el siguiente código, la Línea \ding{202} muestra como obtener el número de hook del argumento \texttt{state}.
+En la Línea \ding{203}, usamos la función \texttt{ip\_hdr()} para obtener el puntero para el encabezado IP, y entonces usamos el especificador de formato de cadena \texttt{\%pI4} para mostrar la dirección IP de origen y destino en la Línea \ding{204}.
 
 \begin{lstlisting}[language=C, caption={An example of hook function}]
 unsigned int printInfo(void *priv, struct sk_buff *skb,   
@@ -284,7 +284,7 @@ unsigned int printInfo(void *priv, struct sk_buff *skb,
 }
 \end{lstlisting}
 
-Si necesita obtener los encabezados para otros protocolos, puede usar la siguiente funciones que se encuentran definidas en varios archivos de encabezado. La definición de la estructura de esos encabezados pueden ser encontradas dentro del directorio \path{/lib/modules/5.4.0-54-generic/build/include/uapi/linux}, donde el número de versión del directorio es el resultado de \texttt{"uname -r"}, por lo que puede variar de acuerdo a la versión de kernel instalada.
+Si necesita obtener los encabezados para otros protocolos, puede usar la siguiente funciones que se encuentran definidas en varios archivos de encabezado. La definición de la estructura de esos encabezados pueden ser encontradas dentro del directorio \path{/lib/modules/5.4.0-54-generic/build/include/uapi/linux}, donde el número de versión del directorio es el resultado de \texttt{"uname -r"}, por lo que puede variar de acuerdo a la versión de kernel que tenga instalada.
 
 \begin{lstlisting}[language=C]
 struct iphdr   *iph   = ip_hdr(skb)    // (need to include <linux/ip.h>) 
@@ -295,7 +295,7 @@ struct icmphdr *icmph = icmp_hdr(skb)  // (need to include <linux/icmp.h>)
  
 
 \paragraph{Bloqueando paquetes.} 
-También ofrecemos un ejemplo de una función hook para mostrar como bloquear un paquete, si este cumple con una condición específica. El siguiente ejemplo bloquea paquetes UDP si su IP de dirección de destino es \texttt{8.8.8.8} y el puerto de destino es \texttt{53}. Esto significa que bloqueará las consultas DNS al nameserver \texttt{8.8.8.8}. 
+También ofrecemos un ejemplo de una función hook para mostrar como bloquear un paquete si este cumple con una condición específica. El siguiente ejemplo bloquea paquetes UDP si su dirección IP de destino es \texttt{8.8.8.8} y el puerto de destino es \texttt{53}. Esto significa que bloqueará las consultas DNS al nameserver \texttt{8.8.8.8}. 
 
 \begin{lstlisting}[language=C, caption={Code example: blocking UDP}]
 unsigned int blockUDP(void *priv, struct sk_buff *skb,
@@ -322,8 +322,8 @@ unsigned int blockUDP(void *priv, struct sk_buff *skb,
 }
 \end{lstlisting}
 
-En el código anterior, la Línea \ding{202} muestra como convertir dentro del kernel, una dirección IP en formato decimal con punto (es decir una cadena, como sería \texttt{1.2.3.4}) es un binario de 32-bits (\texttt{0x01020304}), por lo que puede ser comparado con el número binario que está guardado dentro de los paquetes.
-La Línea \ding{203} compara la dirección IP de destino y el número de puerto con los valores de nuestra regla. Si estos valores coinciden con los de la regla,  \texttt{NF\_DROP} será retornado a \netfilter que se encargará de dropear el paquete. En caso contrario, texttt{NF\_ACCEPT} será retornado y \netfilter dejará que el paquete continue su viaje (\texttt{NF\_ACCEPT} quiere decir que el paquete es aceptado por esta función hook; pero aún así puede ser dropeado por otra función hook).
+En el código anterior, la Línea \ding{202} muestra como convertir dentro del kernel, una dirección IP en formato decimal con punto (es decir una cadena, como sería \texttt{1.2.3.4}) en un binario de 32-bits (\texttt{0x01020304}), por lo que puede ser comparado con el número binario que está guardado dentro de los paquetes.
+La Línea \ding{203} compara la dirección IP de destino y el número de puerto con los valores de nuestra regla. Si estos valores coinciden con los de la regla,  \texttt{NF\_DROP} será retornado a \netfilter que se encargará de dropear el paquete. En caso contrario, \texttt{NF\_ACCEPT} será retornado y \netfilter dejará que el paquete continue su viaje (\texttt{NF\_ACCEPT} quiere decir que el paquete es aceptado por esta función hook; pero aún así puede ser dropeado por otra función hook).
 
 \paragraph{Tareas.} El código completo de muestra se llama \texttt{seedFilter.c} y está incluído en los archivos del laboratorio (dentro del directorio \path{Files/packet_filter}). Por favor realize las siguientes tareas (hágalas por separado).
 
@@ -336,7 +336,7 @@ La Línea \ding{203} compara la dirección IP de destino y el número de puerto 
 dig @8.8.8.8 www.example.com 
 \end{lstlisting}
  
-\item Hookee la función \texttt{printInfo} en todos los hoooks de \netfilter. Aquí están las macros de los números de hooks. 
+\item Hookee la función \texttt{printInfo} en todos los hooks de \netfilter. Aquí están las macros de los números de hooks. 
 Usando los resultados de su experimento, explique en que condiciones la función de cada uno de los hooks es invocada.
 
 \begin{lstlisting}
@@ -351,7 +351,7 @@ NF_INET_POST_ROUTING
 \item Implemente dos hooks más para lograr lo siguiente:
 (1) prevenir que otras máquinas hagan ping a la Máquina virtual y (2) prevenir que otras máquinas puedan hacer telnet a la máquina virtual.
 Por favor implemente dos funciones hooks diferentes, pero registrelas en el mismo hook \netfilter. Ud. debe de decidir que hook usar.
-El puerto default de telnet es \texttt{23}. Para probarlo, puede iniciar los contenedores, ir a texttt{10.9.0.5} y ejecuitar los siguientes comandos (\texttt{10.9.0.1} es la dirección IP asignada a la Máquina Virtual; por hacer las cosas más simples, puede hardcodear esta IP en las reglas del firewall):
+El puerto default de telnet es \texttt{23}. Para probarlo, puede iniciar los contenedores, ir a \texttt{10.9.0.5} y ejecutar los siguientes comandos (\texttt{10.9.0.1} es la dirección IP asignada a la Máquina Virtual; para hacer las cosas más simples, puede hardcodear esta IP en las reglas del firewall):
 
  
 \begin{lstlisting}
@@ -362,8 +362,8 @@ telnet 10.9.0.1
 \end{enumerate}
  
 
-\paragraph{Nota importante:} Dando que hemos hecho cambios en el kernel, hay altas chances que el kernel pueda crashear. Asegúrese de hacer un backup de sus archivos con frecuencia. Una de las razones más comunes por la cual el sistema puede crashear es si ud. olvida de desregistrar los hooks. Cuando un módulo es boprrado, esos hooks serán llamados pero el módulo no estará presente en el kernel. Eso causará que el sistema crashee.
-Para evitar esto, asegúrese que por cada hook que ud. agrega en su módulo, agregue una línea en \texttt{removeFilter} para desregistrarlo, por lo que cuando el módulo es borrado, esos hooks también.
+\paragraph{Nota importante:} Debido a que hemos hecho cambios en el kernel, hay altas chances que el kernel pueda crashear. Asegúrese de hacer un backup de sus archivos con frecuencia. Una de las razones más comunes por la cual el sistema puede crashear es si ud. olvida de desregistrar los hooks. Cuando un módulo es borrado, esos hooks serán llamados pero el módulo no estará presente en el kernel. Eso causará que el sistema crashee.
+Para evitar esto, asegúrese que por cada hook que ud. agrega en su módulo, agregue una línea en \texttt{removeFilter} para desregistrarlo, por lo que cuando el módulo es borrado, esos hooks sean removidos también.
 
 
 % *******************************************
@@ -371,37 +371,25 @@ Para evitar esto, asegúrese que por cada hook que ud. agrega en su módulo, agr
 % ******************************************* 
 \section{Tarea 2: Experimentando Reglas en un Firewall Stateless}
 
-En las tareas anteriores, tuvimos la chance de consturir un firewall simple usando \netfilter. Actualmente, \linux tiene un firewall integrado basado en \netfilter. Este firewall se llama \iptables. Técnicamente la parte del kernel que implementa el firewall se llama  \texttt{Xtables}, nmientras que \iptables es un programa en user-space para configurar el firewall. Sin embargo \iptables es usado a menudo para referirse a la implementación a nivel kernel y a nivel usuario.
+En las tareas anteriores, tuvimos la chance de construir un firewall simple usando \netfilter. Actualmente, \linux tiene un firewall integrado basado en \netfilter. Este firewall se llama \iptables. Técnicamente la parte del kernel que implementa el firewall se llama  \texttt{Xtables}, mientras que \iptables es un programa en user-space para configurar el firewall. Sin embargo \iptables es usado a menudo para referirse a la implementación a nivel kernel y a nivel usuario.
 
 
 
 % -------------------------------------------
 % SUBSECTION
 % ------------------------------------------- 
-\subsection{Background of \iptables}
+\subsection{Background de \iptables}
 
-In this task, we will use \iptables to set up a firewall. 
-The \iptables firewall is designed not only to filter packets, but also to make changes to
-packets. To help manage these firewall rules for different purposes, \iptables organizes all
-rules using a hierarchical structure: table, chain, and rules.
-There are several tables, each specifying the main purpose of the rules as shown
-in Table~\ref{firewall:table:iptables}.
-For example, rules for packet filtering should be
-placed in the \texttt{filter} table, while rules for making changes to packets should be placed
-in the \texttt{nat} or \texttt{mangle} tables.
+En esta tarea, usaremos \iptables para hacer el setup de un firewall.
+El firewall \iptables está diseñado no solamente para filtrar paquetes, sino también para modificarlos. Para manejar los diferentes propósitos de las reglas del firewall, \iptables organiza todas sus reglas en una estructura jerárquica: table, chain y rules (tablas, cadenas y reglas).
+Existen varias tablas, cada una especifica el propósito principal de las reglas como se muestra en la Tabla \ref{firewall:table:iptables}.
+Por ejemplo, las reglas para el filtrado de paquetes deberían de ser ubicadas en la tabla \texttt{filter}, mientras que las reglas para hacer cambios en lo paquetes deberían de ser ubicadas en las tablas \texttt{nat} o \texttt{mangle}.
 
-Each table contains several chains, each of which corresponds to a \netfilter hook. Basically,
-each chain indicates where its rules are enforced. For example, rules on
-the \texttt{FORWARD} chain are enforced at the \texttt{NF\_INET\_FORWARD} hook, and rules on
-the \texttt{INPUT} chain are enforced at the  \texttt{NF\_INET\_LOCAL\_IN} hook.
+Cada tabla contiene varias cadenas, cada una corresponde a un hook de \netfilter. Básicamente, cada cadena indica donde se refuerzan sus reglas. Por ejemplo, las reglas en la cadena \texttt{FORWARD} son reforzadas en el hook \texttt{NF\_INET\_FORWARD} y las reglas en la cadena \texttt{INPUT} son reforzadas en el hook \texttt{NF\_INET\_LOCAL\_IN}.
 
-Each chain contains a set of firewall rules that will be enforced.
-When we set up firewalls, we add rules to these chains.
-For example, if we would like to block all incoming \telnet traffic, we would
-add a rule to the \texttt{INPUT} chain of the \texttt{filter} table.  If we
-would like to redirect all incoming \telnet traffic to a different
-port on a different host, basically doing port forwarding, we can add a rule to the
-\texttt{INPUT} chain of the \texttt{mangle} table, as we need to make changes to packets.
+Cada cadena contiene un conjunto de reglas de firewall que serán reforzadas.
+Cuando configuramos firewalls, agregamos reglas en esas cadenas.
+Por ejemplo, si quisieramos bloquear todo el tráfico \telnet entrante, agregaríamos una regla en la cadena \texttt{INPUT} de la tabla \texttt{filter}. Si quisieramos redireccionar todo el tráfico \telnet hacia un puerto  en un host diferente, básicamente estaríamos haciendo port forwarding, podemos agregar una regla en la cadena \texttt{INPUT} de la tabla \texttt{mangle}, si necesitamos hacer cambios en los paquetes.
 
 
 \begin{table}[htb]
@@ -439,26 +427,12 @@ port on a different host, basically doing port forwarding, we can add a rule to 
 % ------------------------------------------- 
 \subsection{Usando \iptables}
 
+Para agregar reglas en las cadenas de cada una de las tablas, usamos el comando \iptables, este comando es bastante poderoso.
+Los estudiantes pueden ver el manual de \iptables tipeando \texttt{"man iptables"} o buscando tutoriales en la red.
+Lo que hace de \iptables complicado es la cantidad de argumentos de consola que necesitamos aplicar cuando se usa este programa. Sin embargo, si entendemos la estructura de estos argumentos, descubriremos que \iptables no es tan complicado.
 
-To add rules to the chains in each table, we use the \iptables command,
-which is a quite powerful command. 
-Students can find the manual of \iptables by typing \texttt{"man iptables"} 
-or easily find many tutorials from online. 
-What makes \iptables complicated is the many command-line arguments 
-that we need to provide when
-using the command. However, 
-if we understand the structure of these command-line arguments, 
-we will find out that the command is not that complicated. 
-
-
-In a typical \iptables command, we add a rule to or remove a rule 
-from one of the chains in one of the tables, so we need to 
-specify a table name (the default is \texttt{filter}), a chain name, 
-and an operation on the chain. After that, we specify the rule, which
-is basically a pattern that will be matched with each of the 
-packets passing through. If there is a match, an action will be 
-performed on this packet. 
-The general structure of the command is depicted in the following:
+En una situación típica, usamos el comando \iptables para agregar o borrar una regla de alguna de las cadenas en algunas de las tablas, por lo que necesitamos especificar el nombre de la tabla (por defecto es \texttt{filter}), un nombre de cadena y una operación en esa cadena. Después de eso, especificamos la regla, que es básicamente un patrón que coincidirá o no con cada uno de los paquetes que pasan por el firewall. Si coincide con la regla, una acción será ejecutada sobre este paquete.
+La estructura general de un comando de \iptables es ilustrada a continuación:
 
 \begin{lstlisting}
 iptables -t <table> -<operation> <chain>  <rule>   -j <target>
@@ -466,11 +440,8 @@ iptables -t <table> -<operation> <chain>  <rule>   -j <target>
             Table          Chain           Rule      Action
 \end{lstlisting}
 
-
-The rule is the most complicated part of the \iptables command. 
-We will provide additional information later when we use 
-specific rules. In the following, we list some commonly 
-used commands: 
+La parte más complicada del comando \iptables es la regla.
+Más adelante profundizaremos sobre este asunto cuando usemos reglas específicas. A continuación se listan algunos comandos básicos de uso común:
 
 
 \begin{lstlisting}
@@ -489,17 +460,8 @@ iptables -t filter -A INPUT <rule>  -j DROP
 \end{lstlisting}
 
 
-\paragraph{Note.} Docker relies on \iptables to manage 
-the networks it creates, so it adds many rules to 
-the \texttt{nat} table. 
-When we manipulate \iptables rules, we should be careful 
-not to remove Docker rules. For example, it will be quite
-dangerous to run the \texttt{"iptables -t nat -F"} command, because 
-it removes all the rules in the \texttt{nat} table,
-including many of the Docker rules. That will cause 
-trouble to Docker containers. Doing this for 
-the \texttt{filter} table is fine, because Docker 
-does not touch this table. 
+\paragraph{Nota.} Docker descansa en \iptables para manejar la red que crea, este agrega muchas reglas en la tabla \texttt{nat}.
+Cuando manipulamos las reglas de \iptables, debemos de ser cuidadosos en no remover las reglas de Docker. Por ejemplo, sería algo peligroso ejecutar el comando \texttt{"iptables -t nat -F"}, porque borraría todas las reglas en la tabla \texttt{nat}, incluídas muchas reglas de Docker. Eso causará conflictos en los contenedores de Docker. Haciendo esto para la tabla \texttt{filter} está bien, porque Docker no toca esta tabla.
 
 
 % -------------------------------------------
@@ -507,17 +469,10 @@ does not touch this table.
 % -------------------------------------------
 \subsection{Tarea 2.A: Protegiendo el Router} 
 
-In this task, we will set up rules to prevent outside machines from 
-accessing the router machine, except ping.   
-Please execute the following \iptables
-command on the router container, and then try to 
-access it from \texttt{10.9.0.5}. (1) Can you ping 
-the router? (2) Can you telnet into the router (a 
-telnet server is running on all the containers; an
-account called \texttt{seed} was created on them with
-a password \texttt{dees}). 
-Please report your observation and explain the purpose for 
-each rule. 
+En esta tarea, crearemos reglas en el firewall para prevenir el acceso de máquinas externas a la máquina router, excepto por el ping.
+Por favor ejecute el siguiente comando \iptables en el contenedor router y trate de accederlo desde \texttt{10.9.0.5}. (1) ¿Puede hacer ping al router? (2) ¿Puede hacer telnet al router? (el servicio de telnet se encuentra corriendo en todos los contenedores; se ha creado una cuenta llamada \texttt{seed} y su password es \texttt{dees}).
+Por favor reporte su observación y explique el propósito de cada regla.
+
 
 \begin{lstlisting}
 iptables -A INPUT  -p icmp --icmp-type echo-request -j ACCEPT
@@ -527,19 +482,16 @@ iptables -P INPUT  DROP     (*@\pointleft{Set default rule for INPUT}@*)
 \end{lstlisting}
  
 
-\paragraph{Cleanup.} 
-Before moving on to the next task, please restore the \texttt{filter} 
-table to its original state by running the following commands:
+\paragraph{Limpieza.} 
+Antes de movernos a la próximo tarea, por favor restaure la tabla \texttt{filter} a su estado original ejecutando los siguientes comandos:
 
 \begin{lstlisting}
 iptables -F
 iptables -P OUTPUT ACCEPT
 iptables -P INPUT  ACCEPT
 \end{lstlisting}
- 
-Another way to restore the states of all the tables is to restart the 
-container. You can do it using the following command (you need 
-to find the container's ID first):
+
+Otra forma de restaurar los estados de todas las tablas es reiniciando el contenedor. Puede hacerlo usando el siguiente comando (necesita encontrar el ID del contenedor primero):
 
 \begin{lstlisting}
 $ docker restart <Container ID>
@@ -552,51 +504,32 @@ $ docker restart <Container ID>
 % -------------------------------------------
 \subsection{Tarea 2.B: Protegiendo la Red Interna} 
 
-In this task, we will set up firewall rules on the router to protect the 
-internal network \texttt{192.168.60.0/24}. We need to use the 
-FORWARD chain for this purpose. 
+En esta tarea, crearemos reglas en el firewall del router para proteger la red interna \texttt{192.168.60.0/24}. Para esto necesitaremos usar la cadena FORWARD.
 
-The directions of packets in the INPUT and OUTPUT chains are clear:
-packets are either coming into (for INPUT) or going out (for OUTPUT). 
-This is not true for the FORWARD chain, because it is 
-bi-directional: packets going into
-the internal network or going out to the external network
-all go through this chain. To specify the direction,
-we can add the interface options using \texttt{"-i xyz"} (coming in from 
-the \texttt{xyz} interface) and/or \texttt{"-o xyz"} (going out 
-from the \texttt{xyz} interface). The interfaces 
-for the internal and external networks are different.
-You can find out the interface names via the 
-\texttt{"ip addr"} command.
+La dirección de los paquetes en las cadenas INPUT y OUPUT son claras:
+los paquetes entran por INPUT y salen por OUTPUT.
+Esto no es así para la cadena FORWARD, esta es bidireccional: los paquetes que se dirigen a la red interna o salen a la red externa pasan siempre por esta cadena. Para especificar la dirección, podemos agregar la opción de interfaz usando \texttt{"-i xyz"} (viene desde la interfaz \texttt{xyz}) y/o \texttt{"-o xyz"} (sale desde la interfaz \texttt{xyz}). Las interfaces para la red interna y externa son diferentes.
+Puede encontrar los nombres de las interfaces usando el comando \texttt{"ip addr"}.
 
+En esta tarea, queremos implementar un firewall para proteger la red interna. Más específicamente, necesitamos reforzar las siguientes restricciones en el tráfico ICMP:
 
-In this task, we want to implement a firewall to protect the 
-internal network. More specifically, we need to enforce the 
-following restrictions on the ICMP traffic: 
 
 \begin{enumerate}[noitemsep]
-  \item Outside hosts cannot ping internal hosts. 
-  \item Outside hosts can ping the router.
-  \item Internal hosts can ping outside hosts. 
-  \item All other packets between the internal and external networks should be blocked.
+  \item	Los hosts externos no pueden hacer ping a los hosts internos.
+  \item	Los hosts externos pueden hacer ping al router.
+  \item	Los hosts internos pueden hacer ping a los hosts externos.
+  \item	El resto de los paquetes entre las redes interna y externa deben de ser bloqueados.
 \end{enumerate}
 
-You will need to use the \texttt{"-p icmp"} options to specify the match
-options related to the ICMP protocol. You can run 
-\texttt{"iptables -p icmp -h"} to find out all the ICMP match
-options. The following example drops the ICMP echo request.
+Necesitará usar la opción \texttt{"-p icmp"} para especificar la condición relacionada al protocolo ICMP. Puede ejecutar \texttt{"iptables -p icmp -h"} para ver todas las condiciones ICMP. El siguiente ejemplo dropea una petición echo ICMP.
 
 
 \begin{lstlisting}
 iptables -A FORWARD -p icmp --icmp-type echo-request -j DROP
 \end{lstlisting}
 
-In your lab report, please include your rules and  
-screenshots to demonstrate that your firewall works as expected.
-When you are done with this task,
-please remember to clean the table or restart the container 
-before moving on to the next task.
-
+En su informe del laboratio, por favor incluya sus reglas y las capturas de pantalla para demostrar que su firewall funciona como es esperado.
+Cuando termine con esta tarea, por favor recuerde limpiar las tablas o reiniciar el contenedor, antes de moverse a la siguiente tarea.
 
 % -------------------------------------------
 % SUBSECTION
@@ -854,7 +787,7 @@ statistic match options:
 \end{lstlisting}
  
 
-\paragraph{Using the \texttt{nth} mode (round-robin).}
+\paragraph{Usando el modo \texttt{nth} (round-robin).}
 On the router container, we set the following rule, which applies 
 to all the UDP packets going to port \texttt{8080}. 
 The \texttt{nth} mode of the \texttt{statistic} module is used; 
@@ -890,7 +823,7 @@ number of packets.
 Please provide some explanation for the rules. 
 
 
-\paragraph{Using the \texttt{random} mode.}
+\paragraph{Usando el modo \texttt{random}.}
 Let's use a different mode to achieve the load balancing. The following 
 rule will select a matching packet with the probability \texttt{P}.  
 You need to replace \texttt{P} with a probability number.
