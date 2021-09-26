@@ -77,22 +77,18 @@ Para una cobertura más detallada sobre firewalls, técnicas de evasión y VPN p
 % ------------------------------------------- 
 \subsection{Tarea 1: Setup de la Máquina Virtual}
 
- 
-We need two machines, one inside the firewall, and the other
-outside the firewall. The objective is to help the machine
-inside the firewall to reach out to the external sites blocked by the firewall. 
-We use two virtual machines, VM1 and VM2, for these two machines. 
-VM1 and VM2 are supposed to be two machines connected via the Internet through
-routers. This setup may require more than two VMs. 
-For the sake of simplicity, we use a LAN to emulate the Internet connection.
-Basically, we simply connect VM1 and VM2 to a LAN using the \texttt{NAT Network} 
-adapter. Figure~\ref{vpn_firewall:fig:labsetup} depicts the lab setup.
+Necesitamos dos máquinas, una dentro del firewall y la otra fuera del firewall. El objetivo es ayudar a la máquina que se encuentra dentro del firewall que pueda visitar sitios bloqueados por el firewall.
+Las máquinas que usaremos serán, VM1 y VM2, estas máquinas se suponen conectadas a internet a través de routers. Este setup puede requiera más de dos Máquinas Virtuales.
+Para hacer todo más sencillo, usaremos una LAN para emular la conexión a Internet.
+Básicamente, conectaremos VM1 y VM2 a la LAN usando un adaptor de \texttt{NAT Network}. 
+La Figura describe el setup de nuestro laboratorio.
+
 
 \begin{figure}[htb]
   \begin{center}
     \includegraphics[width=0.9\textwidth]{\firewallFigs/Host2Gateway.pdf}
   \end{center}
-  \caption{Lab Environment Setup}
+  \caption{Setup del Laboratorio}
   \label{vpn_firewall:fig:labsetup}
 \end{figure}
 
@@ -101,46 +97,30 @@ adapter. Figure~\ref{vpn_firewall:fig:labsetup} depicts the lab setup.
 % -------------------------------------------
 % SUBSECTION
 % ------------------------------------------- 
-\subsection{Tara 2: Setup del Firewall}
+\subsection{Tarea 2: Setup del Firewall}
 
-In this task, you will set up a firewall on VM1 to block the access of a target website. You
-need to make sure that the IP address of the target web site is either fixed or in a fixed
-range; otherwise, you may have trouble completely blocking this website. Please refer to the
-Firewall Lab for details about how to blocking websites.
+En esta tarea, ud. hara el setup del firewall en la VM1 para bloquear el acceso a un sitio web. Debe asegurarse que la dirección IP de este sitio web sea fija o este dentro de un rango fijo; de otra forma puede terminar bloqueando por completo el sitio web. Por favor vea el laboratorio de Firewall para detalles en como bloquear sitios web.
 
-In the real world, the firewall should run on a separate machine, not on VM1. To minimize the number of VMs
-used in this lab, we put the firewall on VM1. Setting up the firewall on VM1 requires the superuser
-privilege, and so does the setup of the VPN tunnel. One may immediately say that if we already
-have the superuser privilege, why cannot we just simply disable the firewall on VM1. This is a good argument,
-but keep in mind, we put the firewall on VM1 simply because we do not want to create another VM
-in the lab environment. Therefore, although you have the superuser privilege on VM1, you are
-not allowed to use the privilege to reconfigure the firewall. You have to use VPN to bypass
-it.
+En el mundo real, un firewall debería de correr en una máquina separada, no en VM1. Para minimizar el números de VMs usadas en el laboratorio, pondremos el firewall en VM1. Configurar un firewall en VM1 requiere de privilegios de superusuario como así también lo requiere la configuración del tunel VPN. Uno podría decir si contamos con privilegios de superusuario, porque no podemos desactivar el firewall en VM1 y listo. Este es un buen argumento, pero tenga en cuenta, que estamos poniendo el firewall en VM1 porque no queremos crear otra VM en el entorno de laboratorio. Además, aunque cuente con privilegios de superusuario en VM1, no le es permitido usar ese privilegio para reconfigurar el firewall. Ud. deberá de usar una VPN para bypassearlo.
 
-Compared to putting the firewall on an external machine, putting the firewall on VM1 does have
-a small issue that we need to deal with. When we set up the firewall to block packets, we need
-to make sure not to block the packets from getting to the virtual interface used by the VPN, or even our
-VPN will not be able to get the packets.  Therefore, we cannot set the firewall rule before the
-routing, nor can we set the firewall rule on the virtual interface. We just need to set the
-rule on VM1's real network interface, so it will not affect the packets that go to the virtual
-interface. The following command blocks all traffic to \texttt{93.184.216.0/24} 
-network (\texttt{example.com}). 
+A diferencia de situar el firewall en una máquina externa, poner el firewall en VM1 tiene un pequeño inconveniente con el cual necesitamos convivir. Cuando hacemos el setup del firewall para bloquear paquetes, necesitamos asegurarnos de no bloquear los paquetes que vienen de la interfaz virtual usada por la VPN o nuestra VPN no será capaz de obtener los paquetes. Además, no podemos setear la regla del firewall antes del routing o setearla  en la interfaz virtual. Necesitamos setear la regla en la interfaz de red real de VM1, para no afectar a los paquetes que van hacia la interfaz virtual. El siguiente comando bloquea todo el tráfico hacia la red \texttt{93.184.216.0/24}  (\texttt{example.com}).
+
 
 \begin{lstlisting}
 $ sudo iptables -A OUTPUT -o enp0s3 -d 93.184.216.0/24 -j DROP
 \end{lstlisting}
 
-Please identify a website that you would like to block, set up the firewall,
-and then demonstrate that your firewall is working and the target IP address is no longer 
-reachable. Provide screenshots in your lab report.  
-
+Por favor identifique el sitio web que quiere bloquear, haga el setup del firewall y demuestre que su firewall está funcionando y la dirección IP que esta bloqueando no se puede alcanzar. Provea capturas de pantalla en su informe del laboratorio.
 
 % -------------------------------------------
 % SUBSECTION
 % ------------------------------------------- 
 \subsection{Tarea 3: Bypasseando el Firewall usando VPN}
 
-
+La idea de usar una VPN para bypassear un firewall es ilustrada en la Figura \ref{vpn_firewall:fig:bypassing}. 
+Establecemos un tunel VPN entre VM1 (Cliente VPN) y VM2 (Servidor VPN).
+Cuando un usuario trata de acceder al sitio bloqueado, el tráfico no viajará directo a través del adaptador de red, porque será bloqueado. En vez de esto, los paquetes que se dirigen al sitio bloqueado desde VM1 serán enrutados hacia el tunel VPN y llegarán a VM2. Una vez que estos llegan ahí, VM2 los enrutará hacia su destino final.
+Cuando la respuestas de los paquetes lleguen de regreso, regresarán hacia VM2, que redireccionará los paquetes hacia el tunel VPN y eventualmente los paquetes volverán a VM1. Así es como una VPN ayuda a bypassear firewalls.
 
 The idea of using VPN to bypass firewall is depicted in 
 Figure~\ref{vpn_firewall:fig:bypassing}. 
@@ -158,24 +138,19 @@ VM1 to bypass firewalls.
 \begin{center}
 \includegraphics[width=1.0\textwidth]{\firewallFigs/BypassingFirewall.pdf}
 \end{center}
-\caption{Bypassing firewall using VPN}
+\caption{Bypasseando Firewall usando una VPN}
 \label{vpn_firewall:fig:bypassing}
 \end{figure}
  
-
-
-We have created a sample VPN program, including a client program (\texttt{vpnclient})  and
-a server program (\texttt{vpnserver}), both of which can be downloaded from
-this lab's web site. This simple VPN program only establishes a VPN tunnel 
-between the client and server; it does not encrypt the tunnel traffic.
-The program is explained in details in the SEED book (in the VPN chapter).
+Hemos creado un programa VPN de ejemplo, incluídos un programa cliente (\texttt{vpnclient}) y un programa servidor (\texttt{vpnserver}), ambos pueden ser descargados del sitio oficial del laboratorio. Estos programas VPN son muy simples y solamente establecen un tunel VPN entre el cliente y el servidor; no cifra el tráfico del tunel.
+El programa es explicado en detalle en el libro de SEED (Capítulo VPN).
 
 
 \begin{figure}[htb]
 \begin{center}
 \includegraphics[width=0.9\textwidth]{\firewallFigs/ClientServerTunnel.pdf}
 \end{center}
-\caption{VPN client and server}
+\caption{Cliente y Servidor VPN}
 \label{vpn_firewall:fig:client_server}
 \end{figure}
 
