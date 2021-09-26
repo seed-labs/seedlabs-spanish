@@ -536,39 +536,31 @@ Cuando termine con esta tarea, por favor recuerde limpiar las tablas o reiniciar
 % -------------------------------------------
 \subsection{Tarea 2.C: Protegiendo los Servicios Internos}
 
-In this task, we want to protect the TCP servers 
-inside the internal network (\texttt{192.168.60.0/24}). 
-More specifically, we would like to achieve the following objectives.
+En esta tarea, queremos proteger los servidores TCP dentro de la red interna  (\texttt{192.168.60.0/24}). 
+Más específicamente, quisieramos lograr los siguientes objetivos.
 
 \begin{enumerate}[noitemsep]
-  \item All the internal hosts run a telnet server (listening to port \texttt{23}). 
-    Outside hosts can only access the telnet server on \texttt{192.168.60.5},
-    not the other internal hosts.
+	
+  \item Todos los hosts internos corren un servidor telnet (escuchando en el puerto \texttt{23}).
+  Los hosts externos sólo pueden acceder al servidor telnet en \texttt{192.168.60.5}, y no al resto de los hosts de la red interna.
+  
+  \item Los hosts externos no pueden acceder a los servidores internos.
 
-  \item Outside hosts cannot access other internal servers. 
+  \item Los hosts internos pueden acceder a todos los servidores internos.
 
-  \item Internal hosts can access all the internal servers.
-
-  \item Internal hosts cannot access external servers.
-
-  \item In this task, the connection tracking mechanism is not allowed. 
-    It will be used in a later task. 
+  \item Los hosts internos no pueden acceder a los servidores externos.
+  
+  \item En esta tarea, no se permite el mecanismo del trackeo de conexión (connection tracking). Será usado en una tarea posterior.
 \end{enumerate}
 
-You will need to use the \texttt{"-p tcp"} options to specify the match
-options related to the TCP protocol. You can run 
-\texttt{"iptables -p tcp -h"} to find out all the TCP match
-options. The following example allows the TCP packets coming from
-the interface \texttt{eth0} if their source port is \texttt{5000}.  
+Necesitará usar la opción  \texttt{"-p tcp"} para especificar la condición que debe de coincidir para el protocolo TCP. Puede ejecutar \texttt{"iptables -p tcp -h"} para encontrar todas las condiciones de matcheo para TCP. El siguiente ejemplo deja  que los paquetes TCP pque vienen de la interfaz  \texttt{eth0} si su puerto origen es \texttt{5000}, pasen por el firewall.
+
 
 \begin{lstlisting}
 iptables -A FORWARD -i eth0 -p tcp --sport 5000  -j ACCEPT
 \end{lstlisting}
 
-
-When you are done with this task,
-please remember to clean the table or restart the container 
-before moving on to the next task.
+Cuando termine con esta tarea, recuerde limpiar las tablas o reiniciar el contenedor antes de proceder a la siguiente tarea.
 
 
 
@@ -576,61 +568,38 @@ before moving on to the next task.
 % *******************************************
 % SECTION
 % ******************************************* 
-\section{Tarea 3: trackeo de Conexión y Firewall Stateful}
+\section{Tarea 3: Trackeo de Conexión (connection tracking) y Firewall Stateful}
 
-
-In the previous task, we have only set up stateless firewalls, which inspect each
-packet independently. However, packets
-are usually not independent; they may be part of a TCP connection,
-or they may be ICMP packets triggered by other packets. Treating them
-independently does not take into consideration the context of the
-packets, and can thus lead to inaccurate, unsafe, or complicated firewall rules.
-For example, if we would like to allow TCP packets to get into our network
-only if a connection was made first, we cannot achieve that easily 
-using stateless packet filters, because when the firewall examines each individual TCP packet,
-it has no idea whether the packet belongs to an existing connection
-or not, unless the firewall maintains some state information for each connection.
-If it does that, it becomes a stateful firewall.
-
+En la tarea anterior, hemos trabajado con firewalls stateless, que inspeccionan cada paquete de forma independiente. Sin embargo, los paquetes generalmente no son independiente; ellos pueden ser parte de una conexión TCP o pueden ser paquetes ICMP ejecutados por otros paquetes. Tratarlos como independientes no toma en consideración el contexto de los paquetes, y puede desembocar en reglas poco precisas, inseguras o complejas.
+Poir ejemplo, si quisieramos dejar que entren paquetes TCP en nuestra red sólo si hubo una primera conexión, no lo podemos hacer de forma fácil usando un filtrado de paquetes stateless, porque cuando el firewall examine cada paquete TCP de forma individual, no tendrá idea si el paquete pertenece a una conexión existente o no, al menos que el firewall mantenga alguna información sobre el estado de cada conexión.
+Si eso se cumple, estamos en presencia de un firewall stateful.
 
 % -------------------------------------------
 % SUBSECTION
 % ------------------------------------------- 
 \subsection{Tarea 3.A: Experimentado con el Trackeo de Conexiones} 
 
-
-To support stateful firewalls, we need to be able to track connections. 
-This is achieved by the \texttt{conntrack} mechanism inside the kernel. 
-In this task, we will conduct experiments related to this module, and 
-get familiar with the connection tracking mechanism. 
-In our experiment, we will check the connection tracking information
-on the router container. This can be done using the following command: 
+Para dar soporte a un firewall stateful, necesitamos poder trackear las conexiones.
+Esto se logra con el mecanismo \texttt{conntrack} dentro del kernel.
+En esta tarea, haremos experimentos relacionados con este módulo y nos familiarizaremos con el mecanismo del trackeo de conexiones o connection tracking.
+En nuestro experimento, chequeremos la información del trackeo de conexión en el contenedor del router. Esto puede hacerse usando el siguiente comando:
 
 \begin{lstlisting}
 # conntrack -L
 \end{lstlisting}
 
-The goal of the task is to use a series of experiments to 
-help students understand the 
-connection concept in this tracking mechanism, especially
-for the ICMP and UDP protocols, because unlike TCP,  they 
-do not have connections. 
-Please conduct the following experiments. For each experiment, please 
-describe your observation, along with your explanation. 
+El objetivo de la tarea es usar una serie de experimentos para ayudar a los estudiantes a entender el concepto de conexión en este mecanismo de tracking, especialmente para los protocolos ICMP y UDP, porque a diferencia de TCP, ellos no tienen conexiones.
+Por favor realize los siguientes experimentos. Por cada experimento, por favor describa su observación junto con su explicación.
 
 \begin{itemize}
-\item ICMP experiment: Run the following command and 
-check the connection tracking information on the router. Describe
-your observation. How long is the ICMP connection state be kept? 
+\item Experimento ICMP: Ejecute el siguiente comando y observe la información del trackeo de conexión en el router. Describa su observación. ¿Cuanto tiempo se mantiene el estado de la conexión ICMP?
 
 \begin{lstlisting}
 // On 10.9.0.5, send out ICMP packets
 # ping 192.168.60.5
 \end{lstlisting}
 
-\item UDP experiment: Run the following command and 
-check the connection tracking information on the router. Describe
-your observation. How long is the UDP connection state be kept? 
+\item Experimento UDP:Ejecute el siguiente comando y observe la información del trackeo de conexión en el router. Describa su observación. ¿Cuanto tiempo se mantiene el estado de la conexión UDP?
 
 
 \begin{lstlisting}
@@ -643,9 +612,7 @@ your observation. How long is the UDP connection state be kept?
 \end{lstlisting}
 
 
-\item TCP experiment: Run the following command and 
-check the connection tracking information on the router. Describe
-your observation. How long is the TCP connection state be kept? 
+\item Experimento TCP: Ejecute el siguiente comando y observe la información del trackeo de conexión en el router. Describa su observación. ¿Cuanto tiempo se mantiene el estado de la conexión TCP?
 
 \begin{lstlisting}
 // On 192.168.60.5, start a netcat TCP server
