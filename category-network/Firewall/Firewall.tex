@@ -325,7 +325,7 @@ unsigned int blockUDP(void *priv, struct sk_buff *skb,
 En el código anterior, la Línea \ding{202} muestra como convertir dentro del kernel, una dirección IP en formato decimal con punto (es decir una cadena, como sería \texttt{1.2.3.4}) en un binario de 32-bits (\texttt{0x01020304}), por lo que puede ser comparado con el número binario que está guardado dentro de los paquetes.
 La Línea \ding{203} compara la dirección IP de destino y el número de puerto con los valores de nuestra regla. Si estos valores coinciden con los de la regla,  \texttt{NF\_DROP} será retornado a \netfilter que se encargará de dropear el paquete. En caso contrario, \texttt{NF\_ACCEPT} será retornado y \netfilter dejará que el paquete continue su viaje (\texttt{NF\_ACCEPT} quiere decir que el paquete es aceptado por esta función hook; pero aún así puede ser dropeado por otra función hook).
 
-\paragraph{Tareas.} El código completo de muestra se llama \texttt{seedFilter.c} y está incluído en los archivos del laboratorio (dentro del directorio \path{Files/packet_filter}). Por favor realize las siguientes tareas (hágalas por separado).
+\paragraph{Tareas.} El código completo de muestra se llama \texttt{seedFilter.c} y está incluído en los archivos del laboratorio (dentro del directorio \path{Files/packet_filter}). Por favor realice las siguientes tareas (hágalas por separado).
 
 \begin{enumerate}
 	
@@ -570,8 +570,8 @@ Cuando termine con esta tarea, recuerde limpiar las tablas o reiniciar el conten
 % ******************************************* 
 \section{Tarea 3: Trackeo de Conexión (connection tracking) y Firewall Stateful}
 
-En la tarea anterior, hemos trabajado con firewalls stateless, que inspeccionan cada paquete de forma independiente. Sin embargo, los paquetes generalmente no son independiente; ellos pueden ser parte de una conexión TCP o pueden ser paquetes ICMP ejecutados por otros paquetes. Tratarlos como independientes no toma en consideración el contexto de los paquetes, y puede desembocar en reglas poco precisas, inseguras o complejas.
-Poir ejemplo, si quisieramos dejar que entren paquetes TCP en nuestra red sólo si hubo una primera conexión, no lo podemos hacer de forma fácil usando un filtrado de paquetes stateless, porque cuando el firewall examine cada paquete TCP de forma individual, no tendrá idea si el paquete pertenece a una conexión existente o no, al menos que el firewall mantenga alguna información sobre el estado de cada conexión.
+En la tarea anterior, hemos trabajado con firewalls stateless, que inspeccionan cada paquete de forma independiente. Sin embargo, los paquetes generalmente no son independientes; ellos pueden ser parte de una conexión TCP o pueden ser paquetes ICMP ejecutados por otros paquetes. Tratarlos como independientes no toma en consideración el contexto de los paquetes, y puede desembocar en reglas poco precisas, inseguras o complejas.
+Por ejemplo, si quisieramos dejar que entren paquetes TCP en nuestra red sólo si hubo una primera conexión, no lo podemos hacer de forma fácil usando un filtrado de paquetes stateless, porque cuando el firewall examine cada paquete TCP de forma individual, no tendrá idea si el paquete pertenece a una conexión existente o no, al menos que el firewall mantenga alguna información sobre el estado de cada conexión.
 Si eso se cumple, estamos en presencia de un firewall stateful.
 
 % -------------------------------------------
@@ -589,7 +589,7 @@ En nuestro experimento, chequeremos la información del trackeo de conexión en 
 \end{lstlisting}
 
 El objetivo de la tarea es usar una serie de experimentos para ayudar a los estudiantes a entender el concepto de conexión en este mecanismo de tracking, especialmente para los protocolos ICMP y UDP, porque a diferencia de TCP, ellos no tienen conexiones.
-Por favor realize los siguientes experimentos. Por cada experimento, por favor describa su observación junto con su explicación.
+Por favor realice los siguientes experimentos. Por cada experimento, por favor describa su observación junto con su explicación.
 
 \begin{itemize}
 \item Experimento ICMP: Ejecute el siguiente comando y observe la información del trackeo de conexión en el router. Describa su observación. ¿Cuanto tiempo se mantiene el estado de la conexión ICMP?
@@ -632,52 +632,35 @@ Por favor realize los siguientes experimentos. Por cada experimento, por favor d
 % ------------------------------------------- 
 \subsection{Tarea 3.B: Configurando un Firewall Stateful} 
 
-
-Now we are ready to set up firewall rules based on connections. 
-In the following example, 
-the \texttt{"-m conntrack"} option indicates that we are using the \texttt{conntrack} module,
-which is a very important module for \iptables; it tracks connections, and
-\iptables replies on the tracking information to build stateful firewalls. 
-The \texttt{--ctsate ESTABLISHED,RELATED} indicates that whether a packet
-belongs to an \texttt{ESTABLISHED} or \texttt{RELATED} connection.
-The rule allows TCP packets belonging to an existing connection to 
-pass through. 
+Estamos listo para setear las reglas basada en conexiones de nuestro firewall.
+En el siguiente ejemplo, la opción \texttt{"-m conntrack"} indica que estamos usando el módulo \texttt{"conntrack"},
+este módulo es muy importante en \iptables; ya que permite trackear conexiones y \iptables responde sobre la información del trackeo para construir un firewall stateful.
+\texttt{--ctsate ESTABLISHED,RELATED} indica si un paquete pertenece a una conexión \texttt{ESTABLISHED} o \texttt{RELATED}.
+La regla permite que los paquetes TCP que pertenecen a una conexión existente sean aceptadas o no.
 
 \begin{lstlisting}
 iptables -A FORWARD -p tcp -m conntrack          \
          --ctstate ESTABLISHED,RELATED -j ACCEPT
 \end{lstlisting}
 
-
-The rule above does not cover the SYN packets, which do not belong to 
-any established connection. Without it, we will not be able to 
-create a connection in the first place. Therefore, we need to 
-add a rule to accept incoming SYN packet: 
+La regla anterior no cubre paquetes SYN, que no pertenecen a ninguna conexión establecida. Sin esto, no seremos capaces de crear una conexión. Además, necesitamos agregar una regla para aceptar la llegada de paquetes SYN:
 
 \begin{lstlisting}
 iptables -A FORWARD -p tcp -i eth0 --dport 8080 --syn  \
          -m conntrack --ctstate NEW -j ACCEPT 
 \end{lstlisting}
 
-Finally, we will set the default policy on FORWARD to drop
-everything. This way, if a packet is not accepted by the two
-rules above, they will be dropped. 
+Finalmente, seteamos la política por defecto en la cadena FORWARD para dropear todo. De esta forma, si un paquete no es aceptado por las dos reglas anteriores, serán dropeadas o rechazadas.
+
 
 \begin{lstlisting}
 iptables -P FORWARD DROP
 \end{lstlisting}
 
-
-Please rewrite the firewall rules in Task 2.C, but this time,
-\textbf{we will add a rule allowing internal hosts to visit any 
-external server} (this was not allowed in Task 2.C). 
-After you write the rules using the connection tracking mechanism, 
-think about how to do it without using the connection tracking
-mechanism (you do not need to actually implement them). 
-Based on these two sets of rules, 
-compare these two different approaches, and 
-explain the advantage and disadvantage of each approach. 
-When you are done with this task, remember to clear all the rules. 
+Por favor reescriba las reglas del firewall de la Tarea 2.C, pero esta vez, \textbf{agregaremos una regla que permite a los hosts internos visitar cualquier servidor externo} (esto no era permitido en la Tarea 2.C).
+Después de escribir las reglas usando el mecanismo de trackeo de conexión, piense como hacerlo sin este (no necesita implementarlas manualmente).
+Basado en ese conjunto de reglas, compare ambas estrategias y explique las ventajas y desventajas de cada una.
+Cuando termine con esta tarea, recuerde limpiar todas las reglas.
 
 
 
@@ -686,12 +669,12 @@ When you are done with this task, remember to clear all the rules.
 % ******************************************* 
 \section{Tarea 4: Limitando el Tráfico de Red}
 
-In addition to blocking packets, we can also 
-limit the number of packets that can pass through the firewall. 
-This can be done using the \texttt{limit} module of \iptables.
-In this task, we will use this module to limit how many packets 
-from \texttt{10.9.0.5} are allowed to get into the internal network. 
-You can use \texttt{"iptables -m limit -h"} to see the manual.  
+Además de bloquear paquetes, también podemos
+limitar la cantidad de paquetes que pueden pasar a través del firewall.
+Esto se puede hacer usando el módulo \texttt{limit} de \iptables.
+En esta tarea, usaremos este módulo para limitar la cantidad de paquetes
+desde \texttt{10.9.0.5} que pueden ingresar a la red interna.
+Puede usar \texttt{"iptables -m limit -h"} para ver el manual.
 
 \begin{lstlisting}
 $ iptables -m limit -h
@@ -702,12 +685,12 @@ limit match options:
 --limit-burst number    number to match in a burst, default 5
 \end{lstlisting}
  
+Ejecute los siguientes comandos en el router y luego haga
+ping a \texttt {192.168.60.5} desde \texttt{10.9.0.5}.
+Describa tu observación.
+Realice el experimento con y sin la segunda regla,
+y luego explique si la segunda regla es necesaria o no, y por qué.
 
-Please run the following commands on router, and then
-ping \texttt{192.168.60.5} from \texttt{10.9.0.5}.  
-Describe your observation. 
-Please conduct the experiment with and without the second rule, 
-and then explain whether the second rule is needed or not, and why.
 
 \begin{lstlisting}
 iptables -A FORWARD -s 10.9.0.5 -m limit \
@@ -723,24 +706,26 @@ iptables -A FORWARD -s 10.9.0.5 -j DROP
 % *******************************************
 \section{Tarea 5: Balanceo de Carga}
 
-The \iptables is very powerful. In addition to firewalls,
-it has many other applications. We will not be able to 
-cover all its applications in this lab, but we will experimenting
-with one of the applications, load balancing. In this task,
-we will use it to load balance three UDP servers running in the 
-internal network. Let's first start the server
-on each of the hosts: \texttt{192.168.60.5}, \texttt{192.168.60.6}, and 
-\texttt{192.168.60.7} (the \texttt{-k} option indicates that 
-the server can receive UDP datagrams from multiple hosts):
+\iptables es muy poderoso. Además de ser un firewall,
+tiene muchas otras aplicaciones y/o usos. No podremos
+cubrir todos sus usos en este laboratorio, pero experimentaremos
+con uno de ellos, el balanceo de carga. En esta tarea,
+lo usaremos para balancear la carga de tres servidores UDP que se ejecutan en la
+red interna. Primero iniciemos el servidor
+en cada uno de los hosts: \texttt {192.168.60.5}, \texttt {192.168.60.6} y
+\texttt {192.168.60.7} (la opción \texttt {-k} indica que
+el servidor puede recibir datagramas UDP de varios hosts):
+
 
 \begin{lstlisting}
 nc -luk 8080
 \end{lstlisting}
 
-We can use the \texttt{statistic} module to achieve load balancing. 
-You can type the following command to get its manual. You can 
-see there are two modes: \texttt{random} and \texttt{nth}. 
-We will conduct experiments using both of them.
+Podemos usar el módulo \texttt{statistic} para implementar el balanceo de carga.
+Puede ejecutar el siguiente comando para ver su manual. Usted puede
+observar que hay dos modos: \texttt{random} y \texttt{nth}.
+Realizaremos experimentos utilizando ambos.
+
 
 \begin{lstlisting}
 $ iptables -m statistic -h 
@@ -755,14 +740,15 @@ statistic match options:
  
 
 \paragraph{Usando el modo \texttt{nth} (round-robin).}
-On the router container, we set the following rule, which applies 
-to all the UDP packets going to port \texttt{8080}. 
-The \texttt{nth} mode of the \texttt{statistic} module is used; 
-it implements a round-robin load balancing policy: for every
-three packets, pick the packet 0 (i.e., the first one), 
-change its destination IP address and port number to 
-\texttt{192.168.60.5}  and \texttt{8080}, respectively.  
-The modified packets will continue on its journey.
+En el contenedor del router, establecemos la siguiente regla, que se aplica
+a todos los paquetes UDP que van hacia el puerto \texttt{8080}.
+Se utiliza el modo \texttt {nth} del módulo \texttt{statistic};
+este implementa una política de blanaceo de carga por turnos: por cada
+tres paquetes, elije el paquete 0 (es decir, el primero),
+cambia su dirección IP de destino y número de puerto a
+\texttt{192.168.60.5} y \texttt{8080}, respectivamente.
+Los paquetes modificados continuarán su viaje.
+
 
 \begin{lstlisting}
 iptables -t nat -A PREROUTING -p udp --dport 8080      \
@@ -770,12 +756,13 @@ iptables -t nat -A PREROUTING -p udp --dport 8080      \
          -j DNAT --to-destination 192.168.60.5:8080
 \end{lstlisting}
 
-It should be noted that those packets that do not match
-the rule will continue on their journeys; they will
-not be modified or blocked. With this rule in place, 
-if you send a UDP packet to the router's \texttt{8080} port,  
-you will see that one out of three packets gets to 
-\texttt{192.168.60.5}. 
+Cabe señalar que aquellos paquetes que no coinciden
+la regla continuarán sus viajes; lo harán
+sin ser modificados ni bloqueados. Con esta regla en su lugar,
+si envía un paquete UDP al puerto \texttt{8080} del router,
+Verá que uno de cada tres paquetes llega a
+\texttt{192.168.60.5}.
+
 
 \begin{lstlisting}
 // On 10.9.0.5
@@ -783,17 +770,16 @@ echo hello | nc -u 10.9.0.11 8080
 <hit Ctrl-C>
 \end{lstlisting}
  
-
-Please add more rules to the router container, 
-so all the three internal hosts get the equal 
-number of packets. 
-Please provide some explanation for the rules. 
+Agregue más reglas al contenedor del router,
+para que los tres hosts internos obtengan el mismo
+número de paquetes.
+Proporcione una explicación de las reglas.
 
 
 \paragraph{Usando el modo \texttt{random}.}
-Let's use a different mode to achieve the load balancing. The following 
-rule will select a matching packet with the probability \texttt{P}.  
-You need to replace \texttt{P} with a probability number.
+Usemos un modo diferente para lograr el balanceo de carga. La siguiente
+La regla seleccionará un paquete que coincide con la probabilidad \texttt{P}.
+Necesita reemplazar \texttt{P} con un número de probabilidad.
 
 \begin{lstlisting}
 iptables -t nat -A PREROUTING -p udp --dport 8080   \
@@ -801,13 +787,11 @@ iptables -t nat -A PREROUTING -p udp --dport 8080   \
          -j DNAT --to-destination 192.168.60.5:8080
 \end{lstlisting}
 
-Please use this mode to implement your load balancing 
-rules, so each internal server get roughly the 
-same amount of traffic (it may not be exactly the same, 
-but should be close when the total number of packets is large). 
-Please provide some explanation for the rules. 
-
-
+Utilice este modo para implementar su balanceo de carga
+reglas, por lo que cada servidor interno obtiene aproximadamente la
+la misma cantidad de tráfico (puede que no sea exactamente el mismo,
+pero debe estar cerca cuando el número total de paquetes es grande).
+Proporcione una explicación de las reglas.
 
 
 % *******************************************
