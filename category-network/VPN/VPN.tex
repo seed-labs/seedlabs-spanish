@@ -157,36 +157,17 @@ Los programas son explicados en detalle en el Capítulo 16 del libro de SEED lla
 \label{vpn:fig:client_server}
 \end{figure}
 
-The \texttt{vpnclient} and \texttt{vpnserver} programs are the two ends of
-a VPN tunnel. They communicate with each other using either TCP or UDP via the sockets
-depicted in Figure~\ref{vpn:fig:client_server}. In our sample code, we choose 
-to use UDP for the sake of simplicity.  The dotted line between the
-client and server depicts the path for the VPN tunnel. 
-The VPN client and server programs connect to the hosting system via a
-TUN interface, through which they do two things: (1) get IP packets from
-the hosting system, so the packets can be sent through the tunnel, (2) get IP packets from the
-tunnel, and then forward it to the hosting system, which will forward the
-packet to its final destination. 
-The following procedure describes how to create a VPN tunnel 
-using the \texttt{vpnclient} and \texttt{vpnserver} programs. 
+Los programas \texttt{vpnclient} y \texttt{vpnserver} son los dos puntos finales del Túnel VPN. Ellos se comunican entre sí por medio TCP o UDP a través de sockets, esto es ilustrado en la Figura \ref{vpn_firewall:fig:client_server}. En nuestro código de ejemplo, elegimos usar UDP por un tema de simplicidad. La línea punteada entre el cliente y el servidor demarca el camino para el Túnel VPN.
+Los programas del cliente y servidor VPN se conectan al sistema de hosting a través de la interfaz TUN, a través de la cual ellos hacen dos cosas: (1) obtienes los paquetes IP del sistema de hosting, por lo que los paquetes pueden ser enviados a través del Túnel, (2) obtiene los paquetes IP desde el Túnel y los forwardea hacia el sistema de hosting, el cual forwardeará los paquetes hacia su destino final.
+El siguiente procedimiento describe como crear un Túnel VPN usando los programas \texttt{vpnclient} y \texttt{vpnserver}.
 
 
 \paragraph{Paso 1: Iniciar el Servidor VPN.} 
-We first run the VPN server program \texttt{vpnserver} on the Server VM.
-After the program runs, a virtual TUN network interface will appear 
-in the system (we can see it using the \texttt{"ifconfig -a"} command; the name of the
-interface will be \texttt{tun0} in most cases, but they can be
-\texttt{tunX}, where \texttt{X} is a number).   
-This new interface is not yet configured, so we need to configure it by giving it an IP
-address. We use \texttt{192.168.53.1} for this interface.  
+Primer iniciamos el servidor VPN ejecutando \texttt{vpnserver} en la máquina virtual del servidor.
+Después de que el programa se ejecute, aparecerá una interfaz virtual de red TUN en el sistema (puede verla usando el comando \texttt{"ifconfig -a"}; en la mayoría de los sistema el nombre de esta interfaz será \texttt{tun0} pero puede ser que sea diferente, sea como sea será \texttt{tunX} donde \texttt{X} es un número).
+Esta nueva interfaz no está configurada todavía, por lo que necesitamos hacerlo, asignándole una dirección IP. Usaremos \texttt{192.168.53.1} para esta interfaz, pero puede usar otra IP.
 
-
-Run the following commands. The first command will start the server
-program, and the second command assigns an IP address to the \texttt{tun0}
-interface and then activates it. It should be noted that the first 
-command will block and wait for connections, 
-so we need to find another window run the second command.
-
+Ejecute los siguientes comandos. El primer comando iniciará el programa servidor, el segundo comando asignará la dirección IP a la interfaz \texttt{tun0} y la activará. Debería de notar que el primer comando bloqueará y se quedará a la espera por conexiones, por lo que debemos de correr el segundo comando en una nueva ventana.
 
 \begin{lstlisting}
 $ sudo ./vpnserver
@@ -195,12 +176,8 @@ Run the following command in another window:
 $ sudo ifconfig tun0 192.168.53.1/24 up
 \end{lstlisting}
 
-Unless specifically configured, a computer will only act as a host, 
-not as a gateway. The VPN Server needs to forward packets between the private network and the 
-tunnel, so it needs to function as a gateway. We need to  
-enable the IP forwarding for a computer to behave like a gateway. 
-IP forwarding can be enabled
-using the following command:
+Al menos que se configura de una forma especial, una máquina actuará como host y no como gateway. El servidor VPN necesita forwardear los paquetes hacia otros destinos, por lo que necesita funcionar como un gateway. Necesitamos activar el IP forwarding para que la máquina se comporte como un gateway.
+IP Forwarding puede ser activado usando el siguiente comando:
 
 \begin{lstlisting}
 $ sudo sysctl net.ipv4.ip_forward=1
@@ -208,13 +185,9 @@ $ sudo sysctl net.ipv4.ip_forward=1
 
 
 
-\paragraph{Paso 2: Iniciar el Cliente VPN.} We now run the VPN client program on the Client
-VM.  We run the following commands on this machine. The first command
-will connect to the VPN server program (the server's IP address is hardcoded
-inside the program, and you need to change it accordingly).
-This command will block as well, so we need to find another window to 
-configure the \texttt{tun0} interface created by the VPN client program.  
-We assign IP address \texttt{192.168.53.5} to the \texttt{tun0} interface.   
+\paragraph{Paso 2: Iniciar el Cliente VPN.}
+Procederemos a ejecutar el cliente VPN en la máquina virtual cliente. Correremos el siguiente comando en la máquina. El primer comando se encargará de conectar al cliente con el servidor VPN (la IP del servidor está hardcodeada dentro del programa, ud. debe de cambiarla a la que corresponde). Este comando será bloqueante por lo que necesitamos abrir otra ventana para configurar la interfaz \texttt{tun0} creada por el cliente VPN.
+A la interfaz \texttt{tun0} le asignaremos la IP \texttt{192.168.53.5}.
 
 
 \begin{lstlisting}
