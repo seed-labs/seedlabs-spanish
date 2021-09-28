@@ -149,7 +149,7 @@ El siguiente procedimiento describe como crear un Túnel VPN usando los programa
 
 
 \paragraph{Paso 1: Iniciar el Servidor VPN.}
-Primer iniciamos el servidor VPN \texttt{vpnserver} en la máquina virtual del servidor.
+Primer iniciamos el servidor VPN ejecutando \texttt{vpnserver} en la máquina virtual del servidor.
 Después de que el programa se ejecute, aparecerá una interfaz virtual de red TUN en el sistema (puede verla usando el comando \texttt{"ifconfig -a"}; en la mayoría de los sistema el nombre de esta interfaz será \texttt{tun0} pero puede ser que sea diferente, sea como sea será \texttt{tunX} donde \texttt{X} es un número).
 Esta nueva interfaz no está configurada todavía, por lo que necesitamos hacerlo, asignándole una dirección IP. Usaremos \texttt{192.168.53.1} para esta interfaz, pero puede usar otra IP.
 
@@ -163,14 +163,13 @@ Run the following command in another window:
 $ sudo ifconfig tun0 192.168.53.1/24 up
 \end{lstlisting}
 
-Al menpos que se configura de una forma especial, una máquina actuará como host y no como gateway. El servidor VPN necesita forwardear los paquetes hacia otros destinos, por lo que necesita funcionar como un gateway. Necesitamos activar el IP forwarding para que la máquina se comporte como un gateway.
+Al menos que se configura de una forma especial, una máquina actuará como host y no como gateway. El servidor VPN necesita forwardear los paquetes hacia otros destinos, por lo que necesita funcionar como un gateway. Necesitamos activar el IP forwarding para que la máquina se comporte como un gateway.
 IP Forwarding puede ser activado usando el siguiente comando:
 
 
 \begin{lstlisting}
 $ sudo sysctl net.ipv4.ip_forward=1
 \end{lstlisting}
-
 
 
 \paragraph{Paso 2: Iniciar el Cliente VPN.} 
