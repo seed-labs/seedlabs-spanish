@@ -94,13 +94,9 @@ En este laboratorio, los estudiantes deberán de implementar una VPN simple para
 % ------------------------------------------- 
 \subsection{Tarea 1: Setup de la Máquina Virtual}
 
-We will create a VPN tunnel between a 
-computer (client) and a gateway, allowing the computer to securely access 
-a private network via the gateway. 
-We need at least three VMs: VPN client (also serving as Host U), VPN server (the gateway),
-and a host in the private network (Host V). 
-The network setup is depicted in Figure~\ref{vpn:fig:host2gateway}.
-
+Crearemos un Túnel VPN entre la máquina cliente y el gateway, permitiéndole a la máquina el acceso seguro a la red privada a través del gateway.
+Necesitaremos al menos tres Máquinas Virtuales: el cliente VPN (también usado como Host U), el servidor VPN (gateway), y el host en la red privada (Host V).
+El setup de esta red es ilustrado en la Figura \ref{vpn:fig:host2gateway}.
 
 \begin{figure}[htb]
 \begin{center}
@@ -111,34 +107,16 @@ The network setup is depicted in Figure~\ref{vpn:fig:host2gateway}.
 \end{figure}
  
 
+En la práctiva, el cliente VPN y el servidor VPN estarán conectados vía Internet.
+Para no complicar las cosas, conectaremos estas dos máquinas a la misma LAN, es decir la LAN simulará la Internet.
+Usaremos el adaptador ``NAT Network'' para esta LAN.
+La tercera máquina, Host V, es una máquina dentro de la red privada. Los usuarios en el Host U (fuera de la red privada) quieren comunicarse con el Host V usando el Túnel VPN. Para simular esta configuración, conectaremos el Host V al servidor VPN (también será el gateway) a través de una  ``Internal Network''. En este escenario de configuración, el Host V no es accesible directamente desde Internet; o desde el Host U.
 
-In practice, the VPN client and VPN server are connected via the Internet.
-For the sake of simplicity, we directly connect these two
-machines to the same LAN in this lab, i.e., this LAN simulates the Internet. 
-We will use the ``NAT Network'' adaptor for this LAN.
-The third machine, Host V, is a computer inside the private network. Users
-on Host U (outside of the private network) want to communicate with Host V
-via the VPN tunnel. To simulate this setup, we connect Host V to VPN Server
-(also serving as a gateway) via an ``Internal Network''.  In such a setup, 
-Host V is not directly accessible from the Internet; nor is it directly accessible 
-from Host U. 
+Note que si una máquina virtual usa el modo ``Internal Network'', VirtualBox no ofrece DHCP a esta, por lo que la máquina virtual debe ser configurada de forma estática. Para hacer esto haga click en el ícono de network en la esquina derecha superior del escritorio y seleccione \texttt{"Edit Connections"}. Verá una lista de \texttt{"Wired connections"}, una por cada adaptador de red usado por la máquina virtual.
+Para el Host V, hay sólo una conexión pero para el servidor VPN, usaremos dos. Para asegurarse que ud. selecciona el correcto que corresponde al adaptador de ``Internal Network'', puede chequear la dirección MAC mostrada en el pop-up después de haber elejido editar la conexión.
+Compare esta dirección MAC con la que ud. obtiene de  \texttt{ifconfig}, y así sabrá si es la correcta o no.
 
-Note if a VM uses the ``Internal Network'' mode, VirtualBox provides no DHCP to it, so the
-VM must be statically configured. To do this, click the network icon on the top-right corner
-of the desktop, and select \texttt{"Edit Connections"}. You will see a list 
-of \texttt{"Wired connections"}, one for each of the network adaptors used by the VM. 
-For Host V, there is only one connection, but for VPN Server, we will see two. To make sure 
-that you pick the one that is corresponding to the ``Internal Network'' adapter, 
-You can check the MAC address displayed in the pop-up window after you have 
-picked a connection to edit. 
-Compare this MAC address with the one that you get from \texttt{ifconfig},
-and you will know whether you picked the right connection. 
-
-After you have selected the right connection to edit, 
-pick the \texttt{"ipv4 Settings"} tab and select the 
-\texttt{"Manual"} method, instead of the default \texttt{"Automatic (DHCP)"}. Click 
-the \texttt{"Add"} button to set up the new IP address for the VM. See
-Figure~\ref{vpn:fig:internalnetwork} for details. 
+Después de haber seleccionado la conexión que se debe de editar, seleecione el tab que dice \texttt{"ipv4 Settings"} y elija el método Manual, en vez del que se usa por defecto que es \texttt{"Automatic (DHCP)"}. Haga click en el botón de \texttt{"Add"}  para configurar la dirección IP para la máquina virtual. Para más detalles vea la Figura  \ref{vpn:fig:internalnetwork}.
 
 
 
@@ -146,8 +124,7 @@ Figure~\ref{vpn:fig:internalnetwork} for details.
 \begin{center}
 \includegraphics[width=0.8\textwidth]{\vpnFigs/InternalNetwork.pdf}
 \end{center}
-\caption{Manually set up the IP address for the \texttt{"Internal Network"} adaptor on VPN
-Server.}
+\caption{Configuración Manual de la IP para el adaptador \texttt{"Internal Network"} del servidor VPN.}
 \label{vpn:fig:internalnetwork}
 \end{figure}
  
@@ -156,53 +133,27 @@ Server.}
 % -------------------------------------------
 % SUBSECTION
 % ------------------------------------------- 
-\subsection{Tarea 2: Creando un Tunel VPN usando TUN/TAP}
+\subsection{Tarea 2: Creando un Túnel VPN usando TUN/TAP}
 
+Activar la tecnología para las VPNs TLS/SLL es TUN/TAP, las cuales son ampliamente implementadas en los sistemas operativos modernos.
+TUN y TAP son drivers del kernel de redes virtuales; implementan un dispositivo de red que es soportado por el software.
+TAP simula un dispositivo ethernet y opera con paquetes de capa 2 como Frames Ethernet; TUN simula un dispositivo de capa red y opera con paquetes de capa 3 como paquetes IP.
+Con TUN/TAP, podemos crear interfaces de red virtuales.
 
+Un programa en el espacio de usuario está frecuentemente atachada a una interfaz de red virtual TUN/TAP.
+Los paquetes enviados por el sistema operativo usando la interfaz de red TUN/TAP son entregados al programa en espacio de usuario. Por otro lado los paquetes enviados por el programa usando la interfaz de red TUN/TAP son inyectados dentro del stack de red del sistema operativo, y hace parecer que los paquetes provienen de un origen externo a través de la interfaz de red virtual.
 
-The enabling technology for the TLS/SSL VPNs is 
-TUN/TAP, which is now widely implemented in modern operating systems.
-TUN and TAP are virtual network kernel drivers; they 
-implement network device that are supported entirely in software.
-TAP (as in network tap) simulates an Ethernet device and it operates with 
-layer-2 packets such as Ethernet frames; TUN (as in network TUNnel) simulates a
-network layer device and it operates with layer-3 packets such as IP packets.
-With TUN/TAP, we can create virtual network interfaces. 
+Cuando un programa se atacha a la interfaz TUN/TAP, los paquetes IP que envía la máquina a esta interfaz serán canalizados dentro del programa; por otro lado, los paquetes IP que el programa envía a la interfaz serán canalizado dentro de la máquina, como si ellos hubieran venido de afuera de la red a través de esta red de interfaz virtual. El programa puede usar las llamadas al sistema estandar  {\tt read()} y {\tt write()} para recibir estos paquetes desde la interfaz virtual o para enviarlos a través de la misma.
 
-
-A user-space program is usually attached to the TUN/TAP virtual network interface.
-Packets sent by an operating system via a TUN/TAP network interface 
-are delivered to the user-space program. On the other hand,
-packets sent by the program
-via a TUN/TAP network interface are injected into the operating system
-network stack; to the operating system,
-it appears that the packets come from an external source
-through the virtual network interface.
-
-
-When a program is attached to a TUN/TAP interface, the IP packets that 
-the computer sends to this interface will be piped into the 
-program; on the other hand, the IP packets that the program sends to the 
-interface will be piped into the computer, as if they came from 
-the outside through this virtual network interface. The program can use 
-the standard {\tt read()} and {\tt write()} system calls to receive packets 
-from or send packets to the virtual interface.
-
-
-We have created a sample VPN client program (\texttt{vpnclient})  and 
-a server program (\texttt{vpnserver}), both of which can be downloaded from
-this lab's web site. 
-The programs are explained in details in Chapter 16 of the SEED book titled
-\textit{Computer \& Internet Security: A Hands-on Approach, 2nd Edition}; the chapter also
-explains how TUN/TAP works and how to use it to create VPN.
-
+Hemos creado un cliente VPN de ejempolo llamado (\texttt{vpnclient}) y un servidor  (\texttt{vpnserver}), ambos pueden ser descargados del sitio oficial del laboratorio.
+Los programas son explicados en detalle en el Capítulo 16 del libro de SEED llamado \textit{Computer \& Internet Security: A Hands-on Approach, 2nd Edition}; este Capítulo también explica como funciona TUN/TAP y como usarlos para crear una VPN.
 
 
 \begin{figure}[htb]
 \begin{center}
 \includegraphics[width=0.9\textwidth]{\vpnFigs/ClientServerTunnel.pdf}
 \end{center}
-\caption{VPN client and server}
+\caption{Cliente y Servidor VPN}
 \label{vpn:fig:client_server}
 \end{figure}
 
@@ -220,7 +171,7 @@ The following procedure describes how to create a VPN tunnel
 using the \texttt{vpnclient} and \texttt{vpnserver} programs. 
 
 
-\paragraph{Step 1: Run VPN Server.} 
+\paragraph{Paso 1: Iniciar el Servidor VPN.} 
 We first run the VPN server program \texttt{vpnserver} on the Server VM.
 After the program runs, a virtual TUN network interface will appear 
 in the system (we can see it using the \texttt{"ifconfig -a"} command; the name of the
@@ -257,7 +208,7 @@ $ sudo sysctl net.ipv4.ip_forward=1
 
 
 
-\paragraph{Step 2: Run VPN Client.} We now run the VPN client program on the Client
+\paragraph{Paso 2: Iniciar el Cliente VPN.} We now run the VPN client program on the Client
 VM.  We run the following commands on this machine. The first command
 will connect to the VPN server program (the server's IP address is hardcoded
 inside the program, and you need to change it accordingly).
@@ -276,7 +227,7 @@ $ sudo ifconfig tun0 192.168.53.5/24 up
 
 
 
-\paragraph{Step 3: Set Up Routing on Client and Server VMs:} 
+\paragraph{Paso 3: Configurar el Enrutamiento en las máquinas del Cliente VPN y el Servidor VPN:} 
 After the above two steps, the tunnel will be established. 
 Before we can use the tunnel, we need to set up routing 
 paths on both client and server machines to direct the intended traffic through
@@ -303,7 +254,7 @@ we can use the \texttt{route}  command to add it.
 
 
 
-\paragraph{Step 4: Set Up Routing on Host V.} 
+\paragraph{Paso 4: Configurar el Enrutamiento en Host V.} 
 When Host V replies to a packet sent from Host U, it needs to route the
 packets to the VPN Server VM, from where, it can be fed into
 the VPN tunnel toward the other end. You need to find out what entry to
@@ -315,7 +266,7 @@ need to figure out the source IP of the packets from U to V. It is your
 task to figure this out and set the routing correctly in this step.
 
 
-\paragraph{Step 5: Test the VPN Tunnel:} After everything is set up, we can 
+\paragraph{Paso 5: Testeando el Túnel VPN.:} After everything is set up, we can 
 access Host V from Host U via the tunnel. 
 Please conduct the following tests using \texttt{ping} and \texttt{telnet}; 
 please  report your results. You should use Wireshark to 
@@ -330,7 +281,7 @@ $ telnet 192.168.60.101
 \end{lstlisting}
 
 
-\paragraph{Step 6: Tunnel-Breaking Test.} 
+\paragraph{Paso 6: Hacer un Test Breaking del Túnel.} 
 On Host U, \texttt{telnet} to \texttt{Host V}. While keeping the
 \texttt{telnet} connection alive, we break the VPN tunnel. We then type something
 in the \texttt{telnet} window, and report what you observe. 
@@ -343,7 +294,7 @@ Please describe and explain your observations.
 % -------------------------------------------
 % SUBSECTION
 % ------------------------------------------- 
-\subsection{Tarea 3: Encriptando el Tunel}
+\subsection{Tarea 3: Encriptando el Túnel}
 
 
 At this point, we have created an IP tunnel, but our tunnel is not protected. 
