@@ -222,7 +222,7 @@ $ sudo iptables -t nat -A POSTROUTING -j MASQUERADE -o enp0s3
 \paragraph{Demostración.}
 Si ud. ha realizado los pasos anteriores de manera correcta, debería de poder bypassear el firewall. Debería de mostrar que puede acceder al sitio bloqueado desde la máquina virtual del cliente a través de la VPN. Su solución no solamente debería de funcionar para tráfico web sino para todo tipo de tráfico. Por ejemplo, si la máquina bloqueada hace \texttt{telnet} al servidor bloqueado, debería de poder establecer una conexión \texttt{telnet} desde la máquina cliente.
 
-En su informe del laboratorio, debe de proporcionar evidencia que muestre que su tráfico pasó por el Túnel VPN y no por ``puiertas laterales''. La mejor forma de mostrarlo es capturar el tráfico de red usando Wireshark y describir el camino de sus paquetes usando el tráfico capturado. Sin esta evidencia, no tendremos idea si su éxito se debió a un firewall mal configurado (es decir el sitio web que se supone bloqueado no lo está) o por una VPN mal configurada.
+En su informe del laboratorio, debe de proporcionar evidencia que muestre que su tráfico pasó por el Túnel VPN y no por ``puertas laterales''. La mejor forma de mostrarlo es capturar el tráfico de red usando Wireshark y describir el camino de sus paquetes usando el tráfico capturado. Sin esta evidencia, no tendremos idea si su éxito se debió a un firewall mal configurado (es decir el sitio web que se supone bloqueado no lo está) o por una VPN mal configurada.
 
 % *******************************************
 % SECTION
