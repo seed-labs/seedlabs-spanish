@@ -201,51 +201,28 @@ $ sudo ifconfig tun0 192.168.53.5/24 up
 
 
 \paragraph{Paso 3: Configurar el Enrutamiento en las máquinas del Cliente VPN y el Servidor VPN:} 
-After the above two steps, the tunnel will be established. 
-Before we can use the tunnel, we need to set up routing 
-paths on both client and server machines to direct the intended traffic through
-the tunnel. On the client machine, we need to direct all the packets going
-to the private network ({\tt 192.168.60.0/24}) towards the \texttt{tun0}
-interface, from where the packets can be forwarded through the VPN tunnel.
-Without this setup, we will not be able to access the private network at
-all. We can use the \texttt{route} command to add an routing entry. The
-following example shows how to route the \texttt{10.20.30.0/24}-bound
-packets to the interface \texttt{eth0}. 
+
+Después de realizar los pasos anteriores, el Túnel será establecido.
+Antes de poder usar el Túnel, necesitamos configurar los caminos de enrutamiento en las máquinas del cliente y del servidor para así poder direccionar el tráfico que nos interesa a través del Túnel.
+En la máquina cliente, necesitamos direccionar todos los paquetes que van hacia a la red privada ({\tt 192.168.60.0/24}) hacia la interfaz  \texttt{tun0}, que es donde todos los paquetes serán forwardeados a través del túnel VPN.
+Sin esta configuración, no podremos acceder a la red privada.
+Podemos usar el comando \texttt{route} para agregar entradas. El siguiente ejemplo muestra como enrutar los paquetes de \texttt{10.20.30.0/24} hacia la interfaz \texttt{eth0}.
 
 \begin{lstlisting}
 $ sudo route add -net 10.20.30.0/24 eth0
 \end{lstlisting}
 
-
-On both client and server machines, we also need to 
-set up a routing entry so all the traffic going to the \texttt{192.168.53.0/24}
-network are directed to the \texttt{tun0} interface. This entry will usually be 
-automatically added when we assign \texttt{192.169.53.X} to
-the \texttt{tun0} interface.  If for some reasons it is not added, 
-we can use the \texttt{route}  command to add it.
-
+Tanto en la máquina del cliente como en la del servidor, necesitamos configurar las entradas de enrutamiento para que el todo el tráfico  que va hacia la red \texttt{192.168.53.0/24} sea redireccionado a la interfaz \texttt{tun0}. Esta entrada generalmente será agregada de forma automática cuando asignemos \texttt{192.169.53.X} a la interfaz \texttt{tun0} interface. Si por alguna razón no es agregada podemos usar el comando \texttt{route} para hacerlo de forma manual.
 
 
 
 \paragraph{Paso 4: Configurar el Enrutamiento en Host V.} 
-When Host V replies to a packet sent from Host U, it needs to route the
-packets to the VPN Server VM, from where, it can be fed into
-the VPN tunnel toward the other end. You need to find out what entry to
-add, and then use  the \texttt{route} command to add the routing entry. 
-Hint: when Host V receives a packet from Host U (via the tunnel), you need to know what the
-source IP is in the packet; in the reply packet, the source IP becomes the
-destination IP, which will be used by the routing table. Therefore, you
-need to figure out the source IP of the packets from U to V. It is your
-task to figure this out and set the routing correctly in this step.
+Cuando Host V responde a un paquete enviado desde Host U, necesita enrutar los paquetes hacia el servidor VPNM, desde donde puede llenar el túnel VPN hacia al otro extremo. Necesita encontrar que entrada agregar y usar el comando \texttt{route} para agregar la entrada de enrutamiento que corresponde.
+Pista: cuando Host V recibe un paquete desde Host U (vía el túnel), necesita saber cual es la dirección IP de origen que se encuentra en el paquete; en el paquete de respuesta, la IP de origen se vuelve la la dirección IP de destino, la cual será usada por la tabla de enrutamiento desde U hacia V. Es su tarea encontrar esto y agregar la entrada de forma correcta para este paso.
 
-
-\paragraph{Paso 5: Testeando el Túnel VPN.:} After everything is set up, we can 
-access Host V from Host U via the tunnel. 
-Please conduct the following tests using \texttt{ping} and \texttt{telnet}; 
-please  report your results. You should use Wireshark to 
-capture the network traffics on all the interfaces on the client VM, 
-and pinpoint which packets are part of the tunnel traffic, and
-which packets are not the tunnel traffic. 
+\paragraph{Paso 5: Testeando el Túnel VPN.:} 
+Después de haber configurado todo, podemos acceder al host V desde el Host U por medio del túnelñ.
+Por favor realize las siguientes pruebas usando \texttt{ping} y \texttt{telnet}; por favor incluya en el informe sus resultados. Debería de usar Wireshark para capturar el tráfico de red en todas las interfaces de la máquina virtual del cliente and señalar cuales son los paquetes que son parte del tráfico del túnel y cuales no lo son.
 
 \begin{lstlisting}
 On Host U:
@@ -255,13 +232,9 @@ $ telnet 192.168.60.101
 
 
 \paragraph{Paso 6: Hacer un Test Breaking del Túnel.} 
-On Host U, \texttt{telnet} to \texttt{Host V}. While keeping the
-\texttt{telnet} connection alive, we break the VPN tunnel. We then type something
-in the \texttt{telnet} window, and report what you observe. 
-We then reconnect the VPN tunnel. What is going to happen to the
-\texttt{telnet} connection? Will it be broken or resumed?
-Please describe and explain your observations. 
-
+Haga un \texttt{telnet} del Host U al \texttt{Host V}. Mientras este la conexión \texttt{telnet} activa, desconectese del túnel VPN. Escriba algo en la ventana de \texttt{telnet} y describa su observación en el informe del laboratorio.
+Proceda a reconectarse al túnel VPN. ¿Qué sucede con la conexión \texttt{telnet}? ¿Se perderá o retomará desde donde quedó?
+Por favor describa y explique sus observaciones.
 
 
 % -------------------------------------------
@@ -270,35 +243,18 @@ Please describe and explain your observations.
 \subsection{Tarea 3: Encriptando el Túnel}
 
 
-At this point, we have created an IP tunnel, but our tunnel is not protected. 
-Only after we have secured this tunnel, can we call it a VPN tunnel. 
-This is what we are going to achieve in this task. 
-To secure this tunnel, we need to achieve two 
-goals, confidentiality and integrity. 
-The confidentiality is achieved using encryption, i.e.,
-the contents that go through the tunnel is encrypted. 
-The integrity goal ensures that nobody can tamper with 
-the traffic in the tunnel or launch a replay attack. 
-Integrity can be achieved using 
-Message Authentication Code (MAC). 
-Both goals can be achieved using Transport Layer Protocol (TLS). 
+En este punto, hemos creado un túnel IP, pero nuestro túnel no está protegido.
+Sólo después de haber asegurado este túnel, podremos llamarlo un túnel VPN.
+Esto es lo que haremos en esta tarea.
+Para asegurar este túnel, necesitamos lograr dos objetivos, confidencialidad y integridad.
+La confidencialidad se logra usando cifrado, es decir, el contenido que viaja por este túnel está cifrado.
+La integridad permite que nadie pueda manipular el tráfico en el túnel o lanzar un ataque de replay.
+La integridad se lograr usando Message Authentication Code (MAC).
+Ambos objetivos pueden lograr usando Transport Layer Protocol (TLS). 
 
-
-TLS is typically built on top of TCP. The sample VPN client and server 
-programs in Task 2 use UDP, so we first need to 
-replace the UDP channel in the sample code with a TCP channel, and then establish a
-TLS session between the two ends of the tunnel.  A sample TLS client
-and server program (\texttt{tlsclient} and \texttt{tlsserver})   
-is provided in a zip file that can be downloaded from the website. 
-Instructions on how to compile and run the code
-is provided in the README file included in the zip file. 
-For detailed explanation of the sample
-code, please read Chapter 25 of the SEED book (\textit{Computer \& Internet Security: A
-Hands-on Approach, 2nd Edition}). In your demonstration, you need to use Wireshark to
-capture the traffic inside the VPN tunnel, and show that the traffic is
-indeed encrypted. 
-
-
+TLS típicamente está construido sobre TCP. En el cliente y servidor VPN de ejemplo, los programas en la tarea 2 usan UDP, por lo que primero necesitamos reemplazar el canal UDP en el código de ejemplo con un canal TCP y establecer una sesión TLS entre los dos puntos del túnel. Proveemos dos programas de ejemplo para un cliente TLS y un servidor TLS (\texttt{tlsclient} y \texttt{tlsserver}), estos archivos se encuentran en el archivo zip que se puede descargar desde el sitio oficial del laboratorio.
+Las instrucciones para compilar y ejecutar el código provisto se encuentran en el archivo README dentro del archivo zip.
+Para una explicación más en detalle, por favor consulte en Capítulo 25 del libro de SEED (\textit{Computer \& Internet Security: A Hands-on Approach, 2nd Edition}). En su demostración, necesita usar Wireshark para capturar el tráfico dentro del túnel VPN y mostrar que ese tráfico se encuentra cifrado.
 
 % -------------------------------------------
 % SUBSECTION
@@ -400,14 +356,10 @@ lrwxrwxrwx 1 ... 9b58639a.0 -> cacert.pem
 \end{lstlisting}
 
 
-
-
-
-
 % -------------------------------------------
 % SUBSECTION
 % ------------------------------------------- 
-\subsection{Task 5: Authenticating the VPN Client}
+\subsection{Tarea 5: Autenticando al Cliente VPN}
 
 Accessing the machines inside a private network is a privilege that is only
 granted to authorized users, not to everybody. Therefore, only authorized
@@ -427,7 +379,7 @@ sample code on how to authenticate users using the shadow file.
 % -------------------------------------------
 % SUBSECTION
 % ------------------------------------------- 
-\subsection{Task 6: Supporting Multiple Clients}
+\subsection{Tarea 6: Soporte para Múltiples Clientes}
 
 
 In the real world, one VPN server often supports multiple VPN tunnels. 
@@ -476,7 +428,7 @@ Section~\ref{vpn:subsec:select} shows how to achieve that.
 % *******************************************
 % SECTION
 % ******************************************* 
-\section{Guidelines}
+\section{Guías}
 
 
 
