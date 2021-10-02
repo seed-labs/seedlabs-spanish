@@ -261,64 +261,25 @@ Para una explicación más en detalle, por favor consulte en Capítulo 25 del li
 % ------------------------------------------- 
 \subsection{Tarea 4: Autenticando el Servidor VPN}
 
+Antes que la conexión a la VPN sea establecida, el cliente VPN debe autenticarse en el servidor VPN para asegurarse que este servidor no sea un servidor fraudulento.
+Por otro lado, el servidor VPN debe de autenticar al cliente (es decir al usuario), asegurándose que ese usuario tiene los permisos para acceder a la red privada.
+En esta tarea, implementaremos la autenticación en el servidor; en la siguiente tarea lo implementaremos para el cliente.
 
-Before a VPN is established, the VPN client must authenticate
-the VPN server, making sure that the server is not a fraudulent 
-one. On the other hand, the VPN server must authenticate the
-client (i.e. user), making sure that the user has 
-the permission to access the private network. 
-In this task, we implement the server authentication; 
-the client authentication is in the next task. 
+Una forma típica de autenticar servidores es usar certificados de llave pública. El servidor VPN necesita obtener primero el certificado de la llave pública de una Autoridad Certificadora o Certificate Authority (CA). Cuando un cliente realiza una conexión hacia el servidor VPN, el servidor usará el certificado para probar que es el servidor previsto.
+El protocolo HTTPs usa este enfoque para autenticar servidores web, asegurándo que el cliente está hablando con el servidor correcto y no con uno fraudulento.
 
-A typical way to authenticate servers is to use public-key
-certificates. The VPN server needs to first get a public-key 
-certificate from a Certificate Authority (CA).
-When a client makes a connection to the VPN 
-server, the server will use the certificate to prove it 
-is the intended server.  
-The HTTPS protocol uses this approach to 
-authenticate web servers, ensuring that you are talking to 
-an intended web server, not a fake one. 
+En este laboratorio, nuestra \miniVPN debería de usar este método para autenticar en el servidor VPN. Podemos iomplementar un protocolo de autenticación (tal como TLS/SSL) desde cero, pero afortunadamente, \texttt{openssl} se encarga de la mayoría del trabajo por nosotros. Sólo neceistamos configurar nuestra sesión TLS de manera correcta, de esta forma \texttt{openssl} puede realizar la autenticación automáticamente por nosotros.
+
+Existen tres pasos importantes en la autenticación de un servidor: (1) verificar que el certificado del servidor sea válido, (2) verificar que el servidor es el dueño del certificado y (3) verificar que el servidor es el servidor sea el indicado (por ejemplo si el usuario intenta visitar \texttt{example.com}, necesitamos asegurarnos que ese servidor sea \texttt{example.com}, y no  otro sitio). Por favor señale qué líneas enn el código en su programa lleva a cabo las verificaciones anteriores.
+En su demostración, debe demostrar dos casos diferentes con respecto a la tercera verificación: una autenticación exitosa del servidor donde el servidor es el servidor previsto, y una autenticación de servidor fallida donde el servidor no es el servidor previsto.
+
+\paragraph{Nota:} Nuestro programa \miniVPN debería de poder comunicarse con servidores VPNs en otras máquinas, por lo que no puede hardcodear el hostname del servidor VPN en el programa. El hostname debe de ser tipeado desde la consola. Este nombre representa una acción del usuario que representa una intención, por lo que debería ser usada en la verificación. Este nombre también debería de ser usada para encontrar la dirección IP del servidor. La sección \ref{vpn:subsec:hostnametoip} es un ejemplo de un programa que muestra como obtener la dirección IP dado un hostname.
 
 
-In this lab, \miniVPN should use such a method to authenticate the
-VPN server. We can implement an authentication protocol (such
-as TLS/SSL) from the scratch, but fortunately, \texttt{openssl} has 
-taken care most of the work for us. We just need to configure 
-our TLS session properly, so \texttt{openssl} can conduct the authentication
-automatically for us.  
-
-There are three important steps in server authentication: (1) verifying that
-the server certificate is valid, (2) verifying that the server 
-is the owner of the certificate, and (3) verifying that the server is
-the intended server (for example, if the user intends to visit 
-\texttt{example.com}, we need to ensure that the server is indeed 
-\texttt{example.com}, not another site). Please point out what lines of the
-code in your program carry out the above verifications. 
-In your demonstration, you need to demonstrate two different cases regarding the 
-third verification: a successful server authentication where the 
-server is the intended server, and a failed server authentication where 
-the server is not the intended server. 
-
-
-\paragraph{Note:} Our \miniVPN program should be able to communicate with
-VPN servers on different machines, so you cannot hardcode the hostname of 
-the VPN server in the program. The hostname needs to be typed in from the
-command line. This name represents the user's intention, so it should be
-used in the verification. This name should also be used to find the IP
-address of the server. Section~\ref{vpn:subsec:hostnametoip} provides a sample 
-program to show you how to get the IP address for a given hostname. 
-
-
-\paragraph{Our sample TLS client and server programs.} Server authentication
-is implemented in the sample programs provided by us. Part of the authentication requires the
-certificate of the CA who issues the server certificate. 
-We have put two CA certificates in the \texttt{./ca\_client} folder: one is the 
-CA that issues our server's certificate (the hostname of the server
-is \url{vpnlabserver.com}), 
-and the other is the CA that issues Google's certificate. 
-Therefore, the sample TLS client program can talk to 
-our own server, as well as Google's HTTPS server: 
+\paragraph{Nuestros clientes y servidores TLS de ejemplo.}  La autentación a nivel servidor es implementada en el los programas provisto por nosotros. Parte de la autenticación requiere el certificado de la CA dado que es quien emite el certificado.
+Hemos puesto dos certificados CA dentro del directorio \texttt{./ca\_client}. Uno es el CA que emite el certificado de nuestro servidor (el nombre de host del servidores \url{vpnlabserver.com}),
+y el otra es la CA que emite el certificado de Google.
+Por lo tanto, el programa cliente TLS de muestra puede comunicarse con nuestro propio servidor, así como con el servidor HTTPS de Google: 
 
 \begin{lstlisting}
 $ ./tlsclient vpnlabserver.com 4433
@@ -326,22 +287,11 @@ $ ./tlsclient www.google.com 443
 \end{lstlisting}
 
 
-\textbf{It should be noted} that students should not use 
-\texttt{vpnlabserver.com} from the sample code as their VPN server name;
-instead, \textbf{they should include their last name} in the server 
-name. Students should generate their own CA in order to create 
-server certificates. The objective of this requirement is to differentiate
-student's work.
+\textbf{Cabe señalar que} los estudiantes no deberían de usar el dominio \texttt{vpnlabserver.com} del código ejemplo como como el nombre de su servidor VPN; en vez de ello \textbf{deberían de incluir su apellido} en el nombre del servidor. Los estudiantes deberían de generar su propio CA para crear certificados para el servidor. El objetivo de este requerimiento es necesario para diferenciar el trabajo de cada uno de los estudiantes.
 
+Para usar nuestro cliente y que pueda comunicarse con un servidor HTTPS, necesitamos obtener su certificado CA, guardar este certificado dentro de la carpeta \texttt{./ca\_client}  y crear un link simbólico hacia la misma (o renombrarla) usando el valor hash generado a partir de su campo asunto.
+Por ejemplo, para hacer que nuestro cliente hable con Google, quien obtiene su certificado de un CA raíz llamado ``GeoTrust Global CA'', podemos obtener este certificado CA raíz  (\texttt{GeoTrustGlobalCA.pem})   desde el navegador Firefox y ejecutar el comando para obtener su hash y configurar el link simbólico:
 
-To use our client to talk to an HTTPS server, we need to get its CA's certificate, 
-save the certificate in the \texttt{./ca\_client} folder, and create a symbolic link to it~(or
-rename it) using the hash value generated from its subject field.
-For example, to enable our client to talk to Google, who gets 
-its certificate from a root CA called ``GeoTrust Global CA'', we
-get this root CA's certificate (\texttt{GeoTrustGlobalCA.pem})  
-from the Firefox browser,
-and run the following command to get its hash and then set up the symbolic link:
 
 \begin{lstlisting}
 $ openssl x509 -in GeoTrustGlobalCA.pem -noout -subject_hash
@@ -361,19 +311,10 @@ lrwxrwxrwx 1 ... 9b58639a.0 -> cacert.pem
 % ------------------------------------------- 
 \subsection{Tarea 5: Autenticando al Cliente VPN}
 
-Accessing the machines inside a private network is a privilege that is only
-granted to authorized users, not to everybody. Therefore, only authorized
-users are allowed to establish a VPN tunnel with the VPN server. 
-In this task, authorized users are those who have a valid account on the VPN server.
-We will therefore use the standard password authentication to authenticate
-users. Basically, when a user tries to establish a VPN tunnel 
-with the VPN server, the user will be asked to provide a user name and a
-password. The server will check its shadow file (\texttt{/etc/shadow}); 
-if a matching record is found, the user is authenticated, and the 
-VPN tunnel will be established. If there is no match, the server will
-break its connection with the user, and thus no tunnel will be established. 
-See Section~\ref{vpn:subsec:auth} for 
-sample code on how to authenticate users using the shadow file.
+Acceder a las máquinas dentro de una red privada es un privilegio que solo es garantizado a usuarios autorizados, no a todos. Además, sólo a los usuarios autorizados se le permiten establecer conexiones al túnel VPN usando el servidor VPN.
+En esta tarea, los usuarios autorizados son aquellos quienes tengan una cuenta válida en el servidor VPN.
+Usaremos el mecanismo standard de autenticación de password para autenticarlos. Básicamente, cuando un usuario intenta establecer una conexión a un túnel VPN usando el servidor VPN, se le preguntará por un usuario y un password. El servidor deberá de chequear su archivo shadow (\texttt{/etc/shadow}); si los datos ingresados coinciden, el usuario será autenticado y la conexión con el túnel VPN será establecida. De lo contrario el servidor cortará su conexión con el usuario y la conexión con el túnel VPN no podrá ser establecida.
+Vea la Sección \ref{vpn:subsec:auth} para un código de ejemplo que muestra como autenticar usuarios en el archivo shadow.
 
 
 % -------------------------------------------
@@ -381,48 +322,27 @@ sample code on how to authenticate users using the shadow file.
 % ------------------------------------------- 
 \subsection{Tarea 6: Soporte para Múltiples Clientes}
 
-
-In the real world, one VPN server often supports multiple VPN tunnels. 
-Namely, the VPN server allows more than one clients to 
-connect to it simultaneously, with each client having its own VPN tunnel (and thus
-its own TLS session). Our \miniVPN should support 
-multiple clients. 
-
+En el mundo real, un servidor VPN suele soportar múltiples túneles VPN.
+Así el servidor VPN permite que más de un cliente se conecte al mismo tiempo de forma simultánea, con cada cliente teniendo su propio túnel (y su propia sesión TLS). Nuesta \miniVPN podría soportar múltiples clientes.
 
 \begin{figure}[htb]
 \begin{center}
 \includegraphics[width=0.8\textwidth]{\vpnFigs/MultiClient.pdf}
 \end{center}
-\caption{Supporting multiple VPN clients}
+\caption{Múltiples clientes en una VPN}
 \label{vpn:fig:MultiClient}
 \end{figure}
  
+En una implementación típica, el proceso servidor VPN  (el proceso padre) crea procesos hijos por cada túnel (vea la Figura \ref{vpn:fig:MultiClient}).
+Cuando un paquete llega desde el túnel, el proceso hijo que corresponde obtendrá este paquete y lo redirigirá hacia la interfaz TUN.
+Esta dirección es la misma sin iomportar si soporta múltiples clientes o no. Es en la otra dirección en donde se convierte en un desafío.
+Cuando un paquete llega a la intrefaz TUN (desde la red privada), el proceso padre obtendrá el paquete, y necesitará descubrir a cual túnel este paquete debe de dirigirse. Debe de pensar en como implementar la lógica de esta decisión
 
-In a typical implementation, the VPN server process (the parent
-process) will create a child process for each tunnel (see  
-Figure~\ref{vpn:fig:MultiClient}).
-When a packet comes from the tunnel, its corresponding child process 
-will get the packet, and forward it to the TUN interface. 
-This direction is the same regardless of whether multiple clients are 
-supported or not. It is the other direction that becomes challenging. 
-When a packet arrives at the TUN interface (from the private network), 
-the parent process will get the packet, now it needs to figure out which
-tunnel this packet should go to. You need to think about how to implement
-this decision-making logic. 
+Una vez que esta decisión es tomada y se elije un túnel, el proceso padre necesita enviar el paquete al proceso hijo, el cual tiene el túnel que le corresponde. Esto requiere IPC (comunicación entre procesos). A
+Un enfoque típico es utilizar pipes. Ofrecemos un programa de muestra en la Sección \ref{vpn:subsec: pipe} para mostrar cómo usar pipes para IPC.
 
-Once the decision is made and a tunnel is selected, the parent process
-needs to send the packet to the child process, to which
-the selected tunnel is attached. This calls for IPC (Inter-Process Communication). A
-typical approach is to use pipes. We provide a sample program in
-Section~\ref{vpn:subsec:pipe} to demonstrate how to use pipes for IPC.
-
-
-Child processes need to monitor this pipe interface, and read data from it if there 
-are data. Since child processes also need to watch out for data coming from the socket
-interface, they need to simultaneously monitor multiple interfaces.    
-Section~\ref{vpn:subsec:select} shows how to achieve that. 
-
-
+Los procesos hijos necesitan monitorear esta interfaz del pipe y leer datos del mismo si es que los hay. Dado que los procesos hijos también necesitan monitorear los datos que llegan de la interfaz socket, necesitan estar simultáneamente monitoreando múltiples interfaces.
+La Sección \ref{vpn:subsec:select} muestra como hacer esto.
 
 
 % *******************************************
@@ -431,11 +351,10 @@ Section~\ref{vpn:subsec:select} shows how to achieve that.
 \section{Guías}
 
 
-
 % -------------------------------------------
 % SUBSECTION
 % ------------------------------------------- 
-\subsection{Displaying TLS Traffic in Wireshark}
+\subsection{Mostrando Tráfico TLS en Wireshark}
 
 Wireshark identifies TLS/SSL traffic based on port numbers. It knows 
 \texttt{443} is the default port number for HTTPS, but our VPN server listens to a different
@@ -449,7 +368,7 @@ server port. For example, we can change the content
 of the entry to  \texttt{443,4433}, where \texttt{4433} is the port used by our SSL server. 
 
 
-\paragraph{Displaying decrypted traffic.} The approach shown above only 
+\paragraph{Mostrando Tráfico no Cifrado.} The approach shown above only 
 gets Wireshark to recognize the traffic as TLS/SSL traffic; Wireshark cannot 
 decrypt the encrypted traffic. For debugging purposes, we would like to see the decrypted
 traffic. Wireshark provides such a feature; all we need to do is to provide the 
@@ -474,7 +393,7 @@ to Wireshark, do the following:
 % -------------------------------------------
 % SUBSECTION
 % ------------------------------------------- 
-\subsection{Getting IP Address from Hostname}
+\subsection{Obteniendo una Dirección IP desde un Hostname}
 \label{vpn:subsec:hostnametoip}
 
 
@@ -520,7 +439,7 @@ int main() {
 % -------------------------------------------
 % SUBSECTION
 % ------------------------------------------- 
-\subsection{Authentication Using the Shadow File}
+\subsection{Autenticando usando el Archivo Shadow}
 \label{vpn:subsec:auth}
 
 
@@ -593,7 +512,7 @@ not a typo.
 % -------------------------------------------
 % SUBSECTION
 % ------------------------------------------- 
-\subsection{Inter-Process Communication Using Pipe}
+\subsection{Comunicación entre Procesos usando Pipes}
 \label{vpn:subsec:pipe}
 
 The following program shows how a parent process sends data to its child process using 
@@ -659,7 +578,7 @@ int main(void)
 % -------------------------------------------
 % SUBSECTION
 % ------------------------------------------- 
-\subsection{Using \texttt{select} to Monitor Multiple Input Interfaces}
+\subsection{Usando \texttt{select} para Monitorear Múltiples Interfaces}
 \label{vpn:subsec:select}
 
 Our VPN program needs to monitor multiple interfaces, including the TUN interface, the socket
@@ -710,7 +629,7 @@ if (FD_ISSET(tunfd, &readFDSet){
 % -------------------------------------------
 % SUBSECTION
 % ------------------------------------------- 
-\subsection{An example: using {\tt telnet} in our VPN} 
+\subsection{Un Ejemplo: usando {\tt telnet} en nuestra VPN} 
 
 To help you fully understand how packets from an application flow to its destination
 through our \miniVPN, we have drawn two figures to illustrate the complete 
@@ -825,12 +744,7 @@ the path in Figure~\ref{fig:example1_host_2_gateway}.
 % ******************************************* 
 \section{Checklist de la Demostración}
 
-
-During the COVID-19 outbreak, we cannot do in-person demo. Although doing demo
-online is an option, we decide to experiment with a different approach: asking students to 
-record their demo and submit the video file. To help them conduct a self-guided demo,
-we provide a checklist in Table~\ref{vpn:table:checklist}. Even if we do in-person demo, this checklist 
-is still quite useful. 
+Durante el período de pandemia COVID-19, no hemos podido hacer las demostraciones en personas. Sin embargo hacerlas online es una opción, hemos decidido experimentar con un método diferente: pidiendóle a los estudiantes que graben su demostración y envién el archivo de video. Para ayudarlos a realizar su propía guía para la demostración, hemos provisto una serie de checks en una lista en la Tabla \ref{vpn:table:checklist}. Incluso si se realiza esta demostración en persona, este checklist es útil.
 
 \input{Demo_Checklist}
 
