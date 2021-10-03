@@ -287,7 +287,7 @@ $ ./tlsclient www.google.com 443
 \end{lstlisting}
 
 
-\textbf{Cabe señalar que} los estudiantes no deberían de usar el dominio \texttt{vpnlabserver.com} del código ejemplo como como el nombre de su servidor VPN; en vez de ello \textbf{deberían de incluir su apellido} en el nombre del servidor. Los estudiantes deberían de generar su propio CA para crear certificados para el servidor. El objetivo de este requerimiento es necesario para diferenciar el trabajo de cada uno de los estudiantes.
+\textbf{Cabe señalar} que los estudiantes no deberían de usar el dominio \texttt{vpnlabserver.com} del código ejemplo como como el nombre de su servidor VPN; en vez de ello \textbf{deberían de incluir su apellido} en el nombre del servidor. Los estudiantes deberían de generar su propio CA para crear certificados para el servidor. El objetivo de este requerimiento es necesario para diferenciar el trabajo de cada uno de los estudiantes.
 
 Para usar nuestro cliente y que pueda comunicarse con un servidor HTTPS, necesitamos obtener su certificado CA, guardar este certificado dentro de la carpeta \texttt{./ca\_client}  y crear un link simbólico hacia la misma (o renombrarla) usando el valor hash generado a partir de su campo asunto.
 Por ejemplo, para hacer que nuestro cliente hable con Google, quien obtiene su certificado de un CA raíz llamado ``GeoTrust Global CA'', podemos obtener este certificado CA raíz  (\texttt{GeoTrustGlobalCA.pem})   desde el navegador Firefox y ejecutar el comando para obtener su hash y configurar el link simbólico:
@@ -488,23 +488,13 @@ Por último debemos de notar que usamos \texttt{-lcrypt} en la compilación ante
 \subsection{Comunicación entre Procesos usando Pipes}
 \label{vpn:subsec:pipe}
 
-The following program shows how a parent process sends data to its child process using 
-pipe. The parent process creates a pipe using \texttt{pipe()} in Line~\ding{192}. 
-Each pipe has two ends: the input end's file descriptor is \texttt{fd[0]}, and 
-the output end's file descriptor is \texttt{fd[1]}. 
+El siguiente programa muetra como un proceso padre envía datos a su hijo usando pipe. El proceso padre crea un pipe usando  \texttt{pipe()} Línea \ding{192}. 
+Cada pipe tiene dos extremos; el primer extremo corresponde al descriptor de archivo de input \texttt{fd[0]}, y el segundo extremo corresponde al descriptor de archivo de output \texttt{fd[1]}.
 
-After the pipe is created, a child process is spawned using \texttt{fork()}. 
-Both parent and child processes have the
-file descriptors associated with the pipe. They can send data to each other using the 
-the pipe, which is bi-directional. However, we will only use this pipe to send data from the
-parent process to the child process, and the parent will not read anything from the pipe, so 
-we close the input end \texttt{fd[0]} in the parent process. Similarly, the child does not
-send anything via the pipe, so it closes the output end \texttt{fd[1]}.  
-At this point, we have established a uni-directional pipe from the parent process to the child process. 
-To send data via the pipe, the parent process writes to \texttt{fd[1]} (see Line~\ding{193});
-to receive data from the pipe, the child process reads from \texttt{fd[0]} (see
-Line~\ding{194}).  
-
+Después de la creación del pipe, el proceso hijo es lanzado usando \texttt{fork()}. 
+Tanto el padre como el hijo tienen descriptores de archivo asociados al pipe. Ellos pueden enviarse datos entre sí usando el pipe, que es bidireccional. Sin embargo, solamente usaremos este pipe para enviar data del padre al hijo y el padre no leerá nada desde el pipe, por lo que cerraremos el extremo del input \texttt{fd[0]} en el proceso padre. De manera similar, el hijo no enviará nada por el pipe, por lo que cerraremos el extremo del output \texttt{fd[1]}. 
+En este punto, ya hemos establecido el pipe unidireccional desde el proceso padre hacia su hijo.
+Para enviar datos por el pipe, el proceso padre escribe en \texttt{fd[1]} (Línea \ding{193}); para recibir los datos del pipe, el proceso hijo lee desde \texttt{fd[0]} (Línea \ding{194}).  
 
 
 \begin{lstlisting}
