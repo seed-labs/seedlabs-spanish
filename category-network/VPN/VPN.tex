@@ -356,27 +356,18 @@ La Sección \ref{vpn:subsec:select} muestra como hacer esto.
 % ------------------------------------------- 
 \subsection{Mostrando Tráfico TLS en Wireshark}
 
-Wireshark identifies TLS/SSL traffic based on port numbers. It knows 
-\texttt{443} is the default port number for HTTPS, but our VPN server listens to a different
-and non-standard
-port number. We need to let Wireshark know that; otherwise, Wireshark will not label our 
-traffic as SSL/TLS traffic. Here is what we can do: 
-go to the \texttt{Edit} menu in Wireshark, and 
-click  \texttt{Preferences}, \texttt{Protocols}, \texttt{HTTP}, and 
-then find the \texttt{"SSL/TLS Ports"} entry. Add your SSL
-server port. For example, we can change the content 
-of the entry to  \texttt{443,4433}, where \texttt{4433} is the port used by our SSL server. 
+Wireshark identifica el tráfico TLS/SSL basado en los números de puertos. Wireshark sabe que el puerto por defecto para HTTPS es el \texttt{443}, pero nuestro servidor VPN estára a la escucha en un puerto no estandar.
+Necesitamos que Wireshark conozca este número de puerto; de otra forma, Wireshark no marcará nuestro tráfico SSL/TLS. Esto es lo que podemos hacer:
+Vaya al menú de \texttt{Edit} en Wireshark y elija \texttt{Preferences}, \texttt{Protocols}, \texttt{HTTP}, y vea la entrada que dice \texttt{"SSL/TLS Ports"}. Agregue su puerto SSL en donde su servidor está a la escucha.
+Por ejemplo podemos cambiar el contenido de la entrada a \texttt{443,4433}, donde  \texttt{4433} es el puerto usado por nuestro servidor SSL.
 
-
-\paragraph{Mostrando Tráfico no Cifrado.} The approach shown above only 
-gets Wireshark to recognize the traffic as TLS/SSL traffic; Wireshark cannot 
-decrypt the encrypted traffic. For debugging purposes, we would like to see the decrypted
-traffic. Wireshark provides such a feature; all we need to do is to provide the 
-server's private key to Wireshark, and Wireshark will automatically 
-derive the session keys from the TLS/SSL handshake protocol, and use these
-keys to decrypt traffic. To provide the server's private key
-to Wireshark, do the following:
-
+\paragraph{Mostrando Tráfico no Cifrado.} El enfoque que se muestra arriba solamente
+hace que Wireshark reconozca el tráfico como tráfico TLS/SSL; Wireshark no puede
+descifrar el tráfico cifrado. Para fines de depuración, nos gustaría ver el tráfico descifrado.
+Wireshark proporciona tal característica; todo lo que tenemos que hacer es proporcionar la
+la clave privada del servidor a Wireshark, y Wireshark automáticamente
+podrá derivar las claves de sesión del protocolo de enlace TLS/SSL y utilizar estas claves para descifrar el tráfico. 
+Para proporcionar la clave privada del servidor a Wireshark, haga lo siguiente:
 
 \begin{lstlisting}
  Click Edit -> Preferences -> Protocols -> SSL 
@@ -396,14 +387,9 @@ to Wireshark, do the following:
 \subsection{Obteniendo una Dirección IP desde un Hostname}
 \label{vpn:subsec:hostnametoip}
 
-
-Given a hostname, we can get the IP address for this name. 
-In our sample \texttt{tlsclient} program, we use
-the \texttt{gethostbyname()} function to get the IP address. However, this
-function is obsolete because it does not support IPV6. 
-Applications should use \texttt{getaddrinfo()} instead. The following 
-example shows to how to use this function to get IP addresses. 
-
+Dado un hostname, podemos obtener su dirección IP para este nombre.
+En nuestro programa de ejemplo \texttt{tlsclient}, usamos la función \texttt{gethostbyname()} para obtener la dirección IP. Sin embargo, esta función es obsoleta porque no soporta IPv6.
+Las aplicaciones deberían de usar \texttt{getaddrinfo()} en su lugar. El siguiente ejemplo muestra como usar esta función para obtener la dirección IP.
 
 \begin{lstlisting}
 #include <stdio.h>
@@ -442,16 +428,8 @@ int main() {
 \subsection{Autenticando usando el Archivo Shadow}
 \label{vpn:subsec:auth}
 
-
-The following program shows how to authenticate a user using 
-the account information stored in the shadow file.
-The program uses \texttt{getspnam()} to get 
-a given user's account information from the shadow file, including the 
-hashed password. It then uses \texttt{crypt()} to 
-hash a given password and see whether the result matches with
-the values fetched from the shadow file. If so, the user name and the password match, 
-and the authentication is successful. 
-
+El siguiente programa muestra como autenticar a un usuario usando la información de su cuenta guardada en el archivo shadow.
+El programa usa la función \texttt{getspnam()} para obtener la información de la cuenta del usuario. Después usa \texttt{crypt()} para hashear el password ingresado y ver si coincide con el obtenido desde el archivo shadow. Si el usuario y el password coinciden, el proceso de autenticación será exitoso.
 
 \begin{lstlisting}
 #include <stdio.h>
@@ -492,20 +470,15 @@ void main(int argc, char** argv)
 }
 \end{lstlisting}
 
-
-We can compile the code above and run it with a user name and a password. 
-It should be noted that the root privilege is needed when reading from the 
-shadow file. See the following commands for compilation and execution.
+Podemos compilar el código anterior y ejecutarlo con un usuario y un password.
+Hay que señalar que es necesario contar con privilegios de root a la hora de leer el archivo shadow. Los siguientes comandos indican como compilar y ejecutar el programa.
 
 \begin{lstlisting}
 $ gcc login.c -lcrypt
 $ sudo ./a.out seed dees
 \end{lstlisting}
  
-It should be noted that we use \texttt{-lcrypt} in the above compilation;
-we used \texttt{-lcrypto} when compiling our TLS programs. The
-\texttt{crypt} and \texttt{crypto} are two different libraries, so this is
-not a typo.
+Por último debemos de notar que usamos \texttt{-lcrypt} en la compilación anterior; usamos \texttt{-lcrypto} a la hora de compilar nuestros programas TLS; \texttt{crypt} y \texttt{crypto} son dos librerías diferentes, por lo que esto no es un error de tipeo.
 
 
 \vspace{0.2in}
