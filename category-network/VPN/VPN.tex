@@ -544,30 +544,12 @@ int main(void)
 \subsection{Usando \texttt{select} para Monitorear Múltiples Interfaces}
 \label{vpn:subsec:select}
 
-Our VPN program needs to monitor multiple interfaces, including the TUN interface, the socket
-interface, and sometimes, the pipe interface.   
-All these interfaces are represented by file descriptors, so we need to 
-monitor them to see whether there are data coming from them. 
-One way to do that is to keep polling them, and
-see whether there are data on each of the interfaces. The performance of this approach is
-undesirable, because the process has to keep running in an idle loop when there is no data.
-Another way is to read from an interface.  By default, read is blocking, i.e., the process will
-be suspended if there are no data. When data become available, the process will be unblocked,
-and its execution will continue. This way, it does not waste CPU time when there is no data.
+Nuestro programa VPN necesita monitorear múltiples interfaces, incluyendo la interfaz TUN, la interfaz socket y por momentos la interfaz del pipe.
+Todas estas interfaces son representadas por descriptores de archivo, por lo que necesitamos monitorearlos para ver si hay data que provienen desde ellos.
+Una forma de hacerlo es hacer polling sobre ellos y ver cuando hay datos en cada una de las interfaces. El problema con esta estrategia es que provee una performance poco deseable, porque el proceso debe de seguir de corriendo en un loop infinito aún cuando este ocioso y no haya datos, esto deviene en un gasto de tiempo de procesamiento en el CPU que es innecesario. La otra estrategia es leer desde una interfaz. Por defecto, la lectura es bloqueante es decir el proceso se suspenderá si no hay datos. Cuando los datos esten presentes, el proceso se desbloqueará, y continuará su ejecución. De esta forma, no gastaremos tiempo de CPU cuando no haya datos.
 
-The read-based blocking mechanism works well for one interface. If a process is waiting on
-multiple interfaces, it cannot block on just one of the interfaces. It has to block on all of
-them altogether.  \linux has a system call called \texttt{select()}, which
-allows a program to monitor multiple file descriptors simultaneously.
-To use \texttt{select()}, we need to store all the file descriptors to be monitored in a set
-using the \texttt{FD\_SET} macro~(see Lines~\ding{192} and~\ding{193} in
-the code below).  We then give the set to the \texttt{select()} system
-call~(Line~\ding{194}), which will block the process until data are available on one of the
-file descriptors in the set.  We can then use the \texttt{FD\_ISSET} macro to figure out which
-file descriptor has received data. In the following code example, 
-we use \texttt{select()} to monitor a \texttt{TUN} and a socket file
-descriptor.
-
+El mecanismo de la lectura bloqueante funciona bien para una interfaz. Si el proceso está a la espera en múltiples intrefaces, no puede bloquearse en una sola, debe de bloquearse en todas las interfaces al mismo tiempo. \linux tiene una llamada al sistema llamada \texttt{select()}, la cual le permite a un programa monitorear múltiples descriptores de archivo al mismo tiempo.
+Para usar \texttt{select()}, necesitamos guardar todos los descriptores de archivo que van a ser monitoreados en un conjunto usando la macro \texttt{FD\_SET} (Línea \ding{192} y \ding{193}, en el código que se muestra más abajo), esto bloqueará al proceso hasta que los datos esten disponibles en alguno de los descriptores de archivo del conjunto. Podemos usar la macro \texttt{FD\_ISSET} para ver cual descriptor de archivo es el que ha recibido los datos. En el siguiente ejemplo, usamos \texttt{select()} para monitorear a \texttt{TUN} y el descriptor de archivo de un socket.
 
 \begin{lstlisting}
 fd_set readFDSet;
@@ -594,65 +576,36 @@ if (FD_ISSET(tunfd, &readFDSet){
 % ------------------------------------------- 
 \subsection{Un Ejemplo: usando {\tt telnet} en nuestra VPN} 
 
-To help you fully understand how packets from an application flow to its destination
-through our \miniVPN, we have drawn two figures to illustrate the complete 
-packet flow path when users run {\tt telnet 10.0.20.100} from a host machine,
-which is the Point A of a host-to-gateway VPN. The other end of the VPN is 
-on a gateway, which is connected to the {\tt 10.0.20.0/24} network, where 
-our {\tt telnet} server {\tt 10.0.20.100} resides. 
+Para ayudarlo a entender como fluyen los paquetes desde la aplicación hacia su destino a través de nuestra \miniVPN, hemos dibujado dos figuras para ilustrar el flujo del paquete cuando los usuarios ejecutan  {\tt telnet 10.0.20.100} desde la máquina host, el cual es el Punto A de un host-to-gateway VPNJ. El otro extremo de la VPN es el gateway, el cual está conectado a la red {\tt 10.0.20.0/24}  donde nuestro servidor  {\tt telnet} {\tt 10.0.20.100} reside.
 
+La Figura \ref{fig:example1_host_2_gateway} muestra el flujo del paquete desde el cliente {\tt telnet} hacia el sservidor.
+La Figura \ref{fig:example2_host_2_gateway}  mmuestra el flujo del paquete desde el servidor {\tt telnet} de regreso hacia el cliente
+Solamente describiremos el camino en la Figura \ref{fig:example1_host_2_gateway}. La Figura \ref{fig:example2_host_2_gateway} que muestra el camino de regreso se explica por sí sóla una vez que haya comprendido la Figura \ref{fig:example1_host_2_gateway}.  
 
-Figure~\ref{fig:example1_host_2_gateway} shows how a packet flow 
-from the {\tt telnet} client to the server. 
-Figure~\ref{fig:example2_host_2_gateway} shows how a packet flow 
-from the {\tt telnet} server back to the client. 
-We will only describe the path in Figure~\ref{fig:example1_host_2_gateway}
-in the following. The return path is self-explained from
-Figure~\ref{fig:example2_host_2_gateway} once you have understood 
-the path in Figure~\ref{fig:example1_host_2_gateway}. 
 \begin{enumerate}
-\item The data of the packet starts from the {\tt telnet} program. 
-\item The kernel will construct an IP packet, with the destination
-      IP address being {\tt 10.0.20.100}. 
-\item The kernel needs to decide which network interface the packet should 
-      be routed through: {\tt eth1} or {\tt tun0}. You need to set up your routing
-      table correctly for the kernel to pick {\tt tun0}. Once the decision is 
-      made, the kernel will set the source IP address of the packet using
-      the IP address of the network interface, which is {\tt 10.0.4.1}.
 
-\item The packet will reach our VPN program (Point A) through the virtual 
-      interface {\tt tun0}, then it will be encrypted, and then be sent back
-      to the kernel through a UDP port (not through the {\tt tun0} interface).
-      This is because our VPN program use the UDP as our tunnel.
-      
-\item The kernel will treat the encrypted IP packet as UDP data, construct
-      a new IP packet, and put the entire encrypted IP packet as its UDP
-      payload. The new IP's destination address will be the other end of the
-      tunnel (decided by the VPN program we write); in the figure, the 
-      new IP's destination address is {\tt 128.230.208.97}.
+\item Los datos del paquete empiezan desde el programa {\tt telnet}.
 
+\item El kernel construirá un paquete IP con la dirección IP de destino {\tt 10.0.20.100}. 
 
-\item You need to set up your routing table correctly, so the new packet 
-      will be routed through the interaface {\tt eth1}; therefore, the 
-      source IP address of this new packet should be {\tt 209.164.131.32}.
+\item El kernel necesitará decidir cual será la interfaz de red en la cual enrutará el paquete: {\tt eth1} o {\tt tun0}. Necesita configurar su tabla de enrutamiento de manera correcta para que el kernel elija {\tt tun0}. 
+Una vez que la decisión es tomada por parte del kernel, este establecerá la dirección IP de origen del paquete usando la dirección IP de la interfaz de red la cual es {\tt 10.0.4.1}.
 
+\item El paquete llegará a nuestro programa VPN (Punto A) a través de la interfaz virtual {\tt tun0}, luego será encriptado y enviado de regreso al kernel a través de un puerto UDP (no a través de la interfaz {\tt tun0}).
+Esto es porque nuestro programa VPN usa UDP como nuestro túnel.
 
-\item The packet will now flow through the Internet, with the original 
-      {\tt telnet} packet being entirely encrypted, and carried in the 
-      payload of the packet. This is why it is called a {\em tunnel}.
+\item El kernel tratará al paquete IP encriptado como un dato UDP, construirá un nuevo paquete IP y pondrá todo el paquete IP ya encriptado como el payload del UDP. La nueva dirección IP de destino será el otro extremo del túnel (esto es decidido por el programa VPN que hemos escrito); en la figura, la dirección IP de destino es {\tt 128.230.208.97}.
 
-\item The packet will reach our gateway {\tt 128.230.208.97} through
-      its interface {\tt eth1}.
+\item Necesita configurar su tabla de enrutamiento de manera correcta, para que el nuevo paquete sea enrutado por la interfaz  {\tt eth1}; ademas, la dirección IP de origen de este nuevo paquete debería de ser {\tt 209.164.131.32}.
 
+\item El paquete viajará a través de la Internet, junto con el paquete {\tt telnet} original totalmente encriptado y llevado como payload de ese paquete. Esto es el porque del nombre de {\em túnel}.
 
-\item The kernel will give the UDP payload (i.e. the encrypted IP packet)
-      to the VPN program (Point B), which is waiting for UDP data. 
-      This is through the UDP port.
+\item El paquete llegará a nuestro gateway  {\tt 128.230.208.97} a través de su interfaz {\tt eth1}.
 
+\item El kernel le dará el payload UDP (es decir el paquete IP encriptado) al programa VPN (Punto B) que está a a espera de datos UDP por medio de su puerto UDP.
 
-\item The VPN program will decrypt the payload, and then feed the decrypted
-      payload, which is the original {\tt telnet} packet,
-      back to the kernel through the virtual network interface {\tt tun0}.
+\item El programa VPN desencriptará el payload y lo enviará de regreso al kernel usando la interfaz de red virtual {\tt tun0}.
+
 
 \item Since it comes through a network interface, the kernel will treat
       it as an IP packet (it is indeed an IP packet), look at its destination
@@ -674,19 +627,19 @@ the path in Figure~\ref{fig:example1_host_2_gateway}.
 \begin{figure*}
 \centering
 \begin{tabular}[t]{c}
-\subfigure[An Example of packet flow from telnet client to server in Host-to-Gateway Tunnel]
+\subfigure[Un ejemplo del flujo de un paquete desde el cliente elnet hacia el servidor en el Túnel Host-to-Gateway]
 {
    \label{fig:example1_host_2_gateway}
    \includegraphics*[viewport=0.7in 1.7in 8.7in 7.3in,width=6.0in]{\vpnFigs/vpn_h2g_details.pdf}
 }
 \\
-\subfigure[An Example of packet flow from telnet server to client in Host-to-Gateway Tunnel]
+\subfigure[Un ejemplo del flujo de un paquete desde el servidor de telnet hacia el cliente en el Túnel Host-to-Gateway]
 {
     \label{fig:example2_host_2_gateway}
     \includegraphics*[viewport=1.6in 1.6in 9.6in 7.2in,width=6.0in]{\vpnFigs/vpn_h2g_details_reply.pdf}
 }
 \end{tabular}
-\caption{An Example of Packet Flow in VPN.}
+\caption{Ejemplo del Flujo de un Paquete en la VPN.}
 \label{fig:example_packetflow}
 \end{figure*}
 
