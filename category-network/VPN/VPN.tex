@@ -606,21 +606,9 @@ Esto es porque nuestro programa VPN usa UDP como nuestro túnel.
 
 \item El programa VPN desencriptará el payload y lo enviará de regreso al kernel usando la interfaz de red virtual {\tt tun0}.
 
+\item Dado que el paquete viene a través de una interfaz de red, el kernel lo tratará como un paquete IP (bueno en realidad es un paquete IP), mire en su dirección IP de destino y decida por donde enrutarlo. Recuerde, la dirección IP de destino del paquete es {\tt 10.0.20.100}. Si su tabla de enrutamiento está configurada de forma correcta, el paquete debería de ser enrutado por la interfaz {\tt eth2}, porque esta es la interfaz que conecta a la red  {\tt 10.0.20.0/24}.
 
-\item Since it comes through a network interface, the kernel will treat
-      it as an IP packet (it is indeed an IP packet), look at its destination
-      IP address, and decide where to route it. Remember, the destination
-      IP address of this packet is {\tt 10.0.20.100}.
-      If your routing table is 
-      set up correctly, the packet should be routed through {\tt eth2},
-      because this is the interface that connects to the {\tt 10.0.20.0/24}
-      network. 
-
-\item The {\tt telnet} packet will now be delivered to its final 
-      destination {\tt 10.0.20.100}.
-
-
-
+\item El paquete {\tt telnet} será entregado a su destino final {\tt 10.0.20.100}.
 
 \end{enumerate}
 
