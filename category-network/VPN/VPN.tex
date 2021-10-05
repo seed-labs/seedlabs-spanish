@@ -47,13 +47,13 @@
 Una Virtual Private Network (VPN) o Red Privada Virtual se usa para crear un ámbito privado de comunicación entre computadoras o para proveer ua extensión segura de una red privada dentro de una red insegura tal como Internet. VPN es una tecnología ampliamente usada. Una VPN puede ser construída sobre IPSec o TLS/SSL (Transport Layer Security/Secure Socket Layer). 
 Son dos estrategias diferentes para construir VPNs. En este laboratorio, nos centramos en VPNs basadas en  TLS/SSL. Este tipo de VPNs son conocidas como VPNs TLS/SSL.
 
-El objetivo de este laboratorio es que los estudiantes profundizen los conocimientos en redes y la tecnologías que hacen seguras a las VPNs. Para lograr este cometido, se les pedirá a los estudiantes que implementen una simple VPN TLS/SSL.
-Aunque esta VPN es sencilla, esta cinluya todos los elementos esenciales de una VPN. El diseño y la implementación de una las VPNs TLS/SSL ejemplifican
-una serie de principios de seguridad, incluidos los siguientes:
+El objetivo de este laboratorio es que los estudiantes profundizen los conocimientos en redes y las tecnologías que hacen seguras a las VPNs. Para lograr este cometido, se les pedirá a los estudiantes que implementen una VPN TLS/SSL simple.
+Aunque esta VPN es sencilla, esta cinluya todos los elementos esenciales de una VPN. El diseño y la implementación de una VPN TLS/SSL ejemplifican
+una serie de principios de seguridad, incluídos los siguientes:
 
 \begin{itemize}[noitemsep]
 \item Virtual Private Network (VPN)
-\item TUN/TAP, and IP tunneling 
+\item TUN/TAP y IP tunneling 
 \item Enrutamiento
 \item Certificados Public-key cryptography, PKI, y X.509 
 \item Programación TLS/SSL
@@ -113,7 +113,7 @@ Usaremos el adaptador ``NAT Network'' para esta LAN.
 La tercera máquina, Host V, es una máquina dentro de la red privada. Los usuarios en el Host U (fuera de la red privada) quieren comunicarse con el Host V usando el Túnel VPN. Para simular esta configuración, conectaremos el Host V al servidor VPN (también será el gateway) a través de una  ``Internal Network''. En este escenario de configuración, el Host V no es accesible directamente desde Internet; o desde el Host U.
 
 Note que si una máquina virtual usa el modo ``Internal Network'', VirtualBox no ofrece DHCP a esta, por lo que la máquina virtual debe ser configurada de forma estática. Para hacer esto haga click en el ícono de network en la esquina derecha superior del escritorio y seleccione \texttt{"Edit Connections"}. Verá una lista de \texttt{"Wired connections"}, una por cada adaptador de red usado por la máquina virtual.
-Para el Host V, hay sólo una conexión pero para el servidor VPN, usaremos dos. Para asegurarse que ud. selecciona el correcto que corresponde al adaptador de ``Internal Network'', puede chequear la dirección MAC mostrada en el pop-up después de haber elejido editar la conexión.
+Para el Host V, hay sólo una conexión pero para el servidor VPN, usaremos dos. Para asegurarse que ud. seleccione el adaptador que corresponde al adaptador de ``Internal Network'', puede chequear la dirección MAC mostrada en el pop-up después de haber elejido editar la conexión.
 Compare esta dirección MAC con la que ud. obtiene de  \texttt{ifconfig}, y así sabrá si es la correcta o no.
 
 Después de haber seleccionado la conexión que se debe de editar, seleecione el tab que dice \texttt{"ipv4 Settings"} y elija el método Manual, en vez del que se usa por defecto que es \texttt{"Automatic (DHCP)"}. Haga click en el botón de \texttt{"Add"}  para configurar la dirección IP para la máquina virtual. Para más detalles vea la Figura  \ref{vpn:fig:internalnetwork}.
@@ -137,13 +137,13 @@ Después de haber seleccionado la conexión que se debe de editar, seleecione el
 
 Activar la tecnología para las VPNs TLS/SLL es TUN/TAP, las cuales son ampliamente implementadas en los sistemas operativos modernos.
 TUN y TAP son drivers del kernel de redes virtuales; implementan un dispositivo de red que es soportado por el software.
-TAP simula un dispositivo ethernet y opera con paquetes de capa 2 como Frames Ethernet; TUN simula un dispositivo de capa red y opera con paquetes de capa 3 como paquetes IP.
+TAP simula un dispositivo ethernet y opera con paquetes de capa 2 como lo son los Frames de Ethernet; TUN simula un dispositivo de capa red y opera con paquetes de capa 3 como lo son los paquetes IP.
 Con TUN/TAP, podemos crear interfaces de red virtuales.
 
-Un programa en el espacio de usuario está frecuentemente atachada a una interfaz de red virtual TUN/TAP.
+Un programa en el espacio de usuario está frecuentemente ligado a una interfaz de red virtual TUN/TAP.
 Los paquetes enviados por el sistema operativo usando la interfaz de red TUN/TAP son entregados al programa en espacio de usuario. Por otro lado los paquetes enviados por el programa usando la interfaz de red TUN/TAP son inyectados dentro del stack de red del sistema operativo, y hace parecer que los paquetes provienen de un origen externo a través de la interfaz de red virtual.
 
-Cuando un programa se atacha a la interfaz TUN/TAP, los paquetes IP que envía la máquina a esta interfaz serán canalizados dentro del programa; por otro lado, los paquetes IP que el programa envía a la interfaz serán canalizado dentro de la máquina, como si ellos hubieran venido de afuera de la red a través de esta red de interfaz virtual. El programa puede usar las llamadas al sistema estandar  {\tt read()} y {\tt write()} para recibir estos paquetes desde la interfaz virtual o para enviarlos a través de la misma.
+Cuando un programa se liga a la interfaz TUN/TAP, los paquetes IP que envía la máquina a esta interfaz serán canalizados dentro del programa; por otro lado, los paquetes IP que el programa envía a la interfaz serán canalizados dentro de la máquina, como si ellos hubieran venido de afuera de la red a través de esta red de interfaz virtual. El programa puede usar las llamadas al sistema estandar  {\tt read()} y {\tt write()} para recibir estos paquetes desde la interfaz virtual o para enviarlos a través de la misma.
 
 Hemos creado un cliente VPN de ejempolo llamado (\texttt{vpnclient}) y un servidor  (\texttt{vpnserver}), ambos pueden ser descargados del sitio oficial del laboratorio.
 Los programas son explicados en detalle en el Capítulo 16 del libro de SEED llamado \textit{Computer \& Internet Security: A Hands-on Approach, 2nd Edition}; este Capítulo también explica como funciona TUN/TAP y como usarlos para crear una VPN.
@@ -157,8 +157,8 @@ Los programas son explicados en detalle en el Capítulo 16 del libro de SEED lla
 \label{vpn:fig:client_server}
 \end{figure}
 
-Los programas \texttt{vpnclient} y \texttt{vpnserver} son los dos puntos finales del Túnel VPN. Ellos se comunican entre sí por medio TCP o UDP a través de sockets, esto es ilustrado en la Figura \ref{vpn_firewall:fig:client_server}. En nuestro código de ejemplo, elegimos usar UDP por un tema de simplicidad. La línea punteada entre el cliente y el servidor demarca el camino para el Túnel VPN.
-Los programas del cliente y servidor VPN se conectan al sistema de hosting a través de la interfaz TUN, a través de la cual ellos hacen dos cosas: (1) obtienes los paquetes IP del sistema de hosting, por lo que los paquetes pueden ser enviados a través del Túnel, (2) obtiene los paquetes IP desde el Túnel y los forwardea hacia el sistema de hosting, el cual forwardeará los paquetes hacia su destino final.
+Los programas \texttt{vpnclient} y \texttt{vpnserver} son los dos puntos finales del Túnel VPN. Ellos se comunican entre sí por medio TCP o UDP usando sockets, esto es ilustrado en la Figura \ref{vpn:fig:client_server}. En nuestro código de ejemplo, elegimos usar UDP por un tema de simplicidad. La línea punteada entre el cliente y el servidor demarca el camino para el Túnel VPN.
+Los programas del cliente y servidor VPN se conectan al sistema de hosting a través de la interfaz TUN, a través de la cual ellos hacen dos cosas: (1) obtiene los paquetes IP del sistema de hosting, por lo que los paquetes pueden ser enviados a través del Túnel, (2) obtiene los paquetes IP desde el Túnel y los forwardea hacia el sistema de hosting, el cual forwardeará los paquetes hacia su destino final.
 El siguiente procedimiento describe como crear un Túnel VPN usando los programas \texttt{vpnclient} y \texttt{vpnserver}.
 
 
@@ -221,8 +221,8 @@ Cuando Host V responde a un paquete enviado desde Host U, necesita enrutar los p
 Pista: cuando Host V recibe un paquete desde Host U (vía el túnel), necesita saber cual es la dirección IP de origen que se encuentra en el paquete; en el paquete de respuesta, la IP de origen se vuelve la la dirección IP de destino, la cual será usada por la tabla de enrutamiento desde U hacia V. Es su tarea encontrar esto y agregar la entrada de forma correcta para este paso.
 
 \paragraph{Paso 5: Testeando el Túnel VPN.:} 
-Después de haber configurado todo, podemos acceder al host V desde el Host U por medio del túnelñ.
-Por favor realize las siguientes pruebas usando \texttt{ping} y \texttt{telnet}; por favor incluya en el informe sus resultados. Debería de usar Wireshark para capturar el tráfico de red en todas las interfaces de la máquina virtual del cliente and señalar cuales son los paquetes que son parte del tráfico del túnel y cuales no lo son.
+Después de haber configurado todo, podemos acceder al Host V desde el Host U por medio del túnel.
+Por favor realize las siguientes pruebas usando \texttt{ping} y \texttt{telnet}; por favor incluya en el informe sus resultados. Debería de usar Wireshark para capturar el tráfico de red en todas las interfaces de la máquina virtual del cliente y señalar cuales son los paquetes que son parte del tráfico del túnel y cuales no lo son.
 
 \begin{lstlisting}
 On Host U:
@@ -247,9 +247,9 @@ En este punto, hemos creado un túnel IP, pero nuestro túnel no está protegido
 Sólo después de haber asegurado este túnel, podremos llamarlo un túnel VPN.
 Esto es lo que haremos en esta tarea.
 Para asegurar este túnel, necesitamos lograr dos objetivos, confidencialidad y integridad.
-La confidencialidad se logra usando cifrado, es decir, el contenido que viaja por este túnel está cifrado.
+La confidencialidad se logra usando cifrado, es decir, el contenido que viaja por este túnel debe de estar cifrado.
 La integridad permite que nadie pueda manipular el tráfico en el túnel o lanzar un ataque de replay.
-La integridad se lograr usando Message Authentication Code (MAC).
+La integridad se logra usando Message Authentication Code (MAC).
 Ambos objetivos pueden lograr usando Transport Layer Protocol (TLS). 
 
 TLS típicamente está construido sobre TCP. En el cliente y servidor VPN de ejemplo, los programas en la tarea 2 usan UDP, por lo que primero necesitamos reemplazar el canal UDP en el código de ejemplo con un canal TCP y establecer una sesión TLS entre los dos puntos del túnel. Proveemos dos programas de ejemplo para un cliente TLS y un servidor TLS (\texttt{tlsclient} y \texttt{tlsserver}), estos archivos se encuentran en el archivo zip que se puede descargar desde el sitio oficial del laboratorio.
@@ -265,18 +265,18 @@ Antes que la conexión a la VPN sea establecida, el cliente VPN debe autenticars
 Por otro lado, el servidor VPN debe de autenticar al cliente (es decir al usuario), asegurándose que ese usuario tiene los permisos para acceder a la red privada.
 En esta tarea, implementaremos la autenticación en el servidor; en la siguiente tarea lo implementaremos para el cliente.
 
-Una forma típica de autenticar servidores es usar certificados de llave pública. El servidor VPN necesita obtener primero el certificado de la llave pública de una Autoridad Certificadora o Certificate Authority (CA). Cuando un cliente realiza una conexión hacia el servidor VPN, el servidor usará el certificado para probar que es el servidor previsto.
+Una forma típica de autenticar servidores es usar certificados de clave pública. El servidor VPN necesita obtener primero el certificado de la clave pública de una Autoridad Certificadora o Certificate Authority (CA). Cuando un cliente realiza una conexión hacia el servidor VPN, el servidor usará el certificado para probar que es el servidor previsto.
 El protocolo HTTPs usa este enfoque para autenticar servidores web, asegurándo que el cliente está hablando con el servidor correcto y no con uno fraudulento.
 
-En este laboratorio, nuestra \miniVPN debería de usar este método para autenticar en el servidor VPN. Podemos iomplementar un protocolo de autenticación (tal como TLS/SSL) desde cero, pero afortunadamente, \texttt{openssl} se encarga de la mayoría del trabajo por nosotros. Sólo neceistamos configurar nuestra sesión TLS de manera correcta, de esta forma \texttt{openssl} puede realizar la autenticación automáticamente por nosotros.
+En este laboratorio, nuestra \miniVPN debería de usar este método para autenticar en el servidor VPN. Podemos implementar un protocolo de autenticación (tal como TLS/SSL) desde cero, pero afortunadamente, \texttt{openssl} se encarga de la mayoría del trabajo por nosotros. Sólo necesitamos configurar nuestra sesión TLS de manera correcta, de esta forma \texttt{openssl} puede realizar la autenticación automáticamente por nosotros.
 
-Existen tres pasos importantes en la autenticación de un servidor: (1) verificar que el certificado del servidor sea válido, (2) verificar que el servidor es el dueño del certificado y (3) verificar que el servidor es el servidor sea el indicado (por ejemplo si el usuario intenta visitar \texttt{example.com}, necesitamos asegurarnos que ese servidor sea \texttt{example.com}, y no  otro sitio). Por favor señale qué líneas enn el código en su programa lleva a cabo las verificaciones anteriores.
+Existen tres pasos importantes en la autenticación de un servidor: (1) verificar que el certificado del servidor sea válido, (2) verificar que el servidor es el dueño del certificado y (3) verificar que el servidor es el servidor indicado (por ejemplo si el usuario intenta visitar \texttt{example.com}, necesitamos asegurarnos que ese servidor sea \texttt{example.com}, y no otro sitio). Por favor señale qué líneas enn el código en su programa lleva a cabo las verificaciones anteriores.
 En su demostración, debe demostrar dos casos diferentes con respecto a la tercera verificación: una autenticación exitosa del servidor donde el servidor es el servidor previsto, y una autenticación de servidor fallida donde el servidor no es el servidor previsto.
 
 \paragraph{Nota:} Nuestro programa \miniVPN debería de poder comunicarse con servidores VPNs en otras máquinas, por lo que no puede hardcodear el hostname del servidor VPN en el programa. El hostname debe de ser tipeado desde la consola. Este nombre representa una acción del usuario que representa una intención, por lo que debería ser usada en la verificación. Este nombre también debería de ser usada para encontrar la dirección IP del servidor. La sección \ref{vpn:subsec:hostnametoip} es un ejemplo de un programa que muestra como obtener la dirección IP dado un hostname.
 
 
-\paragraph{Nuestros clientes y servidores TLS de ejemplo.}  La autentación a nivel servidor es implementada en el los programas provisto por nosotros. Parte de la autenticación requiere el certificado de la CA dado que es quien emite el certificado.
+\paragraph{Nuestros clientes y servidores TLS de ejemplo.}  La autentación a nivel servidor es implementada en los programas provisto por nosotros. Parte de la autenticación requiere el certificado de la CA dado que es quien emite el certificado.
 Hemos puesto dos certificados CA dentro del directorio \texttt{./ca\_client}. Uno es el CA que emite el certificado de nuestro servidor (el nombre de host del servidores \url{vpnlabserver.com}),
 y el otra es la CA que emite el certificado de Google.
 Por lo tanto, el programa cliente TLS de muestra puede comunicarse con nuestro propio servidor, así como con el servidor HTTPS de Google: 
@@ -287,7 +287,7 @@ $ ./tlsclient www.google.com 443
 \end{lstlisting}
 
 
-\textbf{Cabe señalar} que los estudiantes no deberían de usar el dominio \texttt{vpnlabserver.com} del código ejemplo como como el nombre de su servidor VPN; en vez de ello \textbf{deberían de incluir su apellido} en el nombre del servidor. Los estudiantes deberían de generar su propio CA para crear certificados para el servidor. El objetivo de este requerimiento es necesario para diferenciar el trabajo de cada uno de los estudiantes.
+\textbf{Cabe señalar} que los estudiantes no deberían de usar el dominio \texttt{vpnlabserver.com} del código ejemplo como el nombre de su servidor VPN; en vez de ello \textbf{deberían de incluir su apellido} en el nombre del servidor. Los estudiantes deberían de generar su propio CA para crear certificados para el servidor. El objetivo de este requerimiento es necesario para diferenciar el trabajo de cada uno de los estudiantes.
 
 Para usar nuestro cliente y que pueda comunicarse con un servidor HTTPS, necesitamos obtener su certificado CA, guardar este certificado dentro de la carpeta \texttt{./ca\_client}  y crear un link simbólico hacia la misma (o renombrarla) usando el valor hash generado a partir de su campo asunto.
 Por ejemplo, para hacer que nuestro cliente hable con Google, quien obtiene su certificado de un CA raíz llamado ``GeoTrust Global CA'', podemos obtener este certificado CA raíz  (\texttt{GeoTrustGlobalCA.pem})   desde el navegador Firefox y ejecutar el comando para obtener su hash y configurar el link simbólico:
@@ -311,9 +311,9 @@ lrwxrwxrwx 1 ... 9b58639a.0 -> cacert.pem
 % ------------------------------------------- 
 \subsection{Tarea 5: Autenticando al Cliente VPN}
 
-Acceder a las máquinas dentro de una red privada es un privilegio que solo es garantizado a usuarios autorizados, no a todos. Además, sólo a los usuarios autorizados se le permiten establecer conexiones al túnel VPN usando el servidor VPN.
+Acceder a las máquinas dentro de una red privada es un privilegio que sólo es garantizado a usuarios autorizados, no a todos. Además, sólo a los usuarios autorizados se le permiten establecer conexiones al túnel VPN usando el servidor VPN.
 En esta tarea, los usuarios autorizados son aquellos quienes tengan una cuenta válida en el servidor VPN.
-Usaremos el mecanismo standard de autenticación de password para autenticarlos. Básicamente, cuando un usuario intenta establecer una conexión a un túnel VPN usando el servidor VPN, se le preguntará por un usuario y un password. El servidor deberá de chequear su archivo shadow (\texttt{/etc/shadow}); si los datos ingresados coinciden, el usuario será autenticado y la conexión con el túnel VPN será establecida. De lo contrario el servidor cortará su conexión con el usuario y la conexión con el túnel VPN no podrá ser establecida.
+Usaremos el mecanismo estandard de autenticación de password para autenticarlos. Básicamente, cuando un usuario intenta establecer una conexión a un túnel VPN usando el servidor VPN, se le preguntará por un usuario y un password. El servidor deberá de chequear su archivo shadow (\texttt{/etc/shadow}); si los datos ingresados coinciden, el usuario será autenticado y la conexión con el túnel VPN será establecida. De lo contrario el servidor cortará su conexión con el usuario y la conexión con el túnel VPN no podrá ser establecida.
 Vea la Sección \ref{vpn:subsec:auth} para un código de ejemplo que muestra como autenticar usuarios en el archivo shadow.
 
 
@@ -333,15 +333,15 @@ Así el servidor VPN permite que más de un cliente se conecte al mismo tiempo d
 \label{vpn:fig:MultiClient}
 \end{figure}
  
-En una implementación típica, el proceso servidor VPN  (el proceso padre) crea procesos hijos por cada túnel (vea la Figura \ref{vpn:fig:MultiClient}).
+En una implementación típica, el proceso servidor VPN (el proceso padre) crea procesos hijos por cada túnel (vea la Figura \ref{vpn:fig:MultiClient}).
 Cuando un paquete llega desde el túnel, el proceso hijo que corresponde obtendrá este paquete y lo redirigirá hacia la interfaz TUN.
 Esta dirección es la misma sin iomportar si soporta múltiples clientes o no. Es en la otra dirección en donde se convierte en un desafío.
 Cuando un paquete llega a la intrefaz TUN (desde la red privada), el proceso padre obtendrá el paquete, y necesitará descubrir a cual túnel este paquete debe de dirigirse. Debe de pensar en como implementar la lógica de esta decisión
 
-Una vez que esta decisión es tomada y se elije un túnel, el proceso padre necesita enviar el paquete al proceso hijo, el cual tiene el túnel que le corresponde. Esto requiere IPC (comunicación entre procesos). A
+Una vez que esta decisión es tomada y se elije un túnel, el proceso padre necesita enviar el paquete al proceso hijo, el cual tiene el túnel que le corresponde. Esto requiere IPC (comunicación entre procesos).
 Un enfoque típico es utilizar pipes. Ofrecemos un programa de muestra en la Sección \ref{vpn:subsec: pipe} para mostrar cómo usar pipes para IPC.
 
-Los procesos hijos necesitan monitorear esta interfaz del pipe y leer datos del mismo si es que los hay. Dado que los procesos hijos también necesitan monitorear los datos que llegan de la interfaz socket, necesitan estar simultáneamente monitoreando múltiples interfaces.
+Los procesos hijos necesitan monitorear esta interfaz del pipe y leer datos del mismo, si es que los hay. Dado que los procesos hijos también necesitan monitorear los datos que llegan de la interfaz del socket, necesitan estar simultáneamente monitoreando múltiples interfaces.
 La Sección \ref{vpn:subsec:select} muestra como hacer esto.
 
 
@@ -364,9 +364,7 @@ Por ejemplo podemos cambiar el contenido de la entrada a \texttt{443,4433}, dond
 \paragraph{Mostrando Tráfico no Cifrado.} El enfoque que se muestra arriba solamente
 hace que Wireshark reconozca el tráfico como tráfico TLS/SSL; Wireshark no puede
 descifrar el tráfico cifrado. Para fines de depuración, nos gustaría ver el tráfico descifrado.
-Wireshark proporciona tal característica; todo lo que tenemos que hacer es proporcionar la
-la clave privada del servidor a Wireshark, y Wireshark automáticamente
-podrá derivar las claves de sesión del protocolo de enlace TLS/SSL y utilizar estas claves para descifrar el tráfico. 
+Wireshark proporciona tal característica; todo lo que tenemos que hacer es proporcionar la clave privada del servidor a Wireshark, y Wireshark automáticamente podrá derivar las claves de sesión del protocolo de enlace TLS/SSL y utilizar estas claves para descifrar el tráfico. 
 Para proporcionar la clave privada del servidor a Wireshark, haga lo siguiente:
 
 \begin{lstlisting}
@@ -578,7 +576,7 @@ if (FD_ISSET(tunfd, &readFDSet){
 
 Para ayudarlo a entender como fluyen los paquetes desde la aplicación hacia su destino a través de nuestra \miniVPN, hemos dibujado dos figuras para ilustrar el flujo del paquete cuando los usuarios ejecutan  {\tt telnet 10.0.20.100} desde la máquina host, el cual es el Punto A de un host-to-gateway VPNJ. El otro extremo de la VPN es el gateway, el cual está conectado a la red {\tt 10.0.20.0/24}  donde nuestro servidor  {\tt telnet} {\tt 10.0.20.100} reside.
 
-La Figura \ref{fig:example1_host_2_gateway} muestra el flujo del paquete desde el cliente {\tt telnet} hacia el sservidor.
+La Figura \ref{fig:example1_host_2_gateway} muestra el flujo del paquete desde el cliente {\tt telnet} hacia el servidor.
 La Figura \ref{fig:example2_host_2_gateway}  mmuestra el flujo del paquete desde el servidor {\tt telnet} de regreso hacia el cliente
 Solamente describiremos el camino en la Figura \ref{fig:example1_host_2_gateway}. La Figura \ref{fig:example2_host_2_gateway} que muestra el camino de regreso se explica por sí sóla una vez que haya comprendido la Figura \ref{fig:example1_host_2_gateway}.  
 

@@ -10,73 +10,63 @@
  \textbf{\Large Requerimientos} & \textbf{\Large Detalles} \\ 
  \hline
  \hline
- \textbf{Initial State} & 
+ \textbf{Estado Inicial} & 
 	\vspace*{-0.3cm}
  	\begin{itemize}[topsep=-0.5cm,leftmargin=0.4cm]
-		\item Rebooting all three VMs. Start recording after the VMs are rebooted. You
-		should start demo immediately after rebooting. If you wait too long,
-		you will have to do the rebooting again.
+ 		\item Reinicie las trés Máquinas Virtuales. Empiece la grabación después de que las Máquinas Virtuales sean reiniciadas. Debería de comenzar la demostración inmediatamente después de que hayan sido reiniciadas. Si espera demasiado, tendrá que hacer los reinicios nuevamente.
+ 		
+		\item Escriba en la terminal \texttt{"last reboot; date"}  para mostrar el tiempo de reinicio y el tiempo actual de cada una de las tres máquinas virtuales. La diferencia entre estos dos tiempos no debería de ser más de 5 minutos.
 
-		\item Type \texttt{"last reboot; date"} in a terminal to show the rebooting
-		time and current time on all three VMs. The difference between these two times
-		should not be more than 5 minute.
-
-		\item Display the routing tables on all three VMs.
+		\item Muestre las tablas de enrutamiento en las tres máquinas virtuales.
 	\end{itemize}
  \\ 
  \hline
  
- \textbf{Pre-Tunnel Test} & 
+ \textbf{Testeo Pre-Túnel} & 
  	\vspace*{-0.3cm}
  	\begin{itemize}[topsep=-0.5cm,leftmargin=0.4cm]
-		\item Before VPN is set up, \texttt{ping} Host \hostv
-		from Host \hostu and explain your observation.
+ 		\item Antes de hacer el setup de la VPN, haga un \texttt{ping} al Host \hostv desde el Host \hostu y explique sus observaciones.
 	\end{itemize}
  \\ 
  \hline
 
- \textbf{Tunnel Creation} & 
+ \textbf{Creación del Túnel} & 
  	\vspace*{-0.3cm}
  	\begin{itemize}[topsep=-0.5cm,leftmargin=0.4cm]
-	   \item Start vpn client and vpn server programs.
+	   \item Corra su cliente VPN y su servidor VPN.
 		\begin{itemize}
-		\item You need to type passwords to authenticate yourself to the server, the
-		password should not be visible (10 points will be deducted if we see your
-		passwords). You can use \texttt{getpass()} to achieve that (type ``\texttt{man
-		getpass}" to see its manual).
-
-		\item Passwords cannot be hardcoded in your program. If you do this, 50 points will be deducted. 
+		\item Necesita de tipear los passwords para autenticarse en el servidor, el password no debería de ser visible (se descontarán 10 puntos si vemos sus passwords). Puede usar \texttt{getpass()} para lograr este objetivo (para ver el manual use  ``\texttt{man getpass}")
+		
+		\item Los passwords no pueden ser hardcodeados en su programa. Si lo hace, se le descontarán 50 puntos.
 		\end{itemize}
 
-	   \item Perform configuration on all VMs. Although you can put the configuration
-	   commands in a script, you do need to show the script and explain the commands in
-	   your script.
+	   \item Realice esta configuración en todas las máquinas virtuales. Aunque puede poner los comandos de configuración en un script, necesita mostrar el script y explicar los comandos de su script.
 
-	   \item Show routing tables on all three VMs after the configuration.
+	   \item  Muestre las tablas de enrutamiento en las tres máquinas virtuals después de la configuración.
 	\end{itemize}
  \\ 
  \hline
 
- \textbf{Ping Test} & 
+ \textbf{Testeo del Ping} & 
  	\vspace*{-0.3cm}
  	\begin{itemize}[topsep=-0.5cm,leftmargin=0.4cm]
-		\item On Host \hostu: \texttt{ping} Host \hostv.
-		\item Use Wireshark to prove that your VPN works correctly.
-		\item Show us the proof that the tunnel is indeed encrypted.
+ 		\item En el Host \hostu: realize un \texttt{ping} al Host \hostv.
+		\item Use Wireshark para demostrar que su VPN funciona bien.
+		\item Muestrenos la prueba de que el túnel está encriptado.
 	\end{itemize}
  \\ 
  \hline
 
- \textbf{Telnet Test} & 
+ \textbf{Testeo del Telnet} & 
  	\vspace*{-0.3cm}
  	\begin{itemize}[topsep=-0.5cm,leftmargin=0.4cm]
-		\item On Host \hostu: \texttt{telnet} to Host \hostv.
-		\item Use Wireshark to prove that your VPN works correctly.
+		\item En el Host \hostu: haga \texttt{telnet} al Host \hostv.
+		\item Use Wireshark para demostrar que su VPN funciona bien.
 	\end{itemize}
  \\ 
  \hline
 
- \textbf{Tunnel-Breaking Test} & 
+ \textbf{Testeo del Tunnel-Breaking} & 
  	\vspace*{-0.3cm}
  	\begin{itemize}[topsep=-0.5cm,leftmargin=0.4cm]
 		\item On Host \hostu, telnet to Host \hostv. While keeping the telnet connection alive,
@@ -94,7 +84,7 @@
  \\ 
  \hline
 
- \textbf{Large Packet Test} & 
+ \textbf{Testeo de Paquete Grande} & 
  	\vspace*{-0.3cm}
  	\begin{itemize}[topsep=-0.5cm,leftmargin=0.4cm]
 	\item Send a large packet (size \textgreater\space 3000) from Host \hostu to Host \hostv. 
@@ -105,7 +95,7 @@
  \\ 
  \hline
 
- \textbf{TLS Setup} & 
+ \textbf{Setup de TLS} & 
  	\vspace*{-0.3cm}
  	\begin{itemize}[topsep=-0.5cm,leftmargin=0.4cm]
 		\item Show us how you set up your TLS on both client and server sides.
@@ -115,7 +105,7 @@
  \\ 
  \hline
 
- \textbf{MITM Test} & 
+ \textbf{Testeo de MITM} & 
  	\vspace*{-0.3cm}
  	\begin{itemize}[topsep=-0.5cm,leftmargin=0.4cm]
 		\item Demonstrate that your system can successfully defeat MITM attacks. You
@@ -125,7 +115,7 @@
  \\ 
  \hline
 
- \textbf{Code Explanation 1} & 
+ \textbf{Explicación del Código 1} & 
 	Which lines of code are responsible for the following:
  	\vspace*{0.2cm}
  	\begin{itemize}[topsep=-0.5cm,leftmargin=0.4cm]
@@ -136,13 +126,13 @@
  \\ 
  \hline
 
- \textbf{Code Explanation 2} & 
+ \textbf{Explicación del Código 2} & 
 	Which line of code in the client forces TLS handshake to stop if the server certificate
 	verification fails?
  \\ 
  \hline
 
- \textbf{Code Explanation 3} & 
+ \textbf{Explicación del Código 3} & 
 	Which line(s) of code do the following?
 	\vspace*{0.2cm}
  	\begin{itemize}[topsep=-0.5cm,leftmargin=0.4cm]
@@ -152,7 +142,7 @@
  \\ 
  \hline
 
- \textbf{Ending Time} & 
+ \textbf{Tiempo Final} & 
 	Type \texttt{"last reboot; date"} commands to display the time before ending your demo.
  \\ 
  \hline
