@@ -69,17 +69,10 @@
  \textbf{Testeo del Tunnel-Breaking} & 
  	\vspace*{-0.3cm}
  	\begin{itemize}[topsep=-0.5cm,leftmargin=0.4cm]
-		\item On Host \hostu, telnet to Host \hostv. While keeping the telnet connection alive,
-		break the VPN tunnel by stopping the vpn client and/or vpn server programs.
-		Then type something in the telnet window. Do you see what you type? What
-		happens to the TCP connection? Is the connection broken? 
+ 		\item En el Host \hostu, haga un telnet al Host \hostv. Mientras que la conexión telnet corte el túnel VPN parando el cliente vpn y el/los servidor/es vpns.
+ 		Escriba algo en la ventana de telnet. ¿Puede ver lo que tipea? ¿Qué ocurre con la conexión TCP? ¿Se corta la conexión?
 
-		\item Let us now reconnect the VPN tunnel (do not wait for too long). 
-		Run the client and server programs again, and conduct the necessary
-		configuration (no need to explain or show commands). Once the tunnel is
-		re-established, what is going to happen to the telnet connection? Please
-		describe and explain your observation.
-
+		\item Vamos a reconectar nuestro túnel VPN (no espere mucho tiempo). Ejecute nuevamente los programas cliente y servidore y realize las configuraciones necesarias. Una vez que el túnel se reestableció, fijese que pasa con la conexión telnet, por favor explique y describa su observación.
 	\end{itemize}
  \\ 
  \hline
@@ -87,10 +80,9 @@
  \textbf{Testeo de Paquete Grande} & 
  	\vspace*{-0.3cm}
  	\begin{itemize}[topsep=-0.5cm,leftmargin=0.4cm]
-	\item Send a large packet (size \textgreater\space 3000) from Host \hostu to Host \hostv. 
-	You can use \texttt{"ping -s"} to do that. 
+ 	\item Envíe un paquete grande (tamaño \textgreater\space 3000) desde el Host \hostu al Host \hostv. Puede usar \texttt{"ping -s"} para hacerlo.
 
-	\item Use Wireshark to describe and explain your observations.
+	\item Use Wireshark explique y describa su observación.
 	\end{itemize}
  \\ 
  \hline
@@ -98,9 +90,9 @@
  \textbf{Setup de TLS} & 
  	\vspace*{-0.3cm}
  	\begin{itemize}[topsep=-0.5cm,leftmargin=0.4cm]
-		\item Show us how you set up your TLS on both client and server sides.
-		\item Show us where you place the server certificates and self-signed certificate.
-		\item Show us which lines of code load those certificates.
+ 		\item Muestrenos como ha configurado su TLS en el cliente y en el servidor.
+ 		\item Muestrenos en donde ha ubicado los certificados para el servidor y los certificados autofirmados.
+ 		\item Muestrenos que líneas de código cargan esos certificados.
 	\end{itemize}
  \\ 
  \hline
@@ -108,42 +100,39 @@
  \textbf{Testeo de MITM} & 
  	\vspace*{-0.3cm}
  	\begin{itemize}[topsep=-0.5cm,leftmargin=0.4cm]
-		\item Demonstrate that your system can successfully defeat MITM attacks. You
-		need to set up a simulated MITM attack, and demonstrate that your client
-		program can defeat it.
+ 		\item Demuestre que su sistema puede derrotar con éxito ataques MITM. Necesita simular un ataque MITM y demostrar que su programa cliente puede derrotarlo.
 	\end{itemize}
  \\ 
  \hline
 
  \textbf{Explicación del Código 1} & 
-	Which lines of code are responsible for the following:
+	Cualés son las líneas de código responsables de lo siguiente:
  	\vspace*{0.2cm}
  	\begin{itemize}[topsep=-0.5cm,leftmargin=0.4cm]
-		\item verifying that the server certificate is valid
-		\item verifying that the server is the owner of the certificate
-		\item verifying that the server is the intended server
+ 		\item Verificar que el certificado del servidor sea válido
+ 		\item Verificar que el servidor es el dueño del certificado
+ 		\item Verificar que el servidor es el servidor indicado
 	\end{itemize}
  \\ 
  \hline
 
  \textbf{Explicación del Código 2} & 
-	Which line of code in the client forces TLS handshake to stop if the server certificate
-	verification fails?
+ 	Cual es la línea del código en el programa cliente que fuerza el handshake TLS que detiene el proceso si la verificación del certificado del servidor falla?
  \\ 
  \hline
 
  \textbf{Explicación del Código 3} & 
-	Which line(s) of code do the following?
+	Que línea(s) del código es responsable de lo siguiente:
 	\vspace*{0.2cm}
  	\begin{itemize}[topsep=-0.5cm,leftmargin=0.4cm]
-		\item sending username and password to the server
-		\item getting account information from the shadow file
+ 		\item Enviar el usuario y password al servidor
+ 		\item Obtener la información de la cuenta de usuario en el archivo shadow
 	\end{itemize}
  \\ 
  \hline
 
  \textbf{Tiempo Final} & 
-	Type \texttt{"last reboot; date"} commands to display the time before ending your demo.
+	Escriba los comandos \texttt{"last reboot; date"} para mostrar el tiempo antes de terminar su demostración.
  \\ 
  \hline
 
