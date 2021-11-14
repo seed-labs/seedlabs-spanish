@@ -334,10 +334,10 @@ A continuación se provee un código base. Necesita reempalazar cada entrada que
 from scapy.all import *
 
 ip  = IP(src="@@@@", dst="@@@@")
-tcp = TCP(sport=@@@@, dport=@@@@, flags="@@@@", seq=@@@@, ack=@@@@)
+tcp = TCP(sport=@@@@, dport=@@@@, flags="R", seq=@@@@)
 pkt = ip/tcp
 ls(pkt)
-send(pkt,verbose=0)
+send(pkt, verbose=0)
 \end{lstlisting}
 
 \paragraph{Opcional: Lanzando el ataque automáticamente.} 
@@ -409,11 +409,11 @@ A continuación se provee un código base. Necesita reempalazar cada entrada que
 from scapy.all import *
 
 ip  = IP(src="@@@@", dst="@@@@")
-tcp = TCP(sport=@@@@, dport=@@@@, flags="@@@@", seq=@@@@, ack=@@@@)
+tcp = TCP(sport=@@@@, dport=@@@@, flags="A", seq=@@@@, ack=@@@@)
 data = "@@@@"
 pkt = ip/tcp/data
 ls(pkt)
-send(pkt,verbose=0)
+send(pkt, verbose=0)
 \end{lstlisting}
 
 
